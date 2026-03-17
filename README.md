@@ -31,10 +31,19 @@ Full-stack mosque management website with separated API architecture.
       /utils - Helpers and validators
     /config - Configuration
 
-  /deployment - VPS deployment files
-    /README.md - Quick deployment guide
-    /traefik - Traefik reverse proxy config
-    /backend - Backend + PostgreSQL docker-compose
+  /backend (Go - Completely Separated)
+    /cmd/server - Main application entry point
+    /internal
+      /handlers - API controllers
+      /models - GORM models
+      /middleware - Auth, CORS, logging
+      /database - Connection and migrations
+      /services - Business logic
+      /utils - Helpers and validators
+    /config - Configuration
+    /traefik - Traefik reverse proxy for VPS deployment
+    /docker-compose.yml - Backend + PostgreSQL containers
+    /Dockerfile - Backend Docker image
 ```
 
 ## Tech Stack
@@ -119,7 +128,7 @@ bun run dev
 
 ## VPS Deployment
 
-Pre-configured deployment files are available in the `deployment/` directory.
+Pre-configured deployment files are available in the `backend/` directory.
 
 ### Quick Deploy
 
@@ -127,35 +136,35 @@ Pre-configured deployment files are available in the `deployment/` directory.
    ```bash
    cd ~
    git clone <your-repo-url>
-   cd baiturrahim-app
+   cd baiturrahim-app/backend
    ```
 
 2. **Create required directories:**
    ```bash
-   mkdir -p postgres-data deployment/traefik/letsencrypt
-   touch deployment/traefik/letsencrypt/acme.json
-   chmod 600 deployment/traefik/letsencrypt/acme.json
+   mkdir -p postgres-data traefik/letsencrypt
+   touch traefik/letsencrypt/acme.json
+   chmod 600 traefik/letsencrypt/acme.json
    ```
 
 3. **Configure deployment files:**
    ```bash
    # Edit Traefik config (change email)
-   nano deployment/traefik/traefik.yml
+   nano traefik/traefik.yml
 
    # Edit backend config (change domain, secrets)
-   nano deployment/backend/docker-compose.yml
+   nano docker-compose.yml
    ```
 
 4. **Create Docker network and start:**
    ```bash
    docker network create traefik-network
-   cd deployment/traefik
+   cd traefik
    docker compose up -d
-   cd ../backend
+   cd ..
    docker compose up -d --build
    ```
 
-See `deployment/README.md` for complete deployment guide.
+See `backend/README.md` for complete deployment guide.
 
 ## Design System
 

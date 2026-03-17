@@ -24,6 +24,10 @@ Go-based REST API for the Baiturrahim mosque management system.
     /services       - Business logic layer
     /utils          - Validators, helpers
   /config           - Configuration loading
+  /traefik          - Traefik reverse proxy for VPS deployment
+    /traefik.yml        - Traefik configuration
+    /docker-compose.yml # Traefik containers
+    /letsencrypt/       - SSL certificates storage
 ```
 
 ## Getting Started
@@ -114,17 +118,119 @@ The API uses JWT tokens for authentication:
 3. **Use token**: Include `Authorization: Bearer <token>` header
 4. **Refresh**: Use `POST /api/v1/auth/refresh` to get new token
 
-## Deployment
+## VPS Deployment
 
-For VPS deployment, use the pre-configured files in `../deployment/` directory.
+Pre-configured files are in `traefik/` and `docker-compose.yml` in this directory.
 
-See `deployment/README.md` for complete deployment guide.
+### Quick Deploy
 
-Quick deploy:
+1. **Clone repository on your VPS:**
+   ```bash
+   cd ~
+   git clone <your-repo-url>
+   cd baiturrahim-app/backend
+   ```
+
+2. **Create required directories:**
+   ```bash
+   mkdir -p postgres-data traefik/letsencrypt
+   touch traefik/letsencrypt/acme.json
+   chmod 600 traefik/letsencrypt/acme.json
+   ```
+
+3. **Configure Traefik:**
+   ```bash
+   cd traefik
+   nano traefik.yml
+   ```
+   Change `your-email@example.com` to your email.
+
+4. **Configure Backend:**
+   ```bash
+   cd ..
+   nano docker-compose.yml
+   ```
+   Change:
+   - `api.your-domain.com` to your API subdomain
+   - `JWT_SECRET` to a secure random string
+   - `FRONTEND_URL` to your frontend domain
+   - Database password (recommended)
+
+5. **Create Docker network:**
+   ```bash
+   docker network create traefik-network
+   ```
+
+6. **Start Traefik:**
+   ```bash
+   cd traefik
+   docker compose up -d
+   ```
+
+7. **Start Backend:**
+   ```bash
+   cd ..
+   docker compose up -d --build
+   ```
+
+### Common Commands
+
 ```bash
-cd ../deployment/backend
+# View logs
+docker compose logs -f
+
+# Restart services
+docker compose restart
+
+# Update and redeploy
+cd ~/baiturrahim-app
+git pull
+cd backend
 docker compose up -d --build
+
+# Access database
+docker exec -it baiturrahim-postgres psql -U heulasuser -d baiturrahim_app
 ```
+
+### Server Setup (First Time - Rocky Linux)
+
+If this is a fresh Rocky Linux VPS, first install Docker:
+
+```bash
+# Update packages
+sudo dnf update -y
+
+# Install required packages
+sudo dnf install -y dnf-plugins-core nano
+
+# Add Docker repository
+sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+# Install Docker
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Start and enable Docker
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Add your user to docker group
+sudo usermod -aG docker $USER
+# Log out and back in
+
+# Configure SELinux (important for Rocky Linux)
+sudo setenforce 0
+sudo sed -i 's/^SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
+
+# Configure firewall
+sudo systemctl start firewalld
+sudo systemctl enable firewalld
+sudo firewall-cmd --permanent --add-service=ssh
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --permanent --add-service=https
+sudo firewall-cmd --reload
+```
+
+See `../docs/deployment/backend-vps-guide.md` for detailed guide.
 
 ## Hot Reload Development
 
@@ -151,7 +257,7 @@ Migrations run automatically on server startup using GORM AutoMigrate.
 
 ### Seeding
 
-A default admin user is created automatically if the users table is empty:
+A default admin user is created automatically if users table is empty:
 - Email: `admin@baiturrahim.com`
 - Password: `admin123`
 

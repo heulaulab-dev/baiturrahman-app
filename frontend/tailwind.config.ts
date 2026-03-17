@@ -11,6 +11,15 @@ const config: Config = {
 		extend: {
 			fontFamily: {
 				sans: ['var(--font-plus-jakarta-sans)', 'system-ui', 'sans-serif'],
+				serif: ['var(--font-cormorant)', 'Georgia', 'serif'],
+				mono: ['var(--font-jetbrains-mono)', 'monospace'],
+				arabic: ['var(--font-noto-naskh)', 'sans-serif'],
+			},
+			colors: {
+				'sacred': {
+					green: '#1a3d2b',
+					gold: '#b8962e',
+				},
 			},
 			colors: {
 				'background': 'hsl(var(--background))',

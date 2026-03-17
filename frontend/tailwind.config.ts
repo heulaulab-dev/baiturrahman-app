@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
-	darkMode: ['class'],
+	darkMode: 'class',
 	content: [
 		'./src/pages/**/*.{js,ts,jsx,tsx,mdx}',
 		'./src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -20,8 +20,6 @@ const config: Config = {
 					green: '#1a3d2b',
 					gold: '#b8962e',
 				},
-			},
-			colors: {
 				'background': 'hsl(var(--background))',
 				'foreground': 'hsl(var(--foreground))',
 				'card': {

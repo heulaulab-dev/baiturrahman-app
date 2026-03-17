@@ -52,9 +52,10 @@ export function Navbar() {
 								<a
 									key={link.name}
 									href={link.href}
-									className="text-sm uppercase tracking-widest text-[#1a3d2b] gold-underline"
+									className="text-sm uppercase tracking-widest text-[#1a3d2b] relative group"
 								>
 									{link.name}
+									<span className="absolute bottom-0 left-0 w-0 h-px bg-[#b8962e] transition-all duration-300 group-hover:w-full" />
 								</a>
 							))}
 						</div>
@@ -90,9 +91,10 @@ export function Navbar() {
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ delay: index * 0.1 }}
 									onClick={() => setIsMobileMenuOpen(false)}
-									className="font-serif-cormorant text-2xl text-[#1a3d2b] gold-underline"
+									className="font-serif-cormorant text-2xl text-[#1a3d2b] relative group"
 								>
 									{link.name}
+									<span className="absolute bottom-0 left-0 w-0 h-px bg-[#b8962e] transition-all duration-300 group-hover:w-full" />
 								</motion.a>
 							))}
 						</div>

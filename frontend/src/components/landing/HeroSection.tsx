@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import { ArrowRight, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { PrayerCountdown } from '@/components/landing/PrayerCountdown';
 
 export function HeroSection() {
@@ -80,18 +79,19 @@ export function HeroSection() {
 					transition={{ duration: 0.6, delay: 0.7 }}
 					className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8"
 				>
-					<Button
-						variant="outline"
-						className="border-[#1a3d2b] text-[#1a3d2b] hover:bg-[#1a3d2b] hover:text-white rounded-none px-8 py-6 text-base font-normal"
+					<a
+						href="#kajian"
+						className="inline-flex items-center gap-2 border-2 border-[#1a3d2b] text-[#1a3d2b] hover:bg-[#1a3d2b] hover:text-white px-8 py-6 text-base font-normal transition-colors duration-300"
 					>
 						Jadwal Kajian
-						<ArrowRight size={20} className="ml-2" />
-					</Button>
-					<Button
-						className="bg-[#b8962e] hover:bg-[#d4ad50] text-white rounded-none px-8 py-6 text-base font-normal"
+						<ArrowRight size={20} />
+					</a>
+					<a
+						href="#donasi"
+						className="inline-flex items-center gap-2 bg-[#b8962e] text-white hover:bg-[#d4ad50] px-8 py-6 text-base font-normal transition-colors duration-300"
 					>
 						Donasi Sekarang
-					</Button>
+					</a>
 				</motion.div>
 
 				{/* Scroll Indicator */}

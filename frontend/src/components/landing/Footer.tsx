@@ -59,9 +59,10 @@ export function Footer() {
 											<li key={link}>
 												<a
 													href="#"
-													className="text-sm text-[#6b6b6b] gold-underline"
+													className="text-sm text-[#6b6b6b] relative group"
 												>
 													{link}
+													<span className="absolute bottom-0 left-0 w-0 h-px bg-[#b8962e] transition-all duration-300 group-hover:w-full" />
 												</a>
 											</li>
 										))}

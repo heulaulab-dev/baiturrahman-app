@@ -151,10 +151,11 @@ export function KajianSection() {
 				>
 					<a
 						href="#"
-						className="inline-flex items-center gap-2 text-[#1a3d2b] font-serif-cormorant gold-underline"
+						className="inline-flex items-center gap-2 text-[#1a3d2b] font-serif-cormorant relative group"
 					>
 						Lihat Semua Artikel
 						<ArrowRight size={16} />
+						<span className="absolute bottom-0 left-0 w-0 h-px bg-[#b8962e] transition-all duration-300 group-hover:w-full" />
 					</a>
 				</motion.div>
 			</div>

@@ -58,8 +58,9 @@ export function DonationSection() {
 
 							<div className="flex items-center gap-3 p-4 border border-[#f0f0f0]">
 								<FileText size={24} className="text-[#1a3d2b] flex-shrink-0" />
-								<a href="#" className="text-sm text-[#b8962e] gold-underline">
+								<a href="#" className="text-sm text-[#b8962e] relative group">
 									Laporan Transparansi
+									<span className="absolute bottom-0 left-0 w-0 h-px bg-[#b8962e] transition-all duration-300 group-hover:w-full" />
 								</a>
 							</div>
 
@@ -134,10 +135,11 @@ export function DonationSection() {
 				>
 					<button
 						onClick={() => setShowCalculator(!showCalculator)}
-						className="flex items-center gap-2 mx-auto text-[#1a3d2b] font-serif-cormorant gold-underline"
+						className="flex items-center gap-2 mx-auto text-[#1a3d2b] font-serif-cormorant relative group"
 					>
 						<Calculator size={18} />
 						<span>Kalkulator Zakat</span>
+						<span className="absolute bottom-0 left-0 w-0 h-px bg-[#b8962e] transition-all duration-300 group-hover:w-full" />
 					</button>
 
 					{showCalculator && (

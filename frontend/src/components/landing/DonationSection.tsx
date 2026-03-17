@@ -152,11 +152,11 @@ export function DonationSection() {
 							<h4 className="font-serif-cormorant text-lg text-[#1a3d2b] mb-4">Kalkulator Zakat Maal</h4>
 							<div className="space-y-4">
 								<div>
-									<label className="block text-sm text-[#6b6b6b] mb-1">Total Harta (Rp)</label>
+									<label className="block text-sm text-[#1a3d2b] mb-1">Total Harta (Rp)</label>
 									<input
 										type="number"
 										placeholder="Masukkan jumlah harta"
-										className="w-full px-3 py-2 border border-[#f0f0f0] focus:border-[#b8962e] outline-none transition-colors"
+										className="w-full px-3 py-2 bg-white border-b-2 border-[#f0f0f0] focus:border-[#b8962e] outline-none transition-colors placeholder:text-[#c0c0c0]"
 									/>
 								</div>
 								<div>

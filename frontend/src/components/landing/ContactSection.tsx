@@ -106,7 +106,7 @@ export function ContactSection() {
 								<input
 									type="text"
 									placeholder="Nama lengkap"
-									className="w-full px-4 py-3 bg-white border border-[#e0e0e0] focus:border-[#b8962e] outline-none transition-colors"
+									className="w-full px-4 py-3 bg-white border-b-2 border-[#f0f0f0] focus:border-[#b8962e] outline-none transition-colors placeholder:text-[#c0c0c0]"
 								/>
 							</div>
 
@@ -116,7 +116,7 @@ export function ContactSection() {
 									<input
 										type="email"
 										placeholder="email@contoh.com"
-										className="w-full px-4 py-3 bg-white border border-[#e0e0e0] focus:border-[#b8962e] outline-none transition-colors"
+										className="w-full px-4 py-3 bg-white border-b-2 border-[#f0f0f0] focus:border-[#b8962e] outline-none transition-colors placeholder:text-[#c0c0c0]"
 									/>
 								</div>
 								<div>
@@ -124,14 +124,14 @@ export function ContactSection() {
 									<input
 										type="tel"
 										placeholder="+62 xxx xxxx xxxx"
-										className="w-full px-4 py-3 bg-white border border-[#e0e0e0] focus:border-[#b8962e] outline-none transition-colors"
+										className="w-full px-4 py-3 bg-white border-b-2 border-[#f0f0f0] focus:border-[#b8962e] outline-none transition-colors placeholder:text-[#c0c0c0]"
 									/>
 								</div>
 							</div>
 
 							<div>
 								<label className="block text-sm text-[#1a3d2b] mb-2">Layanan</label>
-								<select className="w-full px-4 py-3 bg-white border border-[#e0e0e0] focus:border-[#b8962e] outline-none transition-colors cursor-pointer">
+								<select className="w-full px-4 py-3 bg-white border-b-2 border-[#f0f0f0] focus:border-[#b8962e] outline-none transition-colors cursor-pointer text-[#1a3d2b]">
 									<option value="">Pilih layanan</option>
 									{layananOptions.map((option) => (
 										<option key={option} value={option}>
@@ -146,7 +146,7 @@ export function ContactSection() {
 								<textarea
 									rows={5}
 									placeholder="Tulis pesan Anda..."
-									className="w-full px-4 py-3 bg-white border border-[#e0e0e0] focus:border-[#b8962e] outline-none transition-colors resize-none"
+									className="w-full px-4 py-3 bg-white border-b-2 border-[#f0f0f0] focus:border-[#b8962e] outline-none transition-colors resize-none placeholder:text-[#c0c0c0]"
 								/>
 							</div>
 

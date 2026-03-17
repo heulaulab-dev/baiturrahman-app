@@ -1,27 +1,25 @@
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
-import { ArrowRight, Play } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { useMosqueInfo } from '@/services/hooks'
-import { HeroSection } from '@/components/sections/HeroSection'
-import { PrayerTimesSection } from '@/components/sections/PrayerTimesSection'
-import { AboutSection } from '@/components/sections/AboutSection'
-import { EventsSection } from '@/components/sections/EventsSection'
-import { AnnouncementsSection } from '@/components/sections/AnnouncementsSection'
-import { DonationSection } from '@/components/sections/DonationSection'
-import { ContactSection } from '@/components/sections/ContactSection'
+import { HeroSection } from '@/components/landing/HeroSection';
+import { PrayerTimesSection } from '@/components/landing/PrayerTimesSection';
+import { ServicesSection } from '@/components/landing/ServicesSection';
+import { KajianSection } from '@/components/landing/KajianSection';
+import { MimbarJumatSection } from '@/components/landing/MimbarJumatSection';
+import { BeritaSection } from '@/components/landing/BeritaSection';
+import { DonationSection } from '@/components/landing/DonationSection';
+import { ContactSection } from '@/components/landing/ContactSection';
 
 export default function HomePage() {
-  return (
-    <div className="min-h-screen">
-      <HeroSection />
-      <PrayerTimesSection />
-      <AboutSection />
-      <EventsSection />
-      <AnnouncementsSection />
-      <DonationSection />
-      <ContactSection />
-    </div>
-  )
+	return (
+		<div className="min-h-screen bg-white">
+			<HeroSection />
+			<PrayerTimesSection />
+			<ServicesSection />
+			<KajianSection />
+			<MimbarJumatSection />
+			<BeritaSection />
+			<DonationSection />
+			<ContactSection />
+		</div>
+	);
 }

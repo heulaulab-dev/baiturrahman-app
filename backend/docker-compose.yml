@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: baiturrahim-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: heulasuser
+      POSTGRES_PASSWORD: heulaspassword
+      POSTGRES_DB: baiturrahim_app
+    volumes:
+      - ../postgres-data:/var/lib/postgresql/data
+    networks:
+      - traefik-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U heulasuser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: baiturrahim-backend
+    restart: unless-stopped
+    environment:
+      PORT: 8080
+      ENVIRONMENT: production
+      DATABASE_URL: postgres://heulasuser:heulaspassword@postgres:5432/baiturrahim_app?sslmode=disable
+      JWT_SECRET: CHANGE_THIS_TO_SECURE_RANDOM_STRING_MIN_32_CHARS
+      FRONTEND_URL: https://your-frontend-domain.com
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.your-domain.com`)"  # CHANGE THIS
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=8080"
+    networks:
+      - traefik-network
+
+networks:
+  traefik-network:
+    external: true

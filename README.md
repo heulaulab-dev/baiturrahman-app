@@ -5,8 +5,8 @@ Full-stack mosque management website with separated API architecture.
 ## Project Structure
 
 ```
-/mosque-website
-  /frontend (Next.js 14 with App Router)
+/baiturrahim-app
+  /frontend (Next.js 16 with App Router)
     /app
       /(public) - Public pages (landing, tentang, kegiatan, kontak)
       /(dashboard) - Dashboard pages (protected)
@@ -19,7 +19,7 @@ Full-stack mosque management website with separated API architecture.
     /lib - Utilities and API client
     /public - Static assets
     /styles - Global styles
-  
+
   /backend (Go - Completely Separated)
     /cmd/server - Main application entry point
     /internal
@@ -30,23 +30,25 @@ Full-stack mosque management website with separated API architecture.
       /services - Business logic
       /utils - Helpers and validators
     /config - Configuration
-    /migrations - Database migrations
+
+  /deployment - VPS deployment files
+    /README.md - Quick deployment guide
+    /traefik - Traefik reverse proxy config
+    /backend - Backend + PostgreSQL docker-compose
 ```
 
 ## Tech Stack
 
 ### Frontend
-- Next.js 14 (App Router, TypeScript)
+- Next.js 16 (App Router, TypeScript)
 - Tailwind CSS 4 with custom Islamic theme
 - shadcn/ui components
-- Framer Motion (animations)
 - TanStack Query (data fetching)
 - Zod (validation)
 - axios (API calls)
 - next-themes (dark mode)
 - react-hook-form (forms)
 - date-fns (date formatting)
-- qrcode.react (QR generation)
 
 ### Backend
 - Go 1.21+
@@ -54,12 +56,6 @@ Full-stack mosque management website with separated API architecture.
 - GORM v2
 - JWT-go (authentication)
 - golang-jwt/jwt/v5
-- CORS middleware
-- validator/v10
-- godotenv
-- PostgreSQL driver
-
-### Database
 - PostgreSQL 15+
 
 ## Getting Started
@@ -70,52 +66,26 @@ Full-stack mosque management website with separated API architecture.
 - Docker and Docker Compose (optional)
 - PostgreSQL 15+ (if not using Docker)
 
-### Installation
+### Local Development
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd web-masjid
-```
-
-2. Set up environment variables:
-
-**Backend:**
-```bash
-cd backend
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-**Frontend:**
-```bash
-cd frontend
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-3. Using Docker Compose (Recommended):
+**Using Docker Compose:**
 
 ```bash
 docker-compose up -d
 ```
 
-This will start:
-- PostgreSQL on port 5432
-- Backend API on port 8080
-- Frontend on port 3000
+This starts PostgreSQL on port 5432, backend API on port 8080, and frontend on port 3000.
 
-4. Manual Setup:
+**Manual Setup:**
 
-**Backend:**
 ```bash
+# Backend
 cd backend
+cp .env.example .env
 go mod download
 go run cmd/server/main.go
-```
 
-**Frontend:**
-```bash
+# Frontend (new terminal)
 cd frontend
 bun install
 bun run dev
@@ -124,43 +94,72 @@ bun run dev
 ## API Endpoints
 
 ### Authentication
-- `POST /api/auth/login` - Login
-- `POST /api/auth/register` - Register
-- `GET /api/auth/me` - Get current user (protected)
+- `POST /api/v1/auth/login` - Login
+- `POST /api/v1/auth/refresh` - Refresh token
+- `GET /api/v1/auth/me` - Get current user (protected)
 
-### Content Management
-- `GET /api/content` - List all content
-- `POST /api/content` - Create content (protected)
-- `PUT /api/content/:id` - Update content (protected)
-- `DELETE /api/content/:id` - Delete content (protected)
+### Public Endpoints
+- `GET /api/v1/mosque-info` - Mosque information
+- `GET /api/v1/content` - Content sections
+- `GET /api/v1/structure` - Organizational structure
+- `GET /api/v1/prayer-times` - Prayer times
+- `GET /api/v1/events` - Events
+- `GET /api/v1/announcements` - Announcements
+- `GET /api/v1/donation-methods` - Donation methods
+- `POST /api/v1/donations` - Create donation
 
-### Structure
-- `GET /api/structure` - List all structure members
-- `POST /api/structure` - Create structure member (protected)
-- `PUT /api/structure/:id` - Update structure member (protected)
-- `DELETE /api/structure/:id` - Delete structure member (protected)
+### Admin Endpoints (Protected)
+- Content: `GET/POST/PUT/DELETE /api/v1/admin/content/*`
+- Structure: `GET/POST/PUT/DELETE /api/v1/admin/structure/*`
+- Prayer Times: `GET/POST/PUT/DELETE /api/v1/admin/prayer-times/*`
+- Events: `GET/POST/PUT/DELETE /api/v1/admin/events/*`
+- Announcements: `GET/POST/PUT/DELETE /api/v1/admin/announcements/*`
+- Donations: `GET/PUT /api/v1/admin/donations/*`
+- Users: `GET/POST/PUT/DELETE /api/v1/admin/users/*`
 
-### Donations
-- `GET /api/donations` - List all donations (protected)
-- `POST /api/donations` - Create donation (protected)
-- `PUT /api/donations/:id` - Update donation (protected)
-- `DELETE /api/donations/:id` - Delete donation (protected)
+## VPS Deployment
 
-### Schedules
-- `GET /api/schedules` - List all schedules (protected)
-- `POST /api/schedules` - Create schedule (protected)
-- `PUT /api/schedules/:id` - Update schedule (protected)
-- `DELETE /api/schedules/:id` - Delete schedule (protected)
+Pre-configured deployment files are available in the `deployment/` directory.
 
-### Announcements
-- `GET /api/announcements` - List all announcements (protected)
-- `POST /api/announcements` - Create announcement (protected)
-- `PUT /api/announcements/:id` - Update announcement (protected)
-- `DELETE /api/announcements/:id` - Delete announcement (protected)
+### Quick Deploy
+
+1. **Clone repository on your VPS:**
+   ```bash
+   cd ~
+   git clone <your-repo-url>
+   cd baiturrahim-app
+   ```
+
+2. **Create required directories:**
+   ```bash
+   mkdir -p postgres-data deployment/traefik/letsencrypt
+   touch deployment/traefik/letsencrypt/acme.json
+   chmod 600 deployment/traefik/letsencrypt/acme.json
+   ```
+
+3. **Configure deployment files:**
+   ```bash
+   # Edit Traefik config (change email)
+   nano deployment/traefik/traefik.yml
+
+   # Edit backend config (change domain, secrets)
+   nano deployment/backend/docker-compose.yml
+   ```
+
+4. **Create Docker network and start:**
+   ```bash
+   docker network create traefik-network
+   cd deployment/traefik
+   docker compose up -d
+   cd ../backend
+   docker compose up -d --build
+   ```
+
+See `deployment/README.md` for complete deployment guide.
 
 ## Design System
 
-The project uses an Islamic-inspired design system with:
+Islamic-inspired design system with:
 - **Colors**: Emerald/Teal (primary), Gold (secondary), Deep Blue (accent)
 - **Typography**: Amiri/Cairo for headings, Inter for body, Scheherazade New for Arabic
 - **Mobile-first**: Responsive design optimized for mobile devices
@@ -183,24 +182,6 @@ go run cmd/server/main.go
 
 ### Database Migrations
 Migrations run automatically on server start using GORM AutoMigrate.
-
-## Production Deployment
-
-1. Build frontend:
-```bash
-cd frontend
-bun run build
-```
-
-2. Build backend:
-```bash
-cd backend
-go build -o server cmd/server/main.go
-```
-
-3. Set production environment variables
-4. Run migrations
-5. Start services
 
 ## License
 

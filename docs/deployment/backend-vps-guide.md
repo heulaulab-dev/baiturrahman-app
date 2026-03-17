@@ -4,7 +4,7 @@ Complete guide for deploying the Baiturrahim backend to a Rocky Linux VPS using 
 
 ## Quick Start
 
-Pre-configured deployment files are in `deployment/` directory. See `deployment/README.md` for the fastest deployment.
+Pre-configured deployment files are in the `backend/` directory. See `backend/README.md` for the fastest deployment.
 
 ## Prerequisites
 
@@ -66,7 +66,7 @@ sudo setsebool -P container_manage_cgroup on
 
 # Use :Z flag in docker-compose volumes
 volumes:
-  - ../postgres-data:/var/lib/postgresql/data:z
+  - ./postgres-data:/var/lib/postgresql/data:z
 ```
 
 ### Configure Firewall
@@ -94,12 +94,12 @@ sudo firewall-cmd --list-all
 # Clone repository
 cd ~
 git clone <your-repo-url>
-cd baiturrahim-app
+cd baiturrahim-app/backend
 
 # Create required directories
-mkdir -p postgres-data deployment/traefik/letsencrypt
-touch deployment/traefik/letsencrypt/acme.json
-chmod 600 deployment/traefik/letsencrypt/acme.json
+mkdir -p postgres-data traefik/letsencrypt
+touch traefik/letsencrypt/acme.json
+chmod 600 traefik/letsencrypt/acme.json
 ```
 
 ## Step 3: Configure Deployment
@@ -107,7 +107,7 @@ chmod 600 deployment/traefik/letsencrypt/acme.json
 ### Edit Traefik Config
 
 ```bash
-cd deployment/traefik
+cd traefik
 nano traefik.yml
 ```
 
@@ -116,7 +116,7 @@ Change `your-email@example.com` to your email for Let's Encrypt.
 ### Edit Backend Config
 
 ```bash
-cd ../backend
+cd ..
 nano docker-compose.yml
 ```
 
@@ -148,14 +148,14 @@ FRONTEND_URL=https://your-frontend-domain.com
 docker network create traefik-network
 
 # Start Traefik
-cd ~/baiturrahim-app/deployment/traefik
+cd traefik
 docker compose up -d
 
 # Check Traefik logs
 docker compose logs -f
 
 # Start Backend
-cd ~/baiturrahim-app/deployment/backend
+cd ..
 docker compose up -d --build
 
 # Check Backend logs
@@ -181,21 +181,21 @@ docker compose logs -f
 
 ```bash
 # View logs
-cd ~/baiturrahim-app/deployment/backend && docker compose logs -f
+cd ~/baiturrahim-app/backend && docker compose logs -f
 
 # Restart backend
-cd ~/baiturrahim-app/deployment/backend && docker compose restart backend
+cd ~/baiturrahim-app/backend && docker compose restart backend
 
 # Restart all
-cd ~/baiturrahim-app/deployment/backend && docker compose restart
+cd ~/baiturrahim-app/backend && docker compose restart
 
 # Stop all
-cd ~/baiturrahim-app/deployment/backend && docker compose down
+cd ~/baiturrahim-app/backend && docker compose down
 
 # Update and redeploy
 cd ~/baiturrahim-app
 git pull
-cd deployment/backend
+cd backend
 docker compose up -d --build
 
 # Access database
@@ -210,7 +210,7 @@ docker exec -i baiturrahim-postgres psql -U heulasuser baiturrahim_app < backup.
 
 ## Security Checklist
 
-- [ ] Change `JWT_SECRET` to secure random string
+- [ ] Change `JWT_SECRET` to a secure random string
 - [ ] Change default database password
 - [ ] Configure firewall (firewalld)
 - [ ] Set up Traefik dashboard authentication
@@ -225,7 +225,7 @@ sudo dnf install -y httpd-tools
 htpasswd -nb user password
 ```
 
-Add to `deployment/traefik/docker-compose.yml`:
+Add to `traefik/docker-compose.yml`:
 ```yaml
 labels:
   - "traefik.http.routers.dashboard.rule=Host(`dashboard.your-domain.com`)"
@@ -242,13 +242,13 @@ labels:
 
 ```bash
 # Check acme.json
-cat deployment/traefik/letsencrypt/acme.json
+cat traefik/letsencrypt/acme.json
 
 # Restart Traefik
-cd deployment/traefik && docker compose restart
+cd traefik && docker compose restart
 
 # Check Traefik logs
-cd deployment/traefik && docker compose logs -f
+cd traefik && docker compose logs -f
 ```
 
 ### SELinux Issues
@@ -278,7 +278,7 @@ docker logs baiturrahim-postgres -f
 
 ```bash
 # Check logs
-cd deployment/backend && docker compose logs backend
+docker compose logs backend
 
 # Enter container for debugging
 docker exec -it baiturrahim-backend sh

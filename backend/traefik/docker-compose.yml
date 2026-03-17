@@ -13,14 +13,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik.yml:/etc/traefik/traefik.yml
       - ./letsencrypt:/letsencrypt
-    labels:
-      # Dashboard router with basic auth (optional)
-      # Generate password with: htpasswd -nb user password
-      # - "traefik.http.routers.dashboard.rule=Host(`dashboard.your-domain.com`)"
-      # - "traefik.http.routers.dashboard.tls=true"
-      # - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
-      # - "traefik.http.routers.dashboard.service=api@internal"
-      # - "traefik.http.middlewares.auth.basicauth.users=user:$$apr1$$hash"
     networks:
       - traefik-network
 

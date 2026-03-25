@@ -1,6 +1,7 @@
 package database
 
 import (
+	"masjid-baiturrahim-backend/config"
 	"masjid-baiturrahim-backend/internal/models"
 
 	"golang.org/x/crypto/bcrypt"
@@ -25,23 +26,25 @@ func Migrate(db *gorm.DB) error {
 func SeedDefaultAdmin(db *gorm.DB) error {
 	var count int64
 	db.Model(&models.User{}).Count(&count)
-	
+
 	// Only create default admin if no users exist
 	if count > 0 {
 		return nil
 	}
 
-	// Hash password: "admin123"
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("admin123"), 12)
+	cfg := config.Load()
+
+	// Hash password from config
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(cfg.DefaultAdminPassword), 12)
 	if err != nil {
 		return err
 	}
 
 	adminUser := models.User{
-		Username:     "admin",
-		Email:        "admin@masjidbaiturrahim.com",
+		Username:     cfg.DefaultAdminUsername,
+		Email:        cfg.DefaultAdminEmail,
 		PasswordHash: string(hashedPassword),
-		FullName:     "Administrator",
+		FullName:     cfg.DefaultAdminFullName,
 		Role:         models.RoleAdmin,
 		IsActive:     true,
 	}

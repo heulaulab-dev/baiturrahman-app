@@ -64,7 +64,7 @@ const navGroups = [
 	},
 ];
 
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
 	const [isCollapsed, setIsCollapsed] = useState(false);
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -110,8 +110,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 											hover:bg-muted/30
 										`}
 									>
-										{item.icon && <item.icon className="w-4 h-4 text-muted" />}
-										{isCollapsed && item.icon === null && (
+										{isCollapsed && (
 											<div className="w-2 h-2 rounded-full bg-foreground/10" />
 										)}
 										{!isCollapsed && <span className="text-sm">{item.title}</span>}
@@ -266,9 +265,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 									)}
 								</div>
 							))}
-						</nav>
-					</div>
+				</nav>
 				</div>
 			</div>
-		);
+			)}
+		</div>
+	);
 }

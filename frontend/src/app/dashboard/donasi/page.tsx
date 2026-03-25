@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowUpDown, Search, FileText, ExternalLink, MoreHorizontal, Check, X, Trash2, Plus, Filter } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, Search, FileText, ExternalLink, MoreHorizontal, Check, X, Trash2, Plus, Filter } from 'lucide-react';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
 
 const paymentMethods = [
@@ -13,12 +13,12 @@ const paymentMethods = [
 ];
 
 const donasiData = [
-	{ id: '1', nama: 'Ahmad Fauzi Rahman', jenis: 'Donasi Umum', nominal: 500000, metode: 'bca', tanggal: '2026-03-15', status: 'success' },
-	{ id: '2', nama: 'Siti Nurhaliza Putri', jenis: 'Zakat Maal', nominal: 2500000, metode: 'bca', tanggal: '2026-03-14', status: 'success' },
-	{ id: '3', nama: 'Muhammad Irfan Hakim', jenis: 'Wakaf Tunai', nominal: 10000000, metode: 'mandiri', tanggal: '2026-03-13', status: 'warning' },
-	{ id: '4', nama: 'Dewi Rahayu Santoso', jenis: 'Infaq Jumat', nominal: 750000, metode: 'tunai', tanggal: '2026-03-12', status: 'danger' },
-	{ id: '5', nama: 'Budi Setiawan', jenis: 'Donasi Umum', nominal: 100000, metode: 'bca', tanggal: '2026-03-11', status: 'success' },
-	{ id: '6', nama: 'Nurul Hidayah', jenis: 'Zakat Fitrah', nominal: 5000000, metode: 'bni', tanggal: '2026-03-10', status: 'warning' },
+	{ id: '1', nama: 'Ahmad Fauzi Rahman', jenis: 'Donasi Umum', nominal: 500000, metode: 'bca', tanggal: '2026-03-15', status: 'success' as const },
+	{ id: '2', nama: 'Siti Nurhaliza Putri', jenis: 'Zakat Maal', nominal: 2500000, metode: 'bca', tanggal: '2026-03-14', status: 'success' as const },
+	{ id: '3', nama: 'Muhammad Irfan Hakim', jenis: 'Wakaf Tunai', nominal: 10000000, metode: 'mandiri', tanggal: '2026-03-13', status: 'warning' as const },
+	{ id: '4', nama: 'Dewi Rahayu Santoso', jenis: 'Infaq Jumat', nominal: 750000, metode: 'tunai', tanggal: '2026-03-12', status: 'danger' as const },
+	{ id: '5', nama: 'Budi Setiawan', jenis: 'Donasi Umum', nominal: 100000, metode: 'bca', tanggal: '2026-03-11', status: 'success' as const },
+	{ id: '6', nama: 'Nurul Hidayah', jenis: 'Zakat Fitrah', nominal: 5000000, metode: 'bni', tanggal: '2026-03-10', status: 'warning' as const },
 ];
 
 const categories = ['Semua', 'Donasi Umum', 'Zakat', 'Wakaf', 'Infaq Jumat', 'Fidyah', 'Zakat Fitrah'];
@@ -28,7 +28,7 @@ export default function DonasiPage() {
 	const [searchQuery, setSearchQuery] = useState('');
 	const [sortField, setSortField] = useState<'tanggal' | 'nominal'>('tanggal');
 	const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-	const [selectedRows, setSelectedRows] = useState<number[]>([]);
+	const [selectedRows, setSelectedRows] = useState<string[]>([]);
 	const [showDetailDrawer, setShowDetailDrawer] = useState(false);
 	const [selectedDonasi, setSelectedDonasi] = useState<typeof donasiData[0] | null>(null);
 
@@ -67,7 +67,7 @@ export default function DonasiPage() {
 		}
 	};
 
-	const toggleRowSelection = (id: number) => {
+	const toggleRowSelection = (id: string) => {
 		setSelectedRows(prev =>
 			prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]
 		);
@@ -283,7 +283,7 @@ export default function DonasiPage() {
 							{Math.min(Math.ceil(filteredData.length / 20), filteredData.length)} of {filteredData.length}
 						</span>
 						<button className="text-muted hover:text-foreground transition-colors">
-							Next >
+							Next →
 						</button>
 					</div>
 					<div className="col-span-2 flex items-center gap-2 justify-end pr-3">

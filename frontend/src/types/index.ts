@@ -96,3 +96,48 @@ export interface StructureMember {
   order: number
   created_at: string
 }
+
+export interface DonationFull {
+  id: string
+  donation_code: string
+  donor_name: string
+  donor_email?: string
+  donor_phone?: string
+  amount: number
+  payment_method_id?: string
+  category: 'infaq' | 'sedekah' | 'zakat' | 'wakaf' | 'operasional'
+  notes: string
+  status: 'pending' | 'confirmed' | 'cancelled'
+  proof_url?: string
+  confirmed_by?: string
+  confirmed_at?: string
+  created_at: string
+  updated_at: string
+  payment_method?: PaymentMethod
+}
+
+export interface DonationStats {
+  total_amount: number
+  total_count: number
+  by_category: Record<string, { total: number; count: number }>
+  by_month: Record<string, { total: number; count: number }>
+  pending_count: number
+  confirmed_count: number
+  cancelled_count: number
+}
+
+export interface ApiResponse<T> {
+  success: boolean
+  data: T
+  message?: string
+  error?: string
+}
+
+export interface PaginatedResponse<T> {
+  success: boolean
+  data: T[]
+  page: number
+  limit: number
+  total: number
+  total_pages: number
+}

@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion';
 import { Shield, FileText, QrCode, Calculator } from 'lucide-react';
 import { useState } from 'react';
+import { Input } from '../ui/input';
+import { Button } from '../ui/button';
 
 const stats = [
 	{ value: '50.000+', label: 'Jamaah/Bulan' },
@@ -153,19 +155,19 @@ export function DonationSection() {
 							<div className="space-y-4">
 								<div>
 									<label className="block text-sm text-sacred-green mb-1">Total Harta (Rp)</label>
-									<input
+									<Input
 										type="number"
 										placeholder="Masukkan jumlah harta"
-										className="w-full px-3 py-2 bg-white border-b-2 border-sacred-green focus:border-sacred-gold outline-none transition-colors placeholder:text-sacred-muted"
+										className="w-full"
 									/>
 								</div>
 								<div>
 									<label className="block text-sm text-sacred-muted mb-1">Nishab (Rp 85.000.000)</label>
 									<span className="text-sm text-sacred-green">Minimal untuk wajib zakat</span>
 								</div>
-								<button className="w-full bg-sacred-gold text-white py-3 font-serif-cormorant hover:bg-sacred-gold-light transition-colors">
+								<Button className="w-full">
 									Hitung Zakat
-								</button>
+								</Button>
 							</div>
 						</motion.div>
 					)}

@@ -29,7 +29,7 @@ export function Footer() {
             <div className="space-y-3">
               {mosqueInfo?.address && (
                 <div className="flex items-start space-x-3">
-                  <MapPin size={20} className="text-primary flex-shrink-0 mt-1" />
+                  <MapPin size={20} className="text-primary shrink-0 mt-1" />
                   <span className="text-muted-foreground">{mosqueInfo.address}</span>
                 </div>
               )}

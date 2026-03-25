@@ -90,6 +90,10 @@ func main() {
 			public.GET("/announcements", h.GetAnnouncements)
 			public.POST("/donations", h.CreateDonation)
 			public.GET("/payment-methods", h.GetPaymentMethods)
+
+			// Khutbah (public)
+			public.GET("/khutbahs/latest", h.GetLatestKhutbah)
+			public.GET("/khutbahs/archive", h.GetKhutbahArchive)
 		}
 
 		// Protected routes (require authentication)
@@ -139,6 +143,14 @@ func main() {
 			admin.POST("/announcements", h.CreateAnnouncement)
 			admin.PUT("/announcements/:id", h.UpdateAnnouncement)
 			admin.DELETE("/announcements/:id", h.DeleteAnnouncement)
+
+			// Khutbah
+			admin.GET("/khutbahs", h.GetKhutbahs)
+			admin.GET("/khutbahs/:id", h.GetKhutbahByID)
+			admin.POST("/khutbahs", h.CreateKhutbah)
+			admin.PUT("/khutbahs/:id", h.UpdateKhutbah)
+			admin.DELETE("/khutbahs/:id", h.DeleteKhutbah)
+			admin.PUT("/khutbahs/:id/toggle", h.ToggleKhutbahStatus)
 
 			// Donations
 			admin.GET("/donations", h.GetDonations)

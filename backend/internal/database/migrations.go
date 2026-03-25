@@ -19,6 +19,7 @@ func Migrate(db *gorm.DB) error {
 		&models.Announcement{},
 		&models.Donation{},
 		&models.PaymentMethod{},
+		&models.Khutbah{},
 		&models.Setting{},
 	)
 }

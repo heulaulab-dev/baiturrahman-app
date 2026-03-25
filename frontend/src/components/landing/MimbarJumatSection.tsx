@@ -2,24 +2,14 @@
 
 import { motion } from 'framer-motion';
 import { Download, FileText } from 'lucide-react';
-import Link from 'next/link';
-
-const khutbahThisWeek = {
-	khatib: 'Ustadz Dr. Abdullah Hakim, M.A.',
-	tema: 'Membangun Keluarga Sakinah di Era Digital',
-	imam: 'KH. Ahmad Fauzan',
-	muadzin: 'Ust. Budi Santoso',
-	date: '14 Maret 2026',
-};
-
-const khutbahArchive = [
-	{ date: '7 Maret 2026', tema: 'Menjaga Lisan dari Ghibah' },
-	{ date: '28 Februari 2026', tema: 'Pentingnya Sedekah dalam Islam' },
-	{ date: '21 Februari 2026', tema: 'Tanda-Tanda Khusnul Khatimah' },
-	{ date: '14 Februari 2026', tema: 'Meneladani Akhlak Rasulullah SAW' },
-];
+import { useLatestKhutbah, useKhutbahArchive } from '@/services/hooks';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 export function MimbarJumatSection() {
+	const { data: latestKhutbah, isLoading: latestLoading } = useLatestKhutbah();
+	const { data: khutbahArchive, isLoading: archiveLoading } = useKhutbahArchive();
+
 	return (
 		<section id="mimbar-jumat" className="py-20 bg-white border-t border-sacred-green">
 			<div className="mx-auto px-4 sm:px-6 lg:px-8 container">
@@ -45,28 +35,60 @@ export function MimbarJumatSection() {
 							Khutbah Minggu Ini
 						</span>
 						<div className="border-2 border-sacred-green p-8">
-							<div className="mb-6">
-								<span className="font-mono-jetbrains text-sm text-sacred-muted">{khutbahThisWeek.date}</span>
-							</div>
-
-							<h3 className="font-serif-cormorant font-semibold text-xl text-sacred-green mb-3">
-								{khutbahThisWeek.khatib}
-							</h3>
-
-							<p className="text-sacred-green text-lg font-serif-cormorant mb-6">
-								"{khutbahThisWeek.tema}"
-							</p>
-
-							<div className="space-y-2 pt-6 border-t border-sacred-green">
-								<div className="flex items-center gap-2 text-sm">
-									<span className="text-sacred-muted">Imam:</span>
-									<span className="text-sacred-green">{khutbahThisWeek.imam}</span>
+							{latestLoading ? (
+								<div className="space-y-3">
+									<div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
+									<div className="h-8 bg-gray-200 rounded w-3/4 animate-pulse" />
+									<div className="h-6 bg-gray-200 rounded w-1/2 animate-pulse" />
 								</div>
-								<div className="flex items-center gap-2 text-sm">
-									<span className="text-sacred-muted">Muadzin:</span>
-									<span className="text-sacred-green">{khutbahThisWeek.muadzin}</span>
+							) : latestKhutbah ? (
+								<>
+									<div className="mb-6">
+										<span className="font-mono-jetbrains text-sm text-sacred-muted">
+											{format(new Date(latestKhutbah.date), 'd MMMM yyyy', { locale: id })}
+										</span>
+									</div>
+
+									<h3 className="font-serif-cormorant font-semibold text-xl text-sacred-green mb-3">
+										{latestKhutbah.khatib}
+									</h3>
+
+									<p className="text-sacred-green text-lg font-serif-cormorant mb-6">
+										"{latestKhutbah.tema}"
+									</p>
+
+									<div className="space-y-2 pt-6 border-t border-sacred-green">
+										{latestKhutbah.imam && (
+											<div className="flex items-center gap-2 text-sm">
+												<span className="text-sacred-muted">Imam:</span>
+												<span className="text-sacred-green">{latestKhutbah.imam}</span>
+											</div>
+										)}
+										{latestKhutbah.muadzin && (
+											<div className="flex items-center gap-2 text-sm">
+												<span className="text-sacred-muted">Muadzin:</span>
+												<span className="text-sacred-green">{latestKhutbah.muadzin}</span>
+											</div>
+										)}
+									</div>
+
+									{latestKhutbah.file_url && (
+										<a
+											href={latestKhutbah.file_url}
+											target="_blank"
+											rel="noopener noreferrer"
+											className="mt-6 flex items-center gap-3 border-2 border-sacred-gold text-sacred-gold px-6 py-4 hover:bg-sacred-gold hover:text-white transition-colors duration-300"
+										>
+											<Download size={20} />
+											<span className="font-serif-cormorant">Unduh Khutbah</span>
+										</a>
+									)}
+								</>
+							) : (
+								<div className="text-center text-sacred-muted py-8">
+									Belum ada khutbah minggu ini
 								</div>
-							</div>
+							)}
 						</div>
 					</motion.div>
 
@@ -76,44 +98,80 @@ export function MimbarJumatSection() {
 						whileInView={{ opacity: 1, x: 0 }}
 						viewport={{ once: true }}
 					>
-						<div className="mb-8">
-							<Link href="#" className="flex items-center gap-3 border-2 border-sacred-gold text-sacred-gold px-6 py-4 hover:bg-sacred-gold hover:text-white transition-colors duration-300">
-								<Download size={20} />
-								<span className="font-serif-cormorant">Unduh Khutbah</span>
-							</Link>
-						</div>
-
-						<div>
-							<span className="text-xs uppercase tracking-widest text-sacred-muted mb-4 block">
-								Archive
-							</span>
-							<div className="space-y-0">
-								{khutbahArchive.map((khutbah, index) => (
-									<motion.div
-										key={khutbah.date}
-										initial={{ opacity: 0, y: 10 }}
-										whileInView={{ opacity: 1, y: 0 }}
-										viewport={{ once: true }}
-										transition={{ delay: index * 0.1 }}
-										className={`
-											py-4 border-t flex items-center justify-between gap-4
-											${index !== khutbahArchive.length - 1 ? 'border-sacred-green' : ''}
-											hover:bg-sacred-green px-2 -mx-2 transition-colors cursor-pointer
-										`}
-									>
-										<div className="flex items-center gap-3 flex-1">
-											<FileText size={16} className="text-sacred-muted flex-shrink-0 cursor-pointer" />
-											<div className="min-w-0">
-												<span className="block text-xs text-sacred-muted">{khutbah.date}</span>
-												<span className="block text-sm text-sacred-green truncate cursor-pointer">
-													{khutbah.tema}
-												</span>
-											</div>
-										</div>
-									</motion.div>
+						{archiveLoading ? (
+							<div className="space-y-4">
+								<div className="h-12 bg-gray-200 rounded animate-pulse" />
+								{[1, 2, 3].map((i) => (
+									<div key={i} className="border-t border-sacred-green py-4">
+										<div className="h-4 bg-gray-200 rounded w-20 animate-pulse mb-1" />
+										<div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
+									</div>
 								))}
 							</div>
-						</div>
+						) : khutbahArchive && khutbahArchive.length > 0 ? (
+							<>
+								<div className="mb-8">
+									<a
+										href={latestKhutbah?.file_url || '#'}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="flex items-center gap-3 border-2 border-sacred-gold text-sacred-gold px-6 py-4 hover:bg-sacred-gold hover:text-white transition-colors duration-300"
+									>
+										<Download size={20} />
+										<span className="font-serif-cormorant">Unduh Khutbah Terbaru</span>
+									</a>
+								</div>
+
+								<div>
+									<span className="text-xs uppercase tracking-widest text-sacred-muted mb-4 block">
+										Archive
+									</span>
+									<div className="space-y-0">
+										{khutbahArchive.map((khutbah, index) => (
+											<motion.div
+												key={khutbah.id}
+												initial={{ opacity: 0, y: 10 }}
+												whileInView={{ opacity: 1, y: 0 }}
+												viewport={{ once: true }}
+												transition={{ delay: index * 0.1 }}
+												className={`
+													py-4 border-t flex items-center justify-between gap-4
+													${index !== khutbahArchive.length - 1 ? 'border-sacred-green' : ''}
+													hover:bg-sacred-green px-2 -mx-2 transition-colors cursor-pointer
+												`}
+											>
+												<div className="flex items-center gap-3 flex-1">
+													<FileText size={16} className="text-sacred-muted shrink-0 cursor-pointer" />
+													<div className="min-w-0">
+														<span className="block text-xs text-sacred-muted">
+															{format(new Date(khutbah.date), 'd MMM yyyy', { locale: id })}
+														</span>
+														<span className="block text-sm text-sacred-green truncate cursor-pointer">
+															{khutbah.tema}
+														</span>
+													</div>
+												</div>
+												{khutbah.file_url && (
+													<a
+														href={khutbah.file_url}
+														target="_blank"
+														rel="noopener noreferrer"
+														className="text-sacred-gold hover:text-white transition-colors"
+														onClick={(e) => e.stopPropagation()}
+													>
+														<Download size={16} />
+													</a>
+												)}
+											</motion.div>
+										))}
+									</div>
+								</div>
+							</>
+						) : (
+							<div className="text-center py-12 text-sacred-muted">
+								Tidak ada arsip khutbah tersedia
+							</div>
+						)}
 					</motion.div>
 				</div>
 			</div>

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import {
 	getMosqueInfo,
 	getPrayerTimesByDate,
@@ -9,6 +9,9 @@ import {
 	getPaymentMethods,
 	getContentSections,
 	getStructures,
+	createDonation as apiCreateDonation,
+	getLatestKhutbah,
+	getKhutbahArchive,
 } from './apiService';
 
 // Mosque Info
@@ -75,6 +78,17 @@ export const usePaymentMethods = () => {
 	});
 };
 
+// Donation
+export const useCreateDonation = () => {
+	const createMutation = useMutation({
+		mutationFn: apiCreateDonation,
+	});
+	return createMutation;
+};
+
+// Re-export createDonation for direct use
+export { apiCreateDonation as createDonation };
+
 // Content Sections
 export const useContentSections = () => {
 	return useQuery({
@@ -90,5 +104,22 @@ export const useStructures = () => {
 		queryKey: ['structures'],
 		queryFn: getStructures,
 		staleTime: 1000 * 60 * 30, // 30 minutes
+	});
+};
+
+// Khutbah
+export const useLatestKhutbah = () => {
+	return useQuery({
+		queryKey: ['khutbah', 'latest'],
+		queryFn: getLatestKhutbah,
+		staleTime: 1000 * 60 * 60, // 1 hour
+	});
+};
+
+export const useKhutbahArchive = () => {
+	return useQuery({
+		queryKey: ['khutbah', 'archive'],
+		queryFn: getKhutbahArchive,
+		staleTime: 1000 * 60 * 60 * 24, // 24 hours
 	});
 };

@@ -74,6 +74,20 @@ export interface Announcement {
   updated_at: string
 }
 
+export interface Khutbah {
+  id: string
+  khatib: string
+  tema: string
+  imam?: string
+  muadzin?: string
+  date: string
+  content?: string
+  file_url?: string
+  status: 'draft' | 'published'
+  created_at: string
+  updated_at: string
+}
+
 export interface Donation {
   id: string
   donor_name: string
@@ -84,14 +98,18 @@ export interface Donation {
   created_at: string
 }
 
+export type PaymentMethodType = 'bank_transfer' | 'ewallet' | 'qris'
+
 export interface PaymentMethod {
   id: string
   name: string
-  account_number: string
-  account_holder: string
-  logo_url?: string
+  type: PaymentMethodType
+  account_number?: string
+  account_name?: string
+  qr_code_url?: string
+  instructions?: string
   is_active: boolean
-  order: number
+  display_order: number
 }
 
 export interface ContentSection {

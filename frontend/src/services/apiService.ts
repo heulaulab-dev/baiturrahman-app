@@ -8,6 +8,7 @@ import type {
   PaymentMethod,
   ContentSection,
   StructureMember,
+  Khutbah,
 } from '@/types'
 
 // Mosque Info
@@ -74,5 +75,16 @@ export const getContentSections = async (): Promise<ContentSection[]> => {
 // Structure
 export const getStructures = async (): Promise<StructureMember[]> => {
   const response = await api.get<StructureMember[]>('/v1/structure')
+  return response.data
+}
+
+// Khutbah
+export const getLatestKhutbah = async (): Promise<Khutbah> => {
+  const response = await api.get<Khutbah>('/v1/khutbahs/latest')
+  return response.data
+}
+
+export const getKhutbahArchive = async (): Promise<Khutbah[]> => {
+  const response = await api.get<Khutbah[]>('/v1/khutbahs/archive')
   return response.data
 }

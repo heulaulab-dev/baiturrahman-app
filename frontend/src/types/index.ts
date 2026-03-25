@@ -1,9 +1,27 @@
+export type UserRole = 'super_admin' | 'admin' | 'editor'
+
 export interface User {
   id: string
   email: string
-  name: string
-  role: 'admin' | 'user'
+  username: string
+  full_name: string
+  role: UserRole
+  avatar_url?: string
+  is_active: boolean
+  last_login_at?: string
   created_at: string
+  updated_at: string
+}
+
+export interface LoginResponse {
+  access_token: string
+  refresh_token: string
+  user: User
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
 }
 
 export interface MosqueInfo {

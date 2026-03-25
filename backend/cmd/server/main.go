@@ -73,7 +73,10 @@ func main() {
 			auth := public.Group("/auth")
 			{
 				auth.POST("/login", h.Login)
+				auth.POST("/register", h.Register)
 				auth.POST("/refresh", h.Refresh)
+				auth.POST("/forgot-password", h.ForgotPassword)
+				auth.POST("/reset-password", h.ResetPassword)
 			}
 
 			// Public endpoints

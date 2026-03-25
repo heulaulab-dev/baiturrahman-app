@@ -1,7 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu, X, Search, Bell, User, LogOut, ChevronDown, ChevronRight, Settings, HelpCircle, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Search, Bell, ChevronDown, ChevronRight, Settings, HelpCircle, LayoutDashboard } from 'lucide-react';
+import { UserMenu } from '@/components/auth/UserMenu';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
 
 const navGroups = [
 	{
@@ -67,6 +70,7 @@ const navGroups = [
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
 	const [isCollapsed, setIsCollapsed] = useState(false);
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+	const { user } = useAuth();
 
 	return (
 		<div className="flex h-screen bg-background text-foreground">
@@ -151,22 +155,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 					{!isCollapsed && (
 						<>
 							<div className="flex items-center gap-3">
-								<div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center text-muted">
-									<span className="text-xs">AD</span>
-								</div>
+								<UserMenu />
 								<div>
-									<p className="text-sm font-medium">Ketua Pengurus</p>
-									<p className="text-xs text-muted">H. Ahmad Fauzi</p>
+									<p className="text-sm font-medium">{user?.full_name || 'Loading...'}</p>
+									<p className="text-xs text-muted">{user?.email || ''}</p>
 								</div>
 							</div>
-							<button className="p-2 text-muted hover:text-foreground">
-								<LogOut className="w-5 h-5" />
-							</button>
 						</>
 					)}
 					{isCollapsed && (
 						<div className="flex justify-center">
-							<LayoutDashboard className="w-8 h-8 text-muted" />
+							<UserMenu />
 						</div>
 					)}
 				</div>
@@ -193,8 +192,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 						</div>
 
 						{/* Role Badge */}
-						<span className="px-2 py-1 text-xs font-medium tracking-widest bg-muted/20 text-muted rounded">
-							Super Admin
+						<span className="px-2 py-1 text-xs font-medium tracking-widest bg-muted/20 text-muted rounded capitalize">
+							{user?.role || 'Loading...'}
 						</span>
 
 						{/* Notification */}
@@ -204,11 +203,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 								3
 							</span>
 						</button>
-
-						{/* Avatar */}
-						<div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center">
-							<span className="text-sm font-medium text-muted">HA</span>
-						</div>
 
 						{/* Settings */}
 						<button className="p-2 text-muted hover:text-foreground">
@@ -224,7 +218,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 				{/* Page Content */}
 				<main className="flex-1 overflow-y-auto">
-					{children}
+					<ProtectedRoute>{children}</ProtectedRoute>
 				</main>
 			</div>
 

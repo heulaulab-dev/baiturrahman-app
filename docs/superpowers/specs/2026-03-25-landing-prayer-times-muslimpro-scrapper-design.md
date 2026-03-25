@@ -27,6 +27,7 @@ Observed endpoints (tested):
 - `GET /health`
 - `GET /{query}?calcMethod=KEMENAG`
 - `GET /{query}?day=<date>` (example accepts `day=2026-03-25`)
+- `GET /{query}?calcMethod=KEMENAG&day=<YYYY-MM-DD>` (combined contract, example tested)
 
 Response shape (key fields):
 - `data.location`: string
@@ -62,6 +63,14 @@ The section currently:
    - Display: `Ramadhan {year}: {start} - {end}` when available
    - Fallback: `Ramadhan info unavailable` if the year key is missing.
 
+### Explicit prayer key mapping & pill order
+The landing pill array order MUST be exactly:
+1. `Subuh` pill index 0 uses scrapper key `Fajr`
+2. `Dzuhur` pill index 1 uses scrapper key `Zuhr`
+3. `Ashar` pill index 2 uses scrapper key `Asr`
+4. `Maghrib` pill index 3 uses scrapper key `Maghrib`
+5. `Isya` pill index 4 uses scrapper key `Isha`
+
 ---
 
 ## Integration Design
@@ -69,22 +78,34 @@ The section currently:
 ### Client-side fetching approach
 Prefer TanStack Query (since the repo already uses it in other sections), but the landing component can remain a client component.
 
-Implementation plan (conceptual):
-1. Add a small client service for `muslimpro-scrapper`.
-   - Base URL constant: `https://muslimpro-scrapper.lleans.dev`
-   - Function: `fetchPrayerTimesForToday(query: string, calcMethod: string)`
-2. Add a hook:
-   - `useMuslimProScrapperPrayerTimes({ query, calcMethod, date })`
-   - Internally:
-     - calls `GET /{query}?calcMethod=KEMENAG&day=<YYYY-MM-DD>`
-     - expects response fields:
-       - `data.praytimes` keyed by date label strings (e.g. `Wed Mar 25`)
-       - `data.ramadhan` keyed by Gregorian year (e.g. `data.ramadhan[2026]`)
-3. Update `PrayerTimesSection` to:
-   - compute the “todayKey” used to index `data.praytimes`
-   - derive prayer times for the day from `data.praytimes[todayKey]`
-   - compute `currentPrayer` and `nextPrayer` using the deterministic minute-based logic defined below
-   - render loading skeletons until the day’s prayer times are available
+Concrete implementation target (for planning):
+1. Modify only:
+   - `frontend/src/components/landing/PrayerTimesSection.tsx`
+2. Use TanStack Query `useQuery` inside this component.
+
+Query inputs (defined by the component):
+1. `SCRAPPER_BASE = "https://muslimpro-scrapper.lleans.dev"`
+2. `query = "Jakarta"`
+3. `calcMethod = "KEMENAG"`
+4. `day = YYYY-MM-DD` derived from browser local time:
+   - `year = now.getFullYear()`
+   - `month = String(now.getMonth() + 1).padStart(2, "0")`
+   - `date = String(now.getDate()).padStart(2, "0")`
+   - `day = `${year}-${month}-${date}``
+
+Request URL:
+1. `GET ${SCRAPPER_BASE}/${query}?calcMethod=KEMENAG&day=${day}`
+
+TanStack Query configuration (unambiguous):
+1. `queryKey = ["landing-prayer-times", "muslimpro-scrapper", query, calcMethod, day]`
+2. `enabled = Boolean(day)`
+3. Do not use `refetchInterval`; prayer-time refetch happens only when `day` changes (midnight).
+
+Post-fetch derivation:
+1. Compute `todayKey` using the “Today key” mapping strategy below.
+2. Set `prayerTimesForToday = data.praytimes[todayKey]`.
+3. Compute highlight indices (`currentPrayer`, `nextPrayer`) from `prayerTimesForToday` + browser local time.
+4. Render pills with skeleton placeholders until `prayerTimesForToday` exists.
 
 ### Time parsing & highlight algorithm
 Assumptions:
@@ -107,6 +128,13 @@ Algorithm (run on render and re-run on an interval):
 Update cadence:
 1. Recompute highlight on mount.
 2. Recompute highlight every 60 seconds using `setInterval` to keep the “current/next” highlight accurate without page refresh.
+
+State implementation detail (critical for planning):
+1. Maintain `const [now, setNow] = useState(() => new Date())`.
+2. `useEffect` creates a 60-second interval:
+   - callback: `setNow(new Date())`
+   - cleanup: `clearInterval(intervalId)` on unmount
+3. Compute `day` and highlight indices from `now`.
 
 ### “Today key” mapping strategy
 Because `data.praytimes` keys are label strings (e.g. `Wed Mar 25`), we must compute the same format.
@@ -156,6 +184,14 @@ Rationale:
 3. Ramadhan year:
    - compute `currentYear` from browser local date (`new Date().getFullYear()`), not from server date
 
+Conditional styling rule (unambiguous):
+1. Define `hasPrayerTimes` as: all five prayer time strings exist for `prayerTimesForToday`.
+2. Apply the existing “gold border” highlight classes only when `hasPrayerTimes` is true.
+3. When `hasPrayerTimes` is false:
+   - render pills with `--:--`
+   - never apply gold borders
+   - keep neutral borders.
+
 ---
 
 ## Caching / Performance
@@ -163,6 +199,7 @@ Suggested React Query settings:
 - `staleTime`: 1 hour (prayer times change daily)
 - `cacheTime`: 6-12 hours (optional)
 - `refetchOnWindowFocus`: false (avoid repeated external calls)
+- `refetchInterval`: not used (local highlight interval only updates UI, not network)
 
 ---
 

@@ -76,13 +76,37 @@ Implementation plan (conceptual):
 2. Add a hook:
    - `useMuslimProScrapperPrayerTimes({ query, calcMethod, date })`
    - Internally:
-     - calls `GET /{query}?day=<YYYY-MM-DD>` (or the minimal query form that still includes `praytimes` keys)
-     - uses `calcMethod=KEMENAG`
+     - calls `GET /{query}?calcMethod=KEMENAG&day=<YYYY-MM-DD>`
+     - expects response fields:
+       - `data.praytimes` keyed by date label strings (e.g. `Wed Mar 25`)
+       - `data.ramadhan` keyed by Gregorian year (e.g. `data.ramadhan[2026]`)
 3. Update `PrayerTimesSection` to:
    - compute the “todayKey” used to index `data.praytimes`
    - derive prayer times for the day from `data.praytimes[todayKey]`
-   - compute `currentPrayer` and `nextPrayer` using the same minute-based logic as before
+   - compute `currentPrayer` and `nextPrayer` using the deterministic minute-based logic defined below
    - render loading skeletons until the day’s prayer times are available
+
+### Time parsing & highlight algorithm
+Assumptions:
+1. Use **browser local time** for “now” and for deriving the highlight.
+2. Prayer times are returned as `HH:mm` 24-hour strings.
+
+Algorithm (run on render and re-run on an interval):
+1. Convert each prayer time string to minutes since midnight:
+   - `minutes = hours * 60 + minutes`
+2. Convert browser “now” to minutes:
+   - `nowMinutes = now.getHours() * 60 + now.getMinutes()`
+3. Define `currentPrayer` as:
+   - the greatest index `i` where `prayerMinutes[i] <= nowMinutes`
+   - if none match (all times are in the future), set `currentPrayer = 0` (Subuh)
+4. Define `nextPrayer` as:
+   - `currentPrayer + 1`, but wrap to `0` if it reaches the array length
+5. Tie handling:
+   - equality (`nowMinutes === prayerMinutes[i]`) counts as current prayer (because of `<=`)
+
+Update cadence:
+1. Recompute highlight on mount.
+2. Recompute highlight every 60 seconds using `setInterval` to keep the “current/next” highlight accurate without page refresh.
 
 ### “Today key” mapping strategy
 Because `data.praytimes` keys are label strings (e.g. `Wed Mar 25`), we must compute the same format.
@@ -95,12 +119,18 @@ Strategy:
    - day: `numeric`
 2. Normalize string:
    - remove commas (`Wed, Mar 25` -> `Wed Mar 25`)
-3. Use the normalized result to index `praytimes`.
+3. Use the normalized result to index `praytimes` (exact match on the normalized label).
 
 Fallback:
-If indexing fails:
-1. try a comma-removed variant
-2. otherwise fall back to “first date key in `praytimes` whose day matches today.day”
+If exact indexing fails:
+1. Iterate all keys in `praytimes`.
+2. Choose keys where:
+   - the month short token matches today's month short token
+   - and the day numeric matches today's day numeric
+   - and the weekday short token matches today's weekday short token
+3. If exactly one key matches, use it.
+4. If multiple keys match (unexpected), pick the one whose label string is lexicographically smallest (deterministic).
+5. If zero keys match, show fallback UI and do not attempt to highlight (or highlight all pills in a neutral state).
 
 ### Location selection assumption
 Initial implementation assumption:
@@ -114,14 +144,17 @@ Rationale:
 
 ## Error Handling & Fallback UI
 1. Loading:
-   - show 5 skeleton pills with existing styling pattern (e.g. muted/animate-pulse if available)
+   - show 5 skeleton pills with the same layout as the final UI
+   - hide the Ramadhan line until data arrives (or show a neutral skeleton line)
 2. Error / no data:
-   - keep the UI stable (render pills but disabled or with placeholder `--:--`)
+   - render pills with placeholder time `--:--` and disable highlight styling (no gold border)
    - show a small inline message near the “date display” area:
      - `Jadwal belum tersedia`
-3. Ramadhan range:
-   - if `data.ramadhan[currentYear]` exists, show range
-   - else show `Ramadhan info unavailable`
+   - Ramadhan line:
+     - if `ramadhan` exists but the year key is missing, show `Ramadhan info unavailable`
+     - otherwise keep neutral fallback
+3. Ramadhan year:
+   - compute `currentYear` from browser local date (`new Date().getFullYear()`), not from server date
 
 ---
 
@@ -134,10 +167,13 @@ Suggested React Query settings:
 ---
 
 ## Security / Compliance Notes
-1. This integration relies on a third-party endpoint without our own API authorization layer.
-2. If CORS blocks browser requests, we should move the fetch into:
-   - a Next.js server route handler (proxy), or
-   - the Go backend (preferred for consistent domain/caching).
+Default for this iteration:
+1. Use direct client-side fetch from the browser to `muslimpro-scrapper`.
+
+If CORS blocks browser requests:
+1. Implement a proxy (choose one) as a follow-up step:
+   - Next.js server route handler (recommended for fast iteration)
+   - or Go backend proxy (recommended for consistency/caching)
 
 ---
 

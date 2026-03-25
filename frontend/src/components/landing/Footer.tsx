@@ -1,9 +1,9 @@
 'use client';
 
-import { Building2, Instagram, Youtube, Facebook, Twitter } from 'lucide-react';
+import { Instagram, Youtube, Facebook, Twitter } from 'lucide-react';
 
 const quickLinks = {
-	Tentang: ['Tentang Kami', 'Sejarah', 'Visi Misi', 'Struktur Organisasi'],
+	Tentang: ['Tentang Kami', 'Sejarah', 'Visi Misi'],
 	Jadwal: ['Jadwal Sholat', 'Jadwal Kajian', 'Khutbah Jumat'],
 	Layanan: ['Zakat & Wakaf', 'Muallaf Center', 'Reservasi', 'Perpustakaan'],
 };
@@ -31,15 +31,13 @@ export function Footer() {
 					{/* Left: Brand */}
 					<div className="md:col-span-1">
 						<div className="flex items-center gap-3 mb-4">
-							<div className="flex items-center justify-center w-10 h-10 border-2 border-[#1a3d2b]">
-								<Building2 size={20} className="text-[#1a3d2b]" />
-							</div>
+							<img src="/Logomark.svg" alt="Baiturrahman" className="h-10" />
 							<span className="font-serif-cormorant font-semibold text-xl text-[#1a3d2b]">
 								Baiturrahman
 							</span>
 						</div>
 						<p className="text-sm text-[#6b6b6b] mb-4">
-							Merahmati Umat, Menerangi Jiwa
+							Erahmati Umat, Menerangi Jiwa
 						</p>
 						<p className="text-xs text-[#6b6b6b]">
 							&copy; {new Date().getFullYear()} Masjid Baiturrahman. All rights reserved.
@@ -87,7 +85,6 @@ export function Footer() {
 								</div>
 							))}
 						</div>
-
 						<div className="flex gap-2">
 							{socialLinks.map((social) => {
 								const Icon = social.icon;

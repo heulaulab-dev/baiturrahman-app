@@ -24,16 +24,16 @@ export function AboutSection() {
 						transition={{ duration: 0.6 }}
 					>
 						<div className='relative shadow-2xl rounded-2xl h-[400px] lg:h-[500px] overflow-hidden'>
-							<div className='absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' />
+							<div className='absolute inset-0 bg-gradient-to-br from-sacred-green via-sacred-gold to-sacred-green' />
 							<div className='absolute inset-0 flex justify-center items-center'>
 								<div className='p-8 text-center'>
 									<div className='flex justify-center items-center bg-white/20 backdrop-blur-sm mx-auto mb-6 rounded-full w-24 h-24'>
-										<span className='font-bold text-primary text-6xl'>M</span>
+										<span className='font-bold text-sacred-green text-6xl'>M</span>
 									</div>
-									<h3 className='mb-2 font-bold text-primary text-3xl'>
+									<h3 className='mb-2 font-bold text-sacred-green text-3xl'>
 										Masjid Baiturrahim
 									</h3>
-									<p className='opacity-90 text-primary text-lg'>
+									<p className='opacity-90 text-sacred-green text-lg'>
 										Pusat Ibadah & Ukhuwah
 									</p>
 								</div>
@@ -48,12 +48,12 @@ export function AboutSection() {
 						viewport={{ once: true }}
 						transition={{ duration: 0.6 }}
 					>
-						<h2 className='mb-6 font-bold text-primary text-4xl'>
+						<h2 className='mb-6 font-bold text-sacred-green text-4xl'>
 							Tentang Masjid Kami
 						</h2>
-						<div className='space-y-6 text-primary'>
+						<div className='space-y-6 text-sacred-green'>
 							{aboutContent ? (
-								<p className='text-primary text-lg leading-relaxed'>
+								<p className='text-sacred-green text-lg leading-relaxed'>
 									{aboutContent.content}
 								</p>
 							) : (
@@ -74,33 +74,33 @@ export function AboutSection() {
 
 						{/* Features */}
 						<div className='gap-4 grid grid-cols-2 mt-8'>
-							<Card className='border border-primary'>
+							<Card className='border border-sacred-green'>
 								<CardContent className='p-4'>
-									<h4 className='mb-2 font-semibold text-primary'>
+									<h4 className='mb-2 font-semibold text-sacred-green'>
 										Fasilitas Lengkap
 									</h4>
 									<p className='text-sm'>Tempat wudhu, parkir luas, ruang AC</p>
 								</CardContent>
 							</Card>
-							<Card className='border border-primary'>
+							<Card className='border border-sacred-green'>
 								<CardContent className='p-4'>
-									<h4 className='mb-2 font-semibold text-primary'>
+									<h4 className='mb-2 font-semibold text-sacred-green'>
 										Kajian Rutin
 									</h4>
 									<p className='text-sm'>Ilmu agama setiap pekannya</p>
 								</CardContent>
 							</Card>
-							<Card className='border border-primary'>
+							<Card className='border border-sacred-green'>
 								<CardContent className='p-4'>
-									<h4 className='mb-2 font-semibold text-primary'>
+									<h4 className='mb-2 font-semibold text-sacred-green'>
 										Program Sosial
 									</h4>
 									<p className='text-sm'>Zakat, infaq, dan sedekah</p>
 								</CardContent>
 							</Card>
-							<Card className='border border-primary'>
+							<Card className='border border-sacred-green'>
 								<CardContent className='p-4'>
-									<h4 className='mb-2 font-semibold text-primary'>
+									<h4 className='mb-2 font-semibold text-sacred-green'>
 										Anak & Remaja
 									</h4>
 									<p className='text-sm'>TPA, remaja masjid</p>

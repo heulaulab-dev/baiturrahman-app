@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowLeft, Building2 } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { RegisterForm } from '@/components/auth/RegisterForm'
 import { useRouter } from 'next/navigation'
 
@@ -11,8 +11,8 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <Building2 className="h-8 w-8 text-primary" />
+          <div className="flex items-center justify-center mb-4">
+            <img src="/Logo.svg" alt="Baiturrahman" className="h-16" />
           </div>
           <h1 className="text-2xl font-semibold text-foreground mb-2">
             Masjid Baiturrahim

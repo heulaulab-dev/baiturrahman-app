@@ -27,7 +27,7 @@ const beritaList = [
 
 export function BeritaSection() {
 	return (
-		<section className="py-20 bg-[#fafafa]">
+		<section id="berita" className="py-20 bg-white">
 			<div className="mx-auto px-4 sm:px-6 lg:px-8 container">
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}
@@ -35,7 +35,7 @@ export function BeritaSection() {
 					viewport={{ once: true }}
 					className="mb-12"
 				>
-					<h2 className="font-serif-cormorant font-semibold text-[clamp(2rem,4vw,3rem)] text-[#1a3d2b] mb-4">
+					<h2 className="font-serif-cormorant font-semibold text-[clamp(2rem,4vw,3rem)] text-sacred-green mb-4">
 						Berita & Kegiatan
 					</h2>
 				</motion.div>
@@ -48,12 +48,12 @@ export function BeritaSection() {
 					className="mb-8 relative aspect-[16/9] md:aspect-[21/9] overflow-hidden group"
 				>
 					{/* Placeholder background */}
-					<div className="absolute inset-0 bg-gradient-to-br from-[#1a3d2b] to-[#b8962e] group-hover:scale-[1.02] transition-transform duration-500" />
+					<div className="absolute inset-0 bg-gradient-to-br from-sacred-green to-sacred-gold group-hover:scale-[1.02] transition-transform duration-500" />
 
 					{/* Content Overlay */}
 					<div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12 bg-gradient-to-t from-black/70 via-black/20 to-transparent">
 						<div className="flex items-center gap-3 mb-3">
-							<span className="px-3 py-1 bg-[#b8962e] text-white text-xs uppercase tracking-wider">
+							<span className="px-3 py-1 bg-sacred-gold text-white text-xs uppercase tracking-wider">
 								{featuredBerita.category}
 							</span>
 							<span className="font-mono-jetbrains text-xs text-white/80">
@@ -78,24 +78,24 @@ export function BeritaSection() {
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true }}
 							transition={{ delay: index * 0.1 }}
-							className="bg-white border border-[#f0f0f0] overflow-hidden group cursor-pointer"
+							className="bg-white border border-sacred-green overflow-hidden group cursor-pointer"
 						>
 							{/* Image placeholder */}
-							<div className="aspect-[4/3] bg-gradient-to-br from-[#1a3d2b]/10 to-[#b8962e]/10 group-hover:scale-[1.02] transition-transform duration-500" />
+							<div className="aspect-[4/3] bg-gradient-to-br from-sacred-green/10 to-sacred-gold/10 group-hover:scale-[1.02] transition-transform duration-500" />
 
 							<div className="p-6">
 								<div className="flex items-center gap-2 mb-2">
-									<span className="text-xs uppercase tracking-wider text-[#b8962e]">
+									<span className="text-xs uppercase tracking-wider text-sacred-gold">
 										{berita.category}
 									</span>
-									<span className="font-mono-jetbrains text-xs text-[#6b6b6b]">
+									<span className="font-mono-jetbrains text-xs text-sacred-muted">
 										{berita.date}
 									</span>
 								</div>
-								<h4 className="font-serif-cormorant font-semibold text-lg text-[#1a3d2b] mb-2 group-hover:text-[#b8962e] transition-colors">
+								<h4 className="font-serif-cormorant font-semibold text-lg text-sacred-green mb-2 group-hover:text-sacred-gold transition-colors">
 									{berita.title}
 								</h4>
-								<p className="text-[#6b6b6b] text-sm line-clamp-2">
+								<p className="text-sacred-muted text-sm line-clamp-2">
 									{berita.excerpt}
 								</p>
 							</div>

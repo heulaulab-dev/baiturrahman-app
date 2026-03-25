@@ -37,7 +37,7 @@ const kajianList = [
 
 export function KajianSection() {
 	return (
-		<section className="py-20 bg-[#fafafa]">
+		<section id="kajian" className="py-20 bg-white">
 			<div className="mx-auto px-4 sm:px-6 lg:px-8 container">
 				{/* Section Header */}
 				<motion.div
@@ -47,14 +47,14 @@ export function KajianSection() {
 					className="mb-12 flex items-end justify-between"
 				>
 					<div>
-						<h2 className="font-serif-cormorant font-semibold text-[clamp(2rem,4vw,3rem)] text-[#1a3d2b] mb-4">
+						<h2 className="font-serif-cormorant font-semibold text-[clamp(2rem,4vw,3rem)] text-sacred-green mb-4">
 							Kajian & Konten Islam
 						</h2>
 						<div className="flex flex-wrap gap-2">
 							{categories.map((category) => (
 								<span
 									key={category}
-									className="px-3 py-1 border border-[#1a3d2b] text-xs uppercase tracking-wider text-[#1a3d2b]"
+									className="px-3 py-1 border border-sacred-green text-xs uppercase tracking-wider text-sacred-green"
 								>
 									{category}
 								</span>
@@ -68,13 +68,13 @@ export function KajianSection() {
 					initial={{ opacity: 0, y: 30 }}
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true }}
-					className="mb-12 bg-white p-8 border border-[#f0f0f0]"
+					className="mb-12 bg-white p-8 border border-sacred-green"
 				>
 					<div className="grid md:grid-cols-2 gap-8 items-center">
 						<div className="aspect-[4/3] bg-gradient-to-br from-[#1a3d2b]/10 to-[#b8962e]/10 flex items-center justify-center">
 							<svg
 								viewBox="0 0 24 24"
-								className="w-24 h-24 text-[#1a3d2b]/20"
+								className="w-24 h-24 text-sacred-green/20"
 								fill="none"
 								stroke="currentColor"
 								strokeWidth="1"
@@ -85,17 +85,17 @@ export function KajianSection() {
 						</div>
 						<div>
 							<div className="mb-3">
-								<span className="px-3 py-1 bg-[#b8962e]/10 text-[#b8962e] text-xs uppercase tracking-wider">
+								<span className="px-3 py-1 bg-sacred-gold/10 text-sacred-gold text-xs uppercase tracking-wider">
 									{featuredKajian.category}
 								</span>
 							</div>
-							<h3 className="font-serif-cormorant font-semibold text-2xl text-[#1a3d2b] mb-3">
+							<h3 className="font-serif-cormorant font-semibold text-2xl text-sacred-green mb-3">
 								{featuredKajian.title}
 							</h3>
-							<p className="text-[#6b6b6b] mb-4 leading-relaxed">
+							<p className="text-sacred-muted mb-4 leading-relaxed">
 								{featuredKajian.excerpt}
 							</p>
-							<div className="flex items-center justify-between text-sm text-[#6b6b6b]">
+							<div className="flex items-center justify-between text-sm text-sacred-muted">
 								<span>{featuredKajian.author}</span>
 								<span className="font-mono-jetbrains">{featuredKajian.date}</span>
 							</div>
@@ -112,12 +112,12 @@ export function KajianSection() {
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true }}
 							transition={{ delay: index * 0.1 }}
-							className="bg-white p-6 border border-[#f0f0f0] hover:border-[#1a3d2b] transition-colors duration-300 group"
+							className="bg-white p-6 border border-sacred-green hover:border-sacred-gold transition-colors duration-300 group"
 						>
-							<div className="aspect-[1/1.2] bg-gradient-to-br from-[#1a3d2b]/5 to-[#b8962e]/5 mb-4 flex items-center justify-center">
+							<div className="aspect-[1/1.2] bg-gradient-to-br from-sacred-green/5 to-sacred-gold/5 mb-4 flex items-center justify-center">
 								<svg
 									viewBox="0 0 24 24"
-									className="w-16 h-16 text-[#1a3d2b]/20 group-hover:text-[#b8962e]/30 transition-colors"
+									className="w-16 h-16 text-sacred-green/20 group-hover:text-sacred-gold/30 transition-colors"
 									fill="none"
 									stroke="currentColor"
 									strokeWidth="1"
@@ -126,16 +126,16 @@ export function KajianSection() {
 									<path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
 								</svg>
 							</div>
-							<span className="text-xs uppercase tracking-wider text-[#b8962e] mb-2 block">
+							<span className="text-xs uppercase tracking-wider text-sacred-gold mb-2 block">
 								{kajian.category}
 							</span>
-							<h4 className="font-serif-cormorant font-semibold text-lg text-[#1a3d2b] mb-2">
+							<h4 className="font-serif-cormorant font-semibold text-lg text-sacred-green mb-2">
 								{kajian.title}
 							</h4>
-							<p className="text-[#6b6b6b] text-sm mb-3 line-clamp-2">
+							<p className="text-sacred-muted text-sm mb-3 line-clamp-2">
 								{kajian.excerpt}
 							</p>
-							<span className="font-mono-jetbrains text-xs text-[#6b6b6b]">
+							<span className="font-mono-jetbrains text-xs text-sacred-muted">
 								{kajian.date}
 							</span>
 						</motion.div>
@@ -151,11 +151,11 @@ export function KajianSection() {
 				>
 					<a
 						href="#"
-						className="inline-flex items-center gap-2 text-[#1a3d2b] font-serif-cormorant relative group"
+						className="inline-flex items-center gap-2 text-sacred-green font-serif-cormorant relative group"
 					>
 						Lihat Semua Artikel
 						<ArrowRight size={16} />
-						<span className="absolute bottom-0 left-0 w-0 h-px bg-[#b8962e] transition-all duration-300 group-hover:w-full" />
+						<span className="absolute bottom-0 left-0 w-0 h-px bg-sacred-gold transition-all duration-300 group-hover:w-full" />
 					</a>
 				</motion.div>
 			</div>

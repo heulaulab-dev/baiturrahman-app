@@ -6,7 +6,7 @@ import { PrayerCountdown } from '@/components/landing/PrayerCountdown';
 
 export function HeroSection() {
 	return (
-		<section className="relative min-h-screen flex items-center overflow-hidden bg-white grain-overlay">
+		<section id="hero" className="relative min-h-screen flex items-center overflow-hidden bg-white grain-overlay">
 			{/* Arabic Calligraphy - Left Side */}
 			<motion.div
 				initial={{ opacity: 0, x: -30 }}
@@ -14,7 +14,7 @@ export function HeroSection() {
 				transition={{ duration: 0.8, delay: 0.2 }}
 				className="absolute left-0 top-1/2 -translate-y-1/2 w-[55%] h-full flex items-center justify-center pointer-events-none"
 			>
-				<span className="font-arabic text-[min(50vw,32rem)] text-[#1a3d2b] opacity-30 leading-none select-none">
+				<span className="font-arabic text-[min(50vw,32rem)] text-sacred-green opacity-30 leading-none select-none">
 					بيت الرحمن
 				</span>
 			</motion.div>
@@ -28,7 +28,7 @@ export function HeroSection() {
 			>
 				<svg
 					viewBox="0 0 400 300"
-					className="w-[min(40vw,28rem)] h-auto text-[#1a3d2b]"
+					className="w-[min(40vw,28rem)] h-auto text-sacred-green"
 					fill="none"
 					stroke="currentColor"
 					strokeWidth="1"
@@ -56,7 +56,7 @@ export function HeroSection() {
 						transition={{ duration: 0.8, delay: 0.5 }}
 						className="text-center"
 					>
-						<h1 className="font-serif-cormorant font-semibold text-[clamp(2rem,5vw,4rem)] text-[#1a3d2b] leading-tight">
+						<h1 className="font-serif-cormorant font-semibold text-[clamp(2rem,5vw,4rem)] text-sacred-green leading-tight">
 							Merahmati Umat, Menerangi Jiwa
 						</h1>
 					</motion.div>
@@ -81,14 +81,14 @@ export function HeroSection() {
 				>
 					<a
 						href="#kajian"
-						className="inline-flex items-center gap-2 border-2 border-[#1a3d2b] text-[#1a3d2b] hover:bg-[#1a3d2b] hover:text-white px-8 py-6 text-base font-normal transition-colors duration-300"
+						className="inline-flex items-center gap-2 border-2 border-sacred-green text-sacred-green hover:bg-sacred-green hover:text-white px-8 py-6 text-base font-normal transition-colors duration-300"
 					>
 						Jadwal Kajian
 						<ArrowRight size={20} />
 					</a>
 					<a
 						href="#donasi"
-						className="inline-flex items-center gap-2 bg-[#b8962e] text-white hover:bg-[#d4ad50] px-8 py-6 text-base font-normal transition-colors duration-300"
+						className="inline-flex items-center gap-2 bg-sacred-gold text-white hover:bg-sacred-gold-light px-8 py-6 text-base font-normal transition-colors duration-300"
 					>
 						Donasi Sekarang
 					</a>
@@ -102,11 +102,11 @@ export function HeroSection() {
 					className="flex justify-center"
 				>
 					<div className="flex flex-col items-center gap-2">
-						<span className="text-xs uppercase tracking-widest text-[#6b6b6b]">Scroll</span>
+						<span className="text-xs uppercase tracking-widest text-sacred-muted">Scroll</span>
 						<motion.div
 							animate={{ y: [0, 8, 0] }}
 							transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-							className="w-px h-10 bg-[#1a3d2b]"
+							className="w-px h-10 bg-sacred-green"
 						/>
 					</div>
 				</motion.div>

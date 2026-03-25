@@ -43,11 +43,11 @@ export function PrayerTimesSection() {
 	const nextPrayer = getNextPrayer();
 
 	return (
-		<section className="py-6 border-y border-[#f0f0f0] bg-white">
-			<div className="mx-auto px-4 sm:px-6 lg:px-8 container">
-				<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+		<section id='jadwal' className='py-6 border-y border-sacred-green bg-white'>
+			<div className='mx-auto px-4 sm:px-6 lg:px-8 container'>
+				<div className='flex flex-col md:flex-row md:items-center justify-between gap-4'>
 					{/* Prayer Pills */}
-					<div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-4 flex-1">
+					<div className='flex flex-wrap justify-center md:justify-start gap-2 md:gap-4 flex-1 font-mono-jetbrains'>
 						{prayerTimes.map((prayer, index) => (
 							<motion.div
 								key={prayer.name}
@@ -57,29 +57,36 @@ export function PrayerTimesSection() {
 								transition={{ delay: index * 0.1 }}
 								className={`
 									px-4 py-2 rounded-none border transition-all duration-300
-									${index === currentPrayer || index === nextPrayer
-										? 'border-[#b8962e] bg-[#b8962e]/5'
-										: 'border-[#1a3d2b] hover:border-[#b8962e]'
+									${
+										index === currentPrayer || index === nextPrayer
+											? 'border-sacred-gold bg-sacred-gold/5'
+											: 'border-sacred-green hover:border-sacred-gold'
 									}
 								`}
 							>
-								<div className="flex items-center gap-2">
-									<span className={`
+								<div className='flex items-center gap-2'>
+									<span
+										className={`
 										font-serif-cormorant text-sm md:text-base
-										${index === currentPrayer || index === nextPrayer
-											? 'text-[#b8962e]'
-											: 'text-[#1a3d2b]'
+										${
+											index === currentPrayer || index === nextPrayer
+												? 'text-sacred-gold'
+												: 'text-sacred-green'
 										}
-									`}>
+									`}
+									>
 										{prayer.name}
 									</span>
-									<span className={`
+									<span
+										className={`
 										font-mono-jetbrains text-sm md:text-base
-										${index === currentPrayer || index === nextPrayer
-											? 'text-[#b8962e] font-semibold'
-											: 'text-[#1a3d2b]'
+										${
+											index === currentPrayer || index === nextPrayer
+												? 'text-sacred-gold font-semibold'
+												: 'text-sacred-green'
 										}
-									`}>
+									`}
+									>
 										{prayer.time}
 									</span>
 								</div>
@@ -93,10 +100,19 @@ export function PrayerTimesSection() {
 						whileInView={{ opacity: 1, x: 0 }}
 						viewport={{ once: true }}
 						transition={{ delay: 0.5 }}
-						className="text-right md:text-left font-mono-jetbrains text-xs md:text-sm uppercase tracking-wider text-[#6b6b6b]"
+						className='text-right md:text-left font-mono-jetbrains text-xs md:text-sm uppercase tracking-wider text-sacred-green'
 					>
-						<div>{new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
-						<div className="text-[#1a3d2b]">17 Ramadhan 1446 H</div>
+						<div>
+							{new Date().toLocaleDateString('id-ID', {
+								weekday: 'long',
+								day: 'numeric',
+								month: 'long',
+								year: 'numeric',
+							})}
+						</div>
+						<div className='text-sacred-green font-mono-jetbrains text-sm'>
+							17 Ramadhan 1446 H
+						</div>
 					</motion.div>
 				</div>
 			</div>

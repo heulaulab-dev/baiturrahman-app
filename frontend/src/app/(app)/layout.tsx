@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu, X, Search, Bell, ChevronDown, ChevronRight, Settings, HelpCircle, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Search, Bell, ChevronDown, ChevronRight, Settings, HelpCircle } from 'lucide-react';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
@@ -10,8 +10,8 @@ const navGroups = [
 	{
 		title: 'Overview',
 		href: '/dashboard',
-		icon: LayoutDashboard,
 	},
+	{
 	{
 		title: 'Keuangan',
 		items: [
@@ -86,7 +86,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 				{/* Logo */}
 				<div className="p-6 border-b border-border">
 					<a href="/" className="flex items-center gap-3">
-						<LayoutDashboard className="w-8 h-8 text-foreground" />
+						<img src="/Logomark.svg" alt="Baiturrahman" className="h-8" />
 						{!isCollapsed && <span className="font-semibold text-lg">Baiturrahman</span>}
 					</a>
 				</div>

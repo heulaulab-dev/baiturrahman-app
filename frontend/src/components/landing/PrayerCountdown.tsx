@@ -96,13 +96,13 @@ export function PrayerCountdown() {
 			<motion.div
 				animate={{ opacity: [0.8, 1, 0.8] }}
 				transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-				className="bg-white border-2 border-[#1a3d2b] px-6 py-3 flex items-center gap-4"
+				className="bg-white border-2 border-sacred-green px-6 py-3 flex items-center gap-4"
 			>
-				<Clock size={20} className="text-[#1a3d2b]" />
+				<Clock size={20} className="text-sacred-green" />
 				<div className="flex items-baseline gap-3">
-					<span className="font-serif-cormorant text-xl text-[#1a3d2b]">{nextPrayer.name}</span>
-					<span className="font-mono-jetbrains text-lg text-[#b8962e]">{nextPrayer.time}</span>
-					<span className="font-mono-jetbrains text-sm text-[#6b6b6b]">{countdown}</span>
+					<span className="font-serif-cormorant text-xl text-sacred-green">{nextPrayer.name}</span>
+					<span className="font-mono-jetbrains text-lg text-sacred-gold">{nextPrayer.time}</span>
+					<span className="font-mono-jetbrains text-sm text-sacred-muted">{countdown}</span>
 				</div>
 			</motion.div>
 		</div>

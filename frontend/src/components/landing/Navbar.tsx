@@ -2,10 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Building2 } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import Link from 'next/link';
+import Logomark from '@/public/Logomark.svg';
+import Logo from '@/public/Logo.svg';
+import Image from 'next/image';
 
 const navLinks = [
-	{ name: 'Beranda', href: '#' },
+	{ name: 'Beranda', href: '#hero' },
 	{ name: 'Jadwal Sholat', href: '#jadwal' },
 	{ name: 'Layanan', href: '#layanan' },
 	{ name: 'Kajian', href: '#kajian' },
@@ -31,39 +35,34 @@ export function Navbar() {
 			<nav
 				className={`
 					fixed top-0 left-0 right-0 z-50 transition-all duration-300
-					${isScrolled ? 'bg-white/80 backdrop-blur-md border-b border-[#f0f0f0]' : 'bg-transparent'}
+					${isScrolled ? 'bg-white/80 backdrop-blur-md border-b border-primary' : 'bg-transparent'}
 				`}
 			>
 				<div className="mx-auto px-4 sm:px-6 lg:px-8 container">
 					<div className="flex items-center justify-between h-16 md:h-20">
 						{/* Logo */}
-						<a href="#" className="flex items-center gap-3">
-							<div className="flex items-center justify-center w-10 h-10 border-2 border-[#1a3d2b]">
-								<Building2 size={20} className="text-[#1a3d2b]" />
-							</div>
-							<span className="font-serif-cormorant font-semibold text-xl text-[#1a3d2b]">
-								Baiturrahman
-							</span>
-						</a>
+						<Link href="/" className="flex items-center gap-3">
+							<Image src={Logo} alt="Baiturrahman"/>
+						</Link>
 
 						{/* Desktop Nav */}
 						<div className="hidden md:flex items-center gap-8">
 							{navLinks.map((link) => (
-								<a
+								<Link
 									key={link.name}
 									href={link.href}
-									className="text-sm uppercase tracking-widest text-[#1a3d2b] relative group"
+									className="text-sm uppercase tracking-widest text-sacred-green relative group"
 								>
 									{link.name}
-									<span className="absolute bottom-0 left-0 w-0 h-px bg-[#b8962e] transition-all duration-300 group-hover:w-full" />
-								</a>
+									<span className="absolute bottom-0 left-0 w-0 h-px bg-sacred-gold transition-all duration-300 group-hover:w-full" />
+								</Link>
 							))}
 						</div>
 
 						{/* Mobile Menu Button */}
 						<button
 							onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-							className="md:hidden p-2 text-[#1a3d2b]"
+							className="md:hidden p-2 text-sacred-green"
 							aria-label="Toggle menu"
 						>
 							{isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -91,10 +90,10 @@ export function Navbar() {
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ delay: index * 0.1 }}
 									onClick={() => setIsMobileMenuOpen(false)}
-									className="font-serif-cormorant text-2xl text-[#1a3d2b] relative group"
+									className="font-serif-cormorant text-2xl text-sacred-green relative group"
 								>
 									{link.name}
-									<span className="absolute bottom-0 left-0 w-0 h-px bg-[#b8962e] transition-all duration-300 group-hover:w-full" />
+									<span className="absolute bottom-0 left-0 w-0 h-px bg-sacred-gold transition-all duration-300 group-hover:w-full" />
 								</motion.a>
 							))}
 						</div>

@@ -70,12 +70,13 @@
     - `Wed, Mar 25` -> `Wed Mar 25`
 
 - [ ] **Step 2: Implement exact `praytimes[todayKey]` selection, then fallback key matching**
+  - Guard: if the fetched response has missing `data` or missing `data.praytimes`, treat it as “no data” and enter the neutral fallback (do not attempt key iteration).
   - First try `data.praytimes[todayKey]`.
   - If exact indexing fails, iterate all keys in `data.praytimes` and apply the spec fallback:
     - match weekday token, month token, and numeric day token
     - implement matching deterministically by splitting normalized labels (e.g. `Wed Mar 25`) on whitespace into `[weekdayToken, monthToken, dayNumericToken]`
     - before splitting candidate labels, apply the same normalization to each label key (remove commas, collapse multiple whitespace, and trim)
-    - if multiple candidates exist, pick lexicographically smallest to be deterministic
+    - if multiple candidates exist, pick lexicographically smallest using the normalized label string (after comma removal/whitespace normalization) to be deterministic
     - if zero matches, enter a neutral state where highlight is not computed from an invalid set
 
 - [ ] **Step 3: Add `now` state and 60-second highlight recomputation**
@@ -89,7 +90,6 @@
   - Prerequisite ordering: compute `prayerTimesForToday` first, then compute `hasPrayerTimes` from it; only then enter parsing/highlight logic.
   - Define `hasPrayerTimes` EXACTLY:
     - `hasPrayerTimes = Boolean(prayerTimesForToday?.Fajr && prayerTimesForToday?.Zuhr && prayerTimesForToday?.Asr && prayerTimesForToday?.Maghrib && prayerTimesForToday?.Isha)`
-    - after parsing, also ensure each time string matches `^\\d{2}:\\d{2}$` and is non-empty
   - Guard parsing and highlight computation: only parse/compute `prayerMinutes`, `currentPrayer`, and `nextPrayer` when `hasPrayerTimes` is true; otherwise skip parsing to avoid runtime crashes from missing/undefined time strings.
   - Convert each prayer time string in that ordered array into minutes since midnight.
   - Convert `now` into minutes since midnight.

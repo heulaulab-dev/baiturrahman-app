@@ -20,6 +20,6 @@ export default function LoginPage() {
 
 
   return (
-    <LoginForm logo={<Image src={Logo} alt="Baiturrahman" width={160} height={160} />} title="Masuk ke dashboard admin" description="Masuk ke dashboard admin" imageSrc={loginImage.src} imageAlt="Masuk ke dashboard admin" onSubmit={onSubmit} forgotPasswordHref="/reset-password" createAccountHref="/register" />
+    <LoginForm logo={<Image src={Logo} alt="Baiturrahman" width={160} height={160} />} title="Masuk ke dashboard admin" description="Masuk ke dashboard admin" imageSrc={loginImage.src} imageAlt="Masuk ke dashboard admin" onSubmit={onSubmit} forgotPasswordHref="/forgot-password" createAccountHref="/register" />
   );
 }

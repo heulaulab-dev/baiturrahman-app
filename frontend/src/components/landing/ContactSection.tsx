@@ -1,16 +1,18 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Mail, Clock, Instagram, Youtube, Facebook, Twitter, Globe } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Globe } from 'lucide-react';
+import { CircleFadingPlus } from 'lucide-react';
+
 import { useMosqueInfo } from '@/services/hooks';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '../ui/textarea';
+import { Textarea } from '@/components/ui/textarea';
 
 const layananOptions = [
 	'Umum',
 	'Reservasi Ruangan',
 	'Donasi',
-	'Kajian',
+	'Kajian',		
 	'Lainnya',
 ];
 
@@ -25,9 +27,9 @@ export function ContactSection() {
 	};
 
 	const socialLinks = [
-		...(mosqueInfo?.instagram ? [{ icon: Instagram, href: mosqueInfo.instagram }] : []),
-		...(mosqueInfo?.youtube ? [{ icon: Youtube, href: mosqueInfo.youtube }] : []),
-		...(mosqueInfo?.facebook ? [{ icon: Facebook, href: mosqueInfo.facebook }] : []),
+		...(mosqueInfo?.instagram ? [{ icon: CircleFadingPlus, href: mosqueInfo.instagram }] : []),
+		...(mosqueInfo?.youtube ? [{ icon: CircleFadingPlus, href: mosqueInfo.youtube }] : []),
+		...(mosqueInfo?.facebook ? [{ icon: CircleFadingPlus, href: mosqueInfo.facebook }] : []),
 	];
 
 	return (

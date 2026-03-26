@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { BarChart3, CalendarDays, Users, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { PendingDonationsTable } from '@/components/dashboard/PendingDonationsTable';
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
@@ -24,7 +25,7 @@ export default function DashboardPage() {
   const { data: usersData, isLoading: usersLoading } = useAdminUsers();
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="flex flex-col gap-6">
       {/* Section 1: KPI Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statsLoading ? (
@@ -71,44 +72,40 @@ export default function DashboardPage() {
         <div className="col-span-1 space-y-6">
           {/* Quick Actions */}
           <div>
-            <h3 className="text-xs font-medium tracking-wider text-muted uppercase mb-3">
+            <h3 className="text-xs font-medium tracking-wider text-muted-foreground uppercase mb-3">
               Pintasan
             </h3>
-            <div className="space-y-2">
-              <Link
-                href="/dashboard/donasi"
-                className="flex items-center gap-3 w-full py-3 px-4 rounded-md font-medium transition-colors bg-foreground text-background hover:bg-foreground/90 text-sm"
-              >
-                <BarChart3 className="w-4 h-4" />
-                Kelola Donasi
-              </Link>
-              <Link
-                href="/dashboard/konten"
-                className="flex items-center gap-3 w-full py-3 px-4 rounded-md font-medium transition-colors bg-muted/30 text-foreground hover:bg-muted/50 text-sm"
-              >
-                <CalendarDays className="w-4 h-4" />
-                Kelola Event
-              </Link>
-              <Link
-                href="/dashboard/laporan"
-                className="flex items-center gap-3 w-full py-3 px-4 rounded-md font-medium transition-colors bg-muted/30 text-foreground hover:bg-muted/50 text-sm"
-              >
-                <AlertCircle className="w-4 h-4" />
-                Lihat Laporan
-              </Link>
-              <Link
-                href="/dashboard/pengaturan"
-                className="flex items-center gap-3 w-full py-3 px-4 rounded-md font-medium transition-colors bg-muted/30 text-foreground hover:bg-muted/50 text-sm"
-              >
-                <Users className="w-4 h-4" />
-                Pengaturan
-              </Link>
+            <div className="flex flex-col gap-2">
+              <Button variant="default" asChild className="justify-start">
+                <Link href="/donasi">
+                  <BarChart3 data-icon="inline-start" />
+                  Kelola Donasi
+                </Link>
+              </Button>
+              <Button variant="secondary" asChild className="justify-start">
+                <Link href="/konten">
+                  <CalendarDays data-icon="inline-start" />
+                  Kelola Event
+                </Link>
+              </Button>
+              <Button variant="secondary" asChild className="justify-start">
+                <Link href="/laporan">
+                  <AlertCircle data-icon="inline-start" />
+                  Lihat Laporan
+                </Link>
+              </Button>
+              <Button variant="secondary" asChild className="justify-start">
+                <Link href="/pengaturan">
+                  <Users data-icon="inline-start" />
+                  Pengaturan
+                </Link>
+              </Button>
             </div>
           </div>
 
           {/* Activity Feed */}
           <div>
-            <h3 className="text-xs font-medium tracking-wider text-muted uppercase mb-3">
+            <h3 className="text-xs font-medium tracking-wider text-muted-foreground uppercase mb-3">
               Aktivitas Terbaru
             </h3>
             <ActivityFeed />
@@ -119,11 +116,11 @@ export default function DashboardPage() {
       {/* Section 3: Bottom Row — Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="p-6 border border-border rounded-md">
-          <h3 className="text-sm font-semibold text-foreground mb-4">Donasi per Bulan</h3>
+          <h3 className="text-sm font-semibold mb-4">Donasi per Bulan</h3>
           <DonationBarChart data={stats?.by_month} isLoading={statsLoading} />
         </div>
         <div className="p-6 border border-border rounded-md">
-          <h3 className="text-sm font-semibold text-foreground mb-4">Ringkasan Kategori</h3>
+          <h3 className="text-sm font-semibold mb-4">Ringkasan Kategori</h3>
           <CategoryBreakdown data={stats?.by_category} isLoading={statsLoading} />
         </div>
       </div>

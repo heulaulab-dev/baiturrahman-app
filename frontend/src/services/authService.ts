@@ -1,5 +1,6 @@
 import api from '@/lib/axios'
 import type { User, LoginRequest, LoginResponse, ApiResponse } from '@/types'
+import { toast } from 'sonner'
 
 const TOKEN_KEY = 'token'
 const REFRESH_TOKEN_KEY = 'refresh_token'
@@ -32,12 +33,17 @@ export const authService = {
 
   // Login
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
-    const response = await api.post<ApiResponse<LoginResponse>>('/v1/auth/login', credentials)
-    const { access_token, refresh_token, user } = response.data.data
 
-    authService.setTokens(access_token, refresh_token)
+    try {
+      const response = await api.post<ApiResponse<LoginResponse>>('/v1/auth/login', credentials)
+      const { access_token, refresh_token, user } = response.data.data
 
-    return { access_token, refresh_token, user }
+      authService.setTokens(access_token, refresh_token)
+      return { access_token, refresh_token, user }
+    } catch (error) {
+      toast.error("Login failed: " + (error as Error).message);
+      throw error;
+    }
   },
 
   // Logout

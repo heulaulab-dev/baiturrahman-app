@@ -37,10 +37,10 @@ export function TentangKamiSection() {
             </h3>
           )}
 
-          {data.banner_url && (
+          {data.image_url && (
             <div className="w-full h-64 md:h-96 rounded-lg overflow-hidden mb-8">
               <img
-                src={data.banner_url}
+                src={data.image_url}
                 alt={data.title || 'Tentang Kami'}
                 className="w-full h-full object-cover"
               />

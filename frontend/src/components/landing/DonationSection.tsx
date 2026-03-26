@@ -118,7 +118,7 @@ export function DonationSection() {
 									<motion.div
 										key={stat.label}
 										initial={{ opacity: 0, y: 10 }}
-										whileInView={{ opacity: 1, y: 0 }}
+									whileInView={{ opacity: 1, y: 0 }}
 										viewport={{ once: true }}
 										transition={{ delay: index * 0.1 }}
 										className="text-center p-3 bg-white"

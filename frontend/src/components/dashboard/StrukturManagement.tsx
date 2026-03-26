@@ -122,7 +122,7 @@ export function StrukturManagement() {
       phone: struktur.phone || '',
       department: struktur.department || '',
       bio: struktur.bio || '',
-      social_media: (struktur.social_media as Record<string, string>) || {},
+      social_media: (struktur.social_media as unknown as Record<string, string>) || {},
       is_active: struktur.is_active,
     });
     setIsDialogOpen(true);

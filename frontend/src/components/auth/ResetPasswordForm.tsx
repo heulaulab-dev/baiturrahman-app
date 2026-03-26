@@ -127,7 +127,7 @@ export function ResetPasswordForm() {
             )}
           </button>
         </div>
-        <FieldError errors={errors.new_password} />
+        <FieldError errors={[errors.new_password]} />
       </Field>
 
       <Field>
@@ -154,7 +154,7 @@ export function ResetPasswordForm() {
             )}
           </button>
         </div>
-        <FieldError errors={errors.confirm_password} />
+        <FieldError errors={[errors.confirm_password]} />
       </Field>
 
       <Button type="submit" className="w-full" disabled={isLoading}>

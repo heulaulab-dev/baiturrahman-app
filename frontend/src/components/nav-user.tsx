@@ -5,8 +5,8 @@ import {
   Bell,
   ChevronsUpDown,
   LogOut,
-  User as UserIcon,
 } from "lucide-react"
+import { useAuth } from "@/context/AuthContext"
 
 import {
   Avatar,
@@ -39,6 +39,15 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const { logout } = useAuth()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      console.error("Logout failed:", error)
+    }
+  }
 
   return (
     <SidebarMenu>
@@ -81,17 +90,17 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <BadgeCheck />
+                <BadgeCheck data-icon="inline-start" />
                 Profil Saya
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Bell />
+                <Bell data-icon="inline-start" />
                 Notifikasi
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut data-icon="inline-start" />
               Keluar
             </DropdownMenuItem>
           </DropdownMenuContent>

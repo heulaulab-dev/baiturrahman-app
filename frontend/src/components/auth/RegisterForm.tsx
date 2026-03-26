@@ -97,7 +97,7 @@ export function RegisterForm({ onSuccess }: { onSuccess?: () => void }) {
           {...register('username')}
           disabled={isLoading}
         />
-        <FieldError errors={errors.username} />
+        <FieldError errors={[errors.username]} />
       </Field>
 
       <Field>
@@ -109,7 +109,7 @@ export function RegisterForm({ onSuccess }: { onSuccess?: () => void }) {
           {...register('full_name')}
           disabled={isLoading}
         />
-        <FieldError errors={errors.full_name} />
+        <FieldError errors={[errors.full_name]} />
       </Field>
 
       <Field>
@@ -121,7 +121,7 @@ export function RegisterForm({ onSuccess }: { onSuccess?: () => void }) {
           {...register('email')}
           disabled={isLoading}
         />
-        <FieldError errors={errors.email} />
+        <FieldError errors={[errors.email]} />
       </Field>
 
       <Field>
@@ -148,7 +148,7 @@ export function RegisterForm({ onSuccess }: { onSuccess?: () => void }) {
             )}
           </button>
         </div>
-        <FieldError errors={errors.password} />
+        <FieldError errors={[errors.password]} />
       </Field>
 
       <Field>
@@ -175,7 +175,7 @@ export function RegisterForm({ onSuccess }: { onSuccess?: () => void }) {
             )}
           </button>
         </div>
-        <FieldError errors={errors.confirm_password} />
+        <FieldError errors={[errors.confirm_password]} />
       </Field>
 
       <FieldDescription>

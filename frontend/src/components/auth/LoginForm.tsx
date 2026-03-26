@@ -58,7 +58,7 @@ export function LoginForm() {
           {...register('email')}
           disabled={isLoading}
         />
-        <FieldError errors={errors.email} />
+        <FieldError errors={[errors.email]} />
       </Field>
 
       <Field>
@@ -85,7 +85,7 @@ export function LoginForm() {
             )}
           </button>
         </div>
-        <FieldError errors={errors.password} />
+        <FieldError errors={[errors.password]} />
       </Field>
 
       <Button type="submit" className="w-full" disabled={isLoading}>

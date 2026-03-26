@@ -10,7 +10,7 @@ export function AboutSection() {
 	const { data: contentSections } = useContentSections();
 
 	const sections = Array.isArray(contentSections) ? contentSections : [];
-	const aboutContent = sections.find((c) => c.section_type === 'about');
+	const aboutContent = sections.find((c) => c.section_key === 'about');
 
 	return (
 		<section id='about' className='py-20'>
@@ -54,7 +54,7 @@ export function AboutSection() {
 						<div className='space-y-6 text-sacred-green'>
 							{aboutContent ? (
 								<p className='text-sacred-green text-lg leading-relaxed'>
-									{aboutContent.content}
+									{aboutContent.body}
 								</p>
 							) : (
 								<>

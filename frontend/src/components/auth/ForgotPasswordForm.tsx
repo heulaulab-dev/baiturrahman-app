@@ -81,7 +81,7 @@ export function ForgotPasswordForm({ onSuccess }: { onSuccess?: () => void }) {
           {...register('email')}
           disabled={isLoading}
         />
-        <FieldError errors={errors.email} />
+        <FieldError errors={[errors.email]} />
       </Field>
 
       <Button type="submit" className="w-full" disabled={isLoading}>

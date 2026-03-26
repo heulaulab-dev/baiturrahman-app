@@ -9,61 +9,56 @@ import { Toaster } from '@/components/ui/sonner';
 
 const navGroups = [
 	{
-		title: 'Overview',
-		href: '/dashboard',
-	},
-	{
-	{
 		title: 'Keuangan',
 		items: [
-			{ title: 'Donasi', href: '/dashboard/donasi', icon: null },
-			{ title: 'Wakaf', href: '/dashboard/wakaf', icon: null },
-			{ title: 'Zakat', href: '/dashboard/zakat', icon: null },
-			{ title: 'Laporan', href: '/dashboard/laporan', icon: null },
+			{ title: 'Donasi', href: '/dashboard/donasi' },
+			{ title: 'Wakaf', href: '/dashboard/wakaf' },
+			{ title: 'Zakat', href: '/dashboard/zakat' },
+			{ title: 'Laporan', href: '/dashboard/laporan' },
 		],
 	},
 	{
 		title: 'Jamaah',
 		items: [
-			{ title: 'Daftar Anggota', href: '/dashboard/jamaah', icon: null },
-			{ title: 'Muallaf', href: '/dashboard/muallaf', icon: null },
+			{ title: 'Daftar Anggota', href: '/dashboard/jamaah' },
+			{ title: 'Muallaf', href: '/dashboard/muallaf' },
 		],
 	},
 	{
 		title: 'Jadwal',
 		items: [
-			{ title: 'Imam Rawatib', href: '/dashboard/imam-rawatib', icon: null },
-			{ title: 'Muadzin', href: '/dashboard/muadzin', icon: null },
-			{ title: 'Kajian Harian', href: '/dashboard/kajian-harian', icon: null },
-			{ title: 'Petugas Jumat', href: '/dashboard/petugas-jumat', icon: null },
+			{ title: 'Imam Rawatib', href: '/dashboard/imam-rawatib' },
+			{ title: 'Muadzin', href: '/dashboard/muadzin' },
+			{ title: 'Kajian Harian', href: '/dashboard/kajian-harian' },
+			{ title: 'Petugas Jumat', href: '/dashboard/petugas-jumat' },
 		],
 	},
 	{
 		title: 'Konten',
 		items: [
-			{ title: 'Berita', href: '/dashboard/berita', icon: null },
-			{ title: 'Artikel', href: '/dashboard/artikel', icon: null },
-			{ title: 'Mimbar Jumat', href: '/dashboard/mimbar-jumat', icon: null },
-			{ title: 'Galeri', href: '/dashboard/galeri', icon: null },
-			{ title: 'Banner', href: '/dashboard/banner', icon: null },
+			{ title: 'Berita', href: '/dashboard/berita' },
+			{ title: 'Artikel', href: '/dashboard/artikel' },
+			{ title: 'Mimbar Jumat', href: '/dashboard/mimbar-jumat' },
+			{ title: 'Galeri', href: '/dashboard/galeri' },
+			{ title: 'Banner', href: '/dashboard/banner' },
 		],
 	},
 	{
 		title: 'Operasional',
 		items: [
-			{ title: 'Reservasi Ruangan', href: '/dashboard/reservasi', icon: null },
-			{ title: 'Kunjungan', href: '/dashboard/kunjungan', icon: null },
-			{ title: 'Fasilitas', href: '/dashboard/fasilitas', icon: null },
+			{ title: 'Reservasi Ruangan', href: '/dashboard/reservasi' },
+			{ title: 'Kunjungan', href: '/dashboard/kunjungan' },
+			{ title: 'Fasilitas', href: '/dashboard/fasilitas' },
 		],
 	},
 	{
 		title: 'Pengaturan',
 		items: [
-			{ title: 'Profil Masjid', href: '/dashboard/profil-masjid', icon: null },
-			{ title: 'Pengguna & Role', href: '/dashboard/pengguna', icon: null },
-			{ title: 'Jadwal Sholat', href: '/dashboard/jadwal-sholat', icon: null },
-			{ title: 'Notifikasi', href: '/dashboard/notifikasi', icon: null },
-			{ title: 'API', href: '/dashboard/api', icon: null },
+			{ title: 'Profil Masjid', href: '/dashboard/profil-masjid' },
+			{ title: 'Pengguna & Role', href: '/dashboard/pengguna' },
+			{ title: 'Jadwal Sholat', href: '/dashboard/jadwal-sholat' },
+			{ title: 'Notifikasi', href: '/dashboard/notifikasi' },
+			{ title: 'API', href: '/dashboard/api' },
 		],
 	},
 ];
@@ -74,6 +69,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 	const { user } = useAuth();
 
 	return (
+		<>
 		<div className="flex h-screen bg-background text-foreground">
 			{/* Sidebar */}
 			<div
@@ -124,18 +120,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 							) : (
 								<a
 									key={group.title}
-									href={group.href}
 									className={`
 										flex items-center gap-3 px-6 py-3 rounded-md transition-all duration-200
 										${isCollapsed ? 'justify-center' : ''}
 										hover:bg-muted/30
 									`}
 								>
-									<group.icon className="w-4 h-4 text-muted" />
 									{!isCollapsed && <span className="text-sm">{group.title}</span>}
-									{isCollapsed && group.icon === null && (
-										<div className="w-2 h-2 rounded-full bg-foreground/10" />
-									)}
 								</a>
 							)}
 						</div>
@@ -243,7 +234,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 										group.items.map((item) => (
 											<a
 												key={item.title}
-												href={item.href}
 												className="block px-4 py-3 text-foreground hover:bg-muted/30 rounded-md"
 											>
 												{item.title}
@@ -252,7 +242,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 									) : (
 										<a
 											key={group.title}
-											href={group.href}
 											className="block px-4 py-3 text-foreground hover:bg-muted/30 rounded-md"
 										>
 											{group.title}
@@ -266,5 +255,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 			)}
 		</div>
 		<Toaster />
-	);
+		</>
+	)
 }

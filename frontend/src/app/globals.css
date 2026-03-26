@@ -8,6 +8,8 @@
 @theme {
   --font-sans: var(--font-plus-jakarta-sans), system-ui, sans-serif;
 
+  --header-height: 3.5rem;
+
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
 

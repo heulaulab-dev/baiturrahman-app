@@ -30,9 +30,9 @@ function relativeTime(dateString: string): string {
 }
 
 const statusConfig: Record<string, { color: string; label: string }> = {
-  confirmed: { color: 'bg-emerald-500', label: 'dikonfirmasi' },
-  cancelled: { color: 'bg-red-500', label: 'dibatalkan' },
-  pending: { color: 'bg-amber-500', label: 'pending' },
+  confirmed: { color: 'bg-chart-1', label: 'dikonfirmasi' },
+  cancelled: { color: 'bg-destructive', label: 'dibatalkan' },
+  pending: { color: 'bg-chart-5', label: 'pending' },
 };
 
 export function ActivityFeed() {
@@ -42,11 +42,11 @@ export function ActivityFeed() {
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
+      <div className="flex flex-col gap-3">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flex items-start gap-3">
             <div className="w-2 h-2 rounded-full bg-muted/50 animate-pulse mt-2 shrink-0" />
-            <div className="flex-1 space-y-1">
+            <div className="flex flex-col gap-1 flex-1">
               <div className="h-4 w-3/4 bg-muted/50 animate-pulse rounded" />
               <div className="h-3 w-1/3 bg-muted/50 animate-pulse rounded" />
             </div>
@@ -58,25 +58,25 @@ export function ActivityFeed() {
 
   if (donations.length === 0) {
     return (
-      <p className="text-sm text-muted py-4">Belum ada aktivitas</p>
+      <p className="text-sm text-muted-foreground py-4">Belum ada aktivitas</p>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       {donations.map((d) => {
         const config = statusConfig[d.status] ?? statusConfig.pending;
         return (
           <div key={d.id} className="flex items-start gap-3">
             <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${config.color}`} />
             <div className="min-w-0 flex-1">
-              <p className="text-sm text-foreground truncate">
+              <p className="text-sm truncate">
                 {d.donor_name}
-                <span className="text-muted"> — </span>
+                <span className="text-muted-foreground"> — </span>
                 <span className="font-mono">{formatCurrency(d.amount)}</span>
-                <span className="text-muted"> {config.label}</span>
+                <span className="text-muted-foreground"> {config.label}</span>
               </p>
-              <p className="text-xs text-muted">{relativeTime(d.created_at)}</p>
+              <p className="text-xs text-muted-foreground">{relativeTime(d.created_at)}</p>
             </div>
           </div>
         );

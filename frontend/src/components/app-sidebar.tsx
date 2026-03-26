@@ -12,7 +12,7 @@ import {
   LayoutDashboard,
   Bell,
 } from "lucide-react"
-
+import { useAuth } from "@/context/AuthContext"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
@@ -26,13 +26,17 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-const data = {
-  user: {
-    name: "Admin",
-    email: "admin@baiturrahim.id",
-    avatar: "/avatars/admin.jpg",
-  },
-  navMain: [
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth()
+
+  // Generate user data from auth context
+  const userData = {
+    name: user?.full_name || user?.username || "Admin",
+    email: user?.email || "admin@baiturrahim.id",
+    avatar: user?.avatar_url || "/avatars/admin.jpg",
+  }
+
+  const navMain = [
     {
       title: "Dashboard",
       url: "/dashboard",
@@ -158,8 +162,9 @@ const data = {
         },
       ],
     },
-  ],
-  navSecondary: [
+  ]
+
+  const navSecondary = [
     {
       title: "Notifikasi",
       url: "/notifikasi",
@@ -170,10 +175,8 @@ const data = {
       url: "/bantuan",
       icon: User,
     },
-  ],
-}
+  ]
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -194,11 +197,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={navMain} />
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
     </Sidebar>
   )

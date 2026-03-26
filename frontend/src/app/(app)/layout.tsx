@@ -32,7 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 	}
 
 	return (
-		<SidebarProvider style={{ '--header-height': '3.5rem' } as React.CSSProperties}>
+		<SidebarProvider>
 			<AppSidebar />
 			<SidebarInset className="flex-1">
 				<SiteHeader />

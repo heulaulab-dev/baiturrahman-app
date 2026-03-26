@@ -32,12 +32,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 	}
 
 	return (
-		<div className="[--header-height:calc(--spacing(14))]">
-			<SidebarProvider>
+		<SidebarProvider style={{ '--header-height': '3.5rem' } as React.CSSProperties}>
 			<AppSidebar />
-			<SidebarInset>
+			<SidebarInset className="flex-1">
 				<SiteHeader />
-				<div className="flex flex-1 flex-col gap-6 overflow-hidden">
+				<div className="flex flex-1 flex-col gap-6">
 					<div className="flex-1 overflow-y-auto">
 						<div className="container mx-auto max-w-6xl px-4 py-6">
 							{children}
@@ -45,8 +44,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 					</div>
 				</div>
 			</SidebarInset>
-			</SidebarProvider>
-		</div>
-
+		</SidebarProvider>
 	);
 }

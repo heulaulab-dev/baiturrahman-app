@@ -3,6 +3,7 @@ import type {
   MosqueInfo,
   Event,
   Announcement,
+  AnnouncementsResponse,
   PrayerTime,
   Donation,
   PaymentMethod,
@@ -11,6 +12,8 @@ import type {
   Khutbah,
   HistoryEntry,
   Struktur,
+  ApiResponse,
+  PaymentMethodsResponse,
 } from '@/types'
 
 // Mosque Info
@@ -37,20 +40,20 @@ export const getPrayerTimesByMonth = async (
 
 // Events
 export const getEvents = async (): Promise<Event[]> => {
-  const response = await api.get<Event[]>('/v1/events')
-  return response.data
+  const response = await api.get<ApiResponse<Event[]>>('/v1/events')
+  return response.data.data
 }
 
 export const getEventBySlug = async (slug: string): Promise<Event> => {
-  const response = await api.get<Event>(`/v1/events/${slug}`)
-  return response.data
+  const response = await api.get<ApiResponse<Event>>(`/v1/events/${slug}`)
+  return response.data.data
 }
 
 // Announcements
 export const getAnnouncements = async (): Promise<Announcement[]> => {
-  const response = await api.get<Announcement[]>('/v1/announcements')
-  return response.data
-}
+  const response = await api.get<ApiResponse<Announcement[]>>('/v1/announcements');
+  return response.data.data
+} 
 
 // Donations
 export const createDonation = async (data: {
@@ -64,8 +67,8 @@ export const createDonation = async (data: {
 }
 
 export const getPaymentMethods = async (): Promise<PaymentMethod[]> => {
-  const response = await api.get<PaymentMethod[]>('/v1/payment-methods')
-  return response.data
+  const response = await api.get<ApiResponse<PaymentMethod[]>>('/v1/payment-methods')
+  return response.data.data
 }
 
 // Content

@@ -12,7 +12,7 @@ export function KajianSection() {
 	const { data: events, isLoading } = useEvents();
 
 	// Get featured event (first published event) and remaining events
-	const featuredEvent = events?.find((e) => e.is_published);
+	const featuredEvent = events?.find((e) => e.is_published); 
 	const otherEvents = events?.filter((e) => e.is_published && e.id !== featuredEvent?.id) || [];
 
 	return (

@@ -1,16 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { UserPlus, Bell, Globe, LayoutDashboard, Calendar, Key, TrendingUp } from 'lucide-react';
-
-const mosqueInfo = {
-	nama: 'Masjid Baiturrahman',
-	alamat: 'Jl. Masjid Baiturrahman No. 1, Jakarta Selatan, Indonesia',
-	telp: '+62 21 1234 5678',
-	email: 'info@baiturrahman.or.id',
-	website: 'www.baiturrahman.or.id',
-	tagline: 'Merahmati Umat, Menerangi Jiwa',
-};
+import { UserPlus, Bell, Globe, LayoutDashboard, Calendar, Key } from 'lucide-react';
+import { MosqueProfile } from '@/components/dashboard/MosqueProfile';
 
 const usersData = [
 	{ id: '1', nama: 'Ketua Pengurus', email: 'ketua@baiturrahman.or.id', role: 'super-admin', lastLogin: '2026-03-17 14:30', status: 'aktif' },
@@ -49,80 +41,7 @@ export default function PengaturanPage() {
 			</div>
 
 			{/* Profil Masjid Tab */}
-			{activeTab === 'profil-masjid' && (
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-					<div className="p-6 border border-border bg-muted/30 rounded-lg">
-						<h3 className="text-xl font-semibold text-foreground mb-4">Informasi Masjid</h3>
-						<div className="space-y-4">
-							<div>
-								<label className="block text-sm text-muted mb-2">Nama Masjid</label>
-								<input type="text" defaultValue={mosqueInfo.nama} className="w-full px-4 py-3 bg-background border border-border text-foreground rounded-md outline-none" />
-							</div>
-							<div>
-								<label className="block text-sm text-muted mb-2">Alamat</label>
-								<input type="text" defaultValue={mosqueInfo.alamat} className="w-full px-4 py-3 bg-background border border-border text-foreground rounded-md outline-none" />
-							</div>
-							<div className="grid grid-cols-2 gap-4">
-								<div>
-									<label className="block text-sm text-muted mb-2">Telepon</label>
-									<input type="tel" defaultValue={mosqueInfo.telp} className="w-full px-4 py-3 bg-background border border-border text-foreground rounded-md outline-none" />
-								</div>
-								<div>
-									<label className="block text-sm text-muted mb-2">Email</label>
-									<input type="email" defaultValue={mosqueInfo.email} className="w-full px-4 py-3 bg-background border border-border text-foreground rounded-md outline-none" />
-								</div>
-							</div>
-							<div>
-								<label className="block text-sm text-muted mb-2">Website</label>
-								<input type="url" defaultValue={mosqueInfo.website} className="w-full px-4 py-3 bg-background border border-border text-foreground rounded-md outline-none" />
-							</div>
-							<div>
-								<label className="block text-sm text-muted mb-2">Tagline</label>
-								<input type="text" defaultValue={mosqueInfo.tagline} className="w-full px-4 py-3 bg-background border border-border text-foreground rounded-md outline-none" />
-							</div>
-							<div>
-								<label className="block text-sm text-muted mb-2">Logo Masjid</label>
-								<div className="flex items-center gap-3">
-									<div className="w-16 h-16 border border-border bg-muted/50 flex items-center justify-center rounded-md">
-										<Globe className="w-6 h-6 text-muted" />
-									</div>
-									<button className="px-4 py-2 bg-muted/30 text-foreground rounded-md hover:bg-muted/50 transition-colors text-sm">
-										Upload
-									</button>
-								</div>
-							</div>
-							<button className="w-full py-3 px-4 rounded-md font-medium bg-foreground text-background hover:bg-foreground/90 transition-colors">
-								Simpan Perubahan
-							</button>
-						</div>
-					</div>
-
-					<div className="border border-border bg-muted/30 rounded-lg p-6">
-						<h3 className="text-lg font-semibold text-foreground mb-4">Statistik Website</h3>
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<div className="p-4 border border-border bg-background rounded-md">
-								<div className="text-xs font-medium text-muted uppercase mb-2">Pengunjung</div>
-								<div className="text-2xl font-mono text-foreground mb-1">12,456</div>
-								<div className="text-sm text-muted">bulan ini</div>
-								<div className="flex items-center gap-1 text-emerald-500 text-xs mt-1">
-									<TrendingUp className="w-3 h-3" />
-									<span>+34%</span>
-								</div>
-							</div>
-							<div className="p-4 border border-border bg-background rounded-md">
-								<div className="text-xs font-medium text-muted uppercase mb-2">Artikel Dilihat</div>
-								<div className="text-2xl font-mono text-foreground mb-1">3,456</div>
-								<div className="text-sm text-muted">total</div>
-							</div>
-							<div className="p-4 border border-border bg-background rounded-md">
-								<div className="text-xs font-medium text-muted uppercase mb-2">Donasi</div>
-								<div className="text-2xl font-mono text-foreground mb-1">472</div>
-								<div className="text-sm text-muted">transaksi</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			)}
+			{activeTab === 'profil-masjid' && <MosqueProfile />}
 
 			{/* Pengguna & Role Tab */}
 			{activeTab === 'pengguna-role' && (

@@ -36,6 +36,23 @@ export interface MosqueInfo {
   instagram?: string
   youtube?: string
   image_url?: string
+  city: string
+  province: string
+  postal_code?: string
+  logo_url?: string
+  banner_url?: string
+  latitude?: number
+  longitude?: number
+  maps_embed_url?: string
+  social_media?: {
+    facebook?: string
+    instagram?: string
+    youtube?: string
+    twitter?: string
+  }
+  established_year?: number
+  vision?: string
+  mission?: string
   created_at: string
   updated_at: string
 }
@@ -114,11 +131,15 @@ export interface PaymentMethod {
 
 export interface ContentSection {
   id: string
-  title: string
-  content: string
-  section_type: 'about' | 'programs' | 'history' | 'other'
-  is_visible: boolean
-  order: number
+  section_key: string
+  title?: string
+  subtitle?: string
+  body: string
+  image_url?: string
+  video_url?: string
+  display_order: number
+  is_active: boolean
+  metadata?: Record<string, any>
   created_at: string
   updated_at: string
 }
@@ -176,4 +197,60 @@ export interface PaginatedResponse<T> {
   limit: number
   total: number
   total_pages: number
+}
+
+export interface Khutbah {
+  id: string
+  khatib: string
+  tema: string
+  imam?: string
+  muadzin?: string
+  date: string
+  content?: string
+  file_url?: string
+  status: 'draft' | 'published'
+  created_at: string
+  updated_at: string
+}
+
+export interface HistoryEntry {
+  id: string
+  title: string
+  content: string
+  entry_date: string
+  category: 'milestone' | 'achievement' | 'event'
+  image_url?: string
+  is_published: boolean
+  created_by?: string
+  created_at: string
+  updated_at: string
+  creator?: {
+    id: string
+    username: string
+    full_name: string
+    avatar_url?: string
+  }
+}
+
+export interface Struktur {
+  id: string
+  name: string
+  role: 'ketua' | 'sekretaris' | 'bendahara' | 'humas' | 'imam_syah' | 'muadzin' | 'dai_amil' | 'marbot' | 'lainnya'
+  photo_url?: string
+  email?: string
+  phone?: string
+  department?: string
+  bio?: string
+  social_media?: string
+  display_order: number
+  is_active: boolean
+  created_by?: string
+  created_at: string
+  updated_at: string
+  creator?: {
+    id: string
+    username: string
+    full_name: string
+    avatar_url?: string
+  }
 }

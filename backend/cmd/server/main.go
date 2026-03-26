@@ -91,6 +91,13 @@ func main() {
 			public.POST("/donations", h.CreateDonation)
 			public.GET("/payment-methods", h.GetPaymentMethods)
 
+			// History Entries (public)
+			public.GET("/history-entries", h.GetHistoryEntries)
+			public.GET("/history-entries/date-range", h.GetHistoryEntriesByDateRange)
+
+			// Strukturs (public)
+			public.GET("/strukturs", h.GetPublicStrukturs)
+
 			// Khutbah (public)
 			public.GET("/khutbahs/latest", h.GetLatestKhutbah)
 			public.GET("/khutbahs/archive", h.GetKhutbahArchive)
@@ -132,6 +139,10 @@ func main() {
 			admin.PUT("/content/reorder", h.ReorderContentSections)
 			admin.PUT("/content/:id/toggle", h.ToggleContentSection)
 
+			// Tentang Kami (About Us) - using ContentSection
+			admin.GET("/content/tentang-kami", h.GetTentangKami)
+			admin.PUT("/content/tentang-kami", h.UpdateTentangKami)
+
 			// Events
 			admin.GET("/events", h.GetEvents)
 			admin.POST("/events", h.CreateEvent)
@@ -151,6 +162,24 @@ func main() {
 			admin.PUT("/khutbahs/:id", h.UpdateKhutbah)
 			admin.DELETE("/khutbahs/:id", h.DeleteKhutbah)
 			admin.PUT("/khutbahs/:id/toggle", h.ToggleKhutbahStatus)
+
+			// History Entries
+			admin.GET("/history-entries", h.GetHistoryEntries)
+			admin.GET("/history-entries/:id", h.GetHistoryEntryByID)
+			admin.POST("/history-entries", h.CreateHistoryEntry)
+			admin.PUT("/history-entries/:id", h.UpdateHistoryEntry)
+			admin.DELETE("/history-entries/:id", h.DeleteHistoryEntry)
+			admin.PUT("/history-entries/:id/toggle", h.ToggleHistoryEntryStatus)
+
+			// Struktur
+			admin.GET("/strukturs", h.GetStrukturs)
+			admin.GET("/strukturs/:id", h.GetStrukturByID)
+			admin.POST("/strukturs", h.CreateStruktur)
+			admin.PUT("/strukturs/:id", h.UpdateStruktur)
+			admin.DELETE("/strukturs/:id", h.DeleteStruktur)
+			admin.PUT("/strukturs/reorder", h.ReorderStrukturs)
+			admin.PUT("/strukturs/:id/toggle", h.ToggleStrukturStatus)
+			admin.GET("/strukturs/active-count", h.GetActiveStruktursCount)
 
 			// Donations
 			admin.GET("/donations", h.GetDonations)

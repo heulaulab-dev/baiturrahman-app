@@ -6,6 +6,10 @@ import type {
   User,
   ApiResponse,
   PaginatedResponse,
+  HistoryEntry,
+  Struktur,
+  ContentSection,
+  MosqueInfo,
 } from '@/types'
 
 export const getDonationStats = async (): Promise<DonationStats> => {
@@ -44,4 +48,137 @@ export const getAdminEvents = async (
 export const getAdminUsers = async (): Promise<PaginatedResponse<User>> => {
   const response = await api.get<PaginatedResponse<User>>('/v1/admin/users')
   return response.data
+}
+
+// Content - Tentang Kami
+export const getTentangKami = async (): Promise<ContentSection> => {
+  const response = await api.get<ApiResponse<ContentSection>>('/v1/admin/content/tentang-kami')
+  return response.data.data
+}
+
+export const updateTentangKami = async (data: {
+  title?: string
+  subtitle?: string
+  body: string
+  image_url?: string
+  video_url?: string
+  is_active: boolean
+}): Promise<ContentSection> => {
+  const response = await api.put<ApiResponse<ContentSection>>('/v1/admin/content/tentang-kami', data)
+  return response.data.data
+}
+
+// History Entries - Admin
+export interface GetHistoryEntriesParams {
+  page?: number
+  limit?: number
+  status?: string
+  category?: string
+}
+
+export const getAdminHistoryEntries = async (
+  params?: GetHistoryEntriesParams
+): Promise<PaginatedResponse<HistoryEntry>> => {
+  const response = await api.get<PaginatedResponse<HistoryEntry>>('/v1/admin/history-entries', { params })
+  return response.data
+}
+
+export const getHistoryEntryById = async (id: string): Promise<HistoryEntry> => {
+  const response = await api.get<ApiResponse<HistoryEntry>>(`/v1/admin/history-entries/${id}`)
+  return response.data.data
+}
+
+export const createHistoryEntry = async (data: {
+  title: string
+  content: string
+  entry_date: string
+  category: 'milestone' | 'achievement' | 'event'
+  image_url?: string
+  is_published?: boolean
+}): Promise<HistoryEntry> => {
+  const response = await api.post<ApiResponse<HistoryEntry>>('/v1/admin/history-entries', data)
+  return response.data.data
+}
+
+export const updateHistoryEntry = async (
+  id: string,
+  data: Partial<HistoryEntry>
+): Promise<HistoryEntry> => {
+  const response = await api.put<ApiResponse<HistoryEntry>>(`/v1/admin/history-entries/${id}`, data)
+  return response.data.data
+}
+
+export const deleteHistoryEntry = async (id: string): Promise<void> => {
+  await api.delete(`/v1/admin/history-entries/${id}`)
+}
+
+export const toggleHistoryEntryStatus = async (id: string): Promise<HistoryEntry> => {
+  const response = await api.put<ApiResponse<HistoryEntry>>(`/v1/admin/history-entries/${id}/toggle`)
+  return response.data.data
+}
+
+// Strukturs - Admin
+export interface GetStruktursParams {
+  page?: number
+  limit?: number
+}
+
+export const getAdminStrukturs = async (
+  params?: GetStruktursParams
+): Promise<PaginatedResponse<Struktur>> => {
+  const response = await api.get<PaginatedResponse<Struktur>>('/v1/admin/strukturs', { params })
+  return response.data
+}
+
+export const getStrukturById = async (id: string): Promise<Struktur> => {
+  const response = await api.get<ApiResponse<Struktur>>(`/v1/admin/strukturs/${id}`)
+  return response.data.data
+}
+
+export const createStruktur = async (data: {
+  name: string
+  role: 'ketua' | 'sekretaris' | 'bendahara' | 'humas' | 'imam_syah' | 'muadzin' | 'dai_amil' | 'marbot' | 'lainnya'
+  photo_url?: string
+  email?: string
+  phone?: string
+  department?: string
+  bio?: string
+  social_media?: Record<string, string>
+  display_order?: number
+  is_active?: boolean
+}): Promise<Struktur> => {
+  const response = await api.post<ApiResponse<Struktur>>('/v1/admin/strukturs', data)
+  return response.data.data
+}
+
+export const updateStruktur = async (
+  id: string,
+  data: Partial<Struktur>
+): Promise<Struktur> => {
+  const response = await api.put<ApiResponse<Struktur>>(`/v1/admin/strukturs/${id}`, data)
+  return response.data.data
+}
+
+export const deleteStruktur = async (id: string): Promise<void> => {
+  await api.delete(`/v1/admin/strukturs/${id}`)
+}
+
+export const reorderStrukturs = async (items: { id: string; display_order: number }[]): Promise<void> => {
+  await api.put('/v1/admin/strukturs/reorder', { items })
+}
+
+export const toggleStrukturStatus = async (id: string): Promise<Struktur> => {
+  const response = await api.put<ApiResponse<Struktur>>(`/v1/admin/strukturs/${id}/toggle`)
+  return response.data.data
+}
+
+export const getActiveStruktursCount = async (): Promise<number> => {
+  const response = await api.get<ApiResponse<number>>('/v1/admin/strukturs/active-count')
+  return response.data.data
+}
+
+// Mosque Info
+export const updateMosqueInfo = async (data: Partial<MosqueInfo>): Promise<MosqueInfo> => {
+  const response = await api.put<ApiResponse<MosqueInfo>>('/v1/admin/mosque', data)
+  return response.data.data
 }

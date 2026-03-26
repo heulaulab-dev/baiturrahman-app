@@ -5,6 +5,7 @@ import { Menu, X, Search, Bell, ChevronDown, ChevronRight, Settings, HelpCircle 
 import { UserMenu } from '@/components/auth/UserMenu';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
+import { Toaster } from '@/components/ui/sonner';
 
 const navGroups = [
 	{
@@ -264,5 +265,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 			</div>
 			)}
 		</div>
+		<Toaster />
 	);
 }

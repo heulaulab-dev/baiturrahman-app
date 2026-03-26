@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { Search, FileText, Plus, Image, X, Calendar, MoreHorizontal } from 'lucide-react';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
+import { TentangKami } from '@/components/dashboard/TentangKami';
+import { HistoryManagement } from '@/components/dashboard/HistoryManagement';
+import { StrukturManagement } from '@/components/dashboard/StrukturManagement';
 
 const eventsData = [
 	{ id: '1', title: 'Kajian Rutin: Kitab Al-Quran', category: 'Kajian', date: '2026-03-20', status: 'published', excerpt: 'Kajian rutin mingguan membahas kitab Al-Quran.' },
@@ -23,15 +26,18 @@ const mimbarJumatData = [
 	{ id: '3', tanggal: '2026-02-28', khatib: 'Ust. Dr. Abdullah Hakim', tema: 'Adab Sopan Santun' },
 ];
 
-type TabType = 'events' | 'berita' | 'mimbar-jumat' | 'banner' | 'gallery';
+type TabType = 'tentang-kami' | 'events' | 'berita' | 'mimbar-jumat' | 'sejarah' | 'struktur' | 'banner' | 'gallery';
 
 export default function KontenPage() {
 	const [activeTab, setActiveTab] = useState<TabType>('events');
 
 	const tabs: { key: TabType; label: string }[] = [
+		{ key: 'tentang-kami', label: 'Tentang Kami' },
 		{ key: 'events', label: 'Events' },
 		{ key: 'berita', label: 'Berita' },
 		{ key: 'mimbar-jumat', label: 'Mimbar Jumat' },
+		{ key: 'sejarah', label: 'Sejarah' },
+		{ key: 'struktur', label: 'Struktur' },
 		{ key: 'banner', label: 'Banner' },
 		{ key: 'gallery', label: 'Galeri' },
 	];
@@ -50,6 +56,9 @@ export default function KontenPage() {
 					</button>
 				))}
 			</div>
+
+			{/* Tentang Kami Tab */}
+			{activeTab === 'tentang-kami' && <TentangKami />}
 
 			{/* Events Tab */}
 			{activeTab === 'events' && (
@@ -132,6 +141,12 @@ export default function KontenPage() {
 					</div>
 				</div>
 			)}
+
+			{/* Sejarah Tab */}
+			{activeTab === 'sejarah' && <HistoryManagement />}
+
+			{/* Struktur Tab */}
+			{activeTab === 'struktur' && <StrukturManagement />}
 
 			{/* Banner / Gallery placeholder */}
 			{(activeTab === 'banner' || activeTab === 'gallery') && (

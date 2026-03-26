@@ -118,7 +118,7 @@ export function DonationSection() {
 													{method.account_number}
 												</p>
 												<p className='text-muted-foreground text-sm'>
-													a.n {method.account_holder}
+													a.n {method.account_name}
 												</p>
 											</div>
 										))

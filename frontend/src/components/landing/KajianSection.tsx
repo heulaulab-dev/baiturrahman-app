@@ -1,43 +1,22 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
-import Image from 'next/image';
+import { ArrowRight, Calendar, MapPin, User } from 'lucide-react';
+import { useEvents } from '@/services/hooks';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 const categories = ['Tafsir', 'Fiqh', 'Tasawuf', 'Khutbah', 'Keislaman'];
 
-const featuredKajian = {
-	title: 'Makna Kehidupan dalam Al-Quran',
-	excerpt: 'Menjelajahi kedalaman makna kehidupan yang terkandung dalam ayat-ayat suci Al-Quran dan relevansinya dengan kehidupan modern.',
-	category: 'Tafsir',
-	date: '15 Maret 2026',
-	author: 'Ustadz Dr. Abdullah Hakim, M.A.',
-};
-
-const kajianList = [
-	{
-		title: 'Fiqh Sholat Lengkap',
-		excerpt: 'Panduan lengkap tata cara sholat sesuai sunnah.',
-		category: 'Fiqh',
-		date: '14 Maret 2026',
-	},
-	{
-		title: 'Meraih Ketenangan Hati',
-		excerpt: 'Jalan menuju ketenangan hati melalui dzikir dan doa.',
-		category: 'Tasawuf',
-		date: '13 Maret 2026',
-	},
-	{
-		title: 'Khutbah Jumat Pilihan',
-		excerpt: 'Kumpulan khutbah jumat yang menginspirasi.',
-		category: 'Khutbah',
-		date: '12 Maret 2026',
-	},
-];
-
 export function KajianSection() {
+	const { data: events, isLoading } = useEvents();
+
+	// Get featured event (first published event) and remaining events
+	const featuredEvent = events?.find((e) => e.is_published); 
+	const otherEvents = events?.filter((e) => e.is_published && e.id !== featuredEvent?.id) || [];
+
 	return (
-		<section className="py-20 bg-[#fafafa]">
+		<section id="kajian" className="py-20 bg-white">
 			<div className="mx-auto px-4 sm:px-6 lg:px-8 container">
 				{/* Section Header */}
 				<motion.div
@@ -47,14 +26,14 @@ export function KajianSection() {
 					className="mb-12 flex items-end justify-between"
 				>
 					<div>
-						<h2 className="font-serif-cormorant font-semibold text-[clamp(2rem,4vw,3rem)] text-[#1a3d2b] mb-4">
+						<h2 className="font-serif-cormorant font-semibold text-[clamp(2rem,4vw,3rem)] text-sacred-green mb-4">
 							Kajian & Konten Islam
 						</h2>
 						<div className="flex flex-wrap gap-2">
 							{categories.map((category) => (
 								<span
 									key={category}
-									className="px-3 py-1 border border-[#1a3d2b] text-xs uppercase tracking-wider text-[#1a3d2b]"
+									className="px-3 py-1 border border-sacred-green text-xs uppercase tracking-wider text-sacred-green"
 								>
 									{category}
 								</span>
@@ -64,83 +43,135 @@ export function KajianSection() {
 				</motion.div>
 
 				{/* Featured Kajian */}
-				<motion.div
-					initial={{ opacity: 0, y: 30 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true }}
-					className="mb-12 bg-white p-8 border border-[#f0f0f0]"
-				>
-					<div className="grid md:grid-cols-2 gap-8 items-center">
-						<div className="aspect-[4/3] bg-gradient-to-br from-[#1a3d2b]/10 to-[#b8962e]/10 flex items-center justify-center">
-							<svg
-								viewBox="0 0 24 24"
-								className="w-24 h-24 text-[#1a3d2b]/20"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="1"
-							>
-								<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-								<path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-							</svg>
-						</div>
-						<div>
-							<div className="mb-3">
-								<span className="px-3 py-1 bg-[#b8962e]/10 text-[#b8962e] text-xs uppercase tracking-wider">
-									{featuredKajian.category}
-								</span>
-							</div>
-							<h3 className="font-serif-cormorant font-semibold text-2xl text-[#1a3d2b] mb-3">
-								{featuredKajian.title}
-							</h3>
-							<p className="text-[#6b6b6b] mb-4 leading-relaxed">
-								{featuredKajian.excerpt}
-							</p>
-							<div className="flex items-center justify-between text-sm text-[#6b6b6b]">
-								<span>{featuredKajian.author}</span>
-								<span className="font-mono-jetbrains">{featuredKajian.date}</span>
+				{isLoading ? (
+					<div className="mb-12 bg-white p-8 border border-sacred-green">
+						<div className="grid md:grid-cols-2 gap-8 items-center">
+							<div className="aspect-[4/3] bg-gray-100 animate-pulse" />
+							<div className="space-y-4">
+								<div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
+								<div className="h-8 bg-gray-200 rounded w-3/4 animate-pulse" />
+								<div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
+								<div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse" />
 							</div>
 						</div>
 					</div>
-				</motion.div>
+				) : featuredEvent ? (
+					<motion.div
+						initial={{ opacity: 0, y: 30 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						className="mb-12 bg-white p-8 border border-sacred-green cursor-pointer group hover:border-sacred-gold transition-colors duration-300"
+					>
+						<div className="grid md:grid-cols-2 gap-8 items-center">
+							{featuredEvent.image_url ? (
+								<img
+									src={featuredEvent.image_url}
+									alt={featuredEvent.title}
+									className="aspect-[4/3] w-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+								/>
+							) : (
+								<div className="aspect-[4/3] bg-gradient-to-br from-[#1a3d2b]/10 to-[#b8962e]/10 flex items-center justify-center">
+									<Calendar size={48} className="text-sacred-green/20" />
+								</div>
+							)}
+							<div>
+								<div className="mb-3">
+									<span className="px-3 py-1 bg-sacred-gold/10 text-sacred-gold text-xs uppercase tracking-wider">
+										Kajian
+									</span>
+								</div>
+								<h3 className="font-serif-cormorant font-semibold text-2xl text-sacred-green mb-3 group-hover:text-sacred-gold transition-colors">
+									{featuredEvent.title}
+								</h3>
+								<p className="text-sacred-muted mb-4 leading-relaxed line-clamp-2">
+									{featuredEvent.description}
+								</p>
+								<div className="space-y-2 text-sm text-sacred-muted">
+									{featuredEvent.date && (
+										<div className="flex items-center gap-2">
+											<Calendar size={14} />
+											<span>
+												{format(new Date(featuredEvent.date), 'EEEE, d MMMM yyyy', { locale: id })}
+											</span>
+										</div>
+									)}
+									{featuredEvent.time && (
+										<div className="font-mono-jetbrains">{featuredEvent.time}</div>
+									)}
+									{featuredEvent.location && (
+										<div className="flex items-center gap-2">
+											<MapPin size={14} />
+											<span className="line-clamp-1">{featuredEvent.location}</span>
+										</div>
+									)}
+								</div>
+							</div>
+						</div>
+					</motion.div>
+				) : (
+					<div className="mb-12 bg-white p-8 border border-sacred-green text-center text-sacred-muted">
+						Belum ada kajian yang terjadwal
+					</div>
+				)}
 
 				{/* Kajian List */}
-				<div className="grid md:grid-cols-3 gap-6 mb-8">
-					{kajianList.map((kajian, index) => (
-						<motion.div
-							key={kajian.title}
-							initial={{ opacity: 0, y: 30 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
-							transition={{ delay: index * 0.1 }}
-							className="bg-white p-6 border border-[#f0f0f0] hover:border-[#1a3d2b] transition-colors duration-300 group"
-						>
-							<div className="aspect-[1/1.2] bg-gradient-to-br from-[#1a3d2b]/5 to-[#b8962e]/5 mb-4 flex items-center justify-center">
-								<svg
-									viewBox="0 0 24 24"
-									className="w-16 h-16 text-[#1a3d2b]/20 group-hover:text-[#b8962e]/30 transition-colors"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="1"
-								>
-									<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-									<path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-								</svg>
+				{isLoading ? (
+					<div className="grid md:grid-cols-3 gap-6 mb-8">
+						{[1, 2, 3].map((i) => (
+							<div key={i} className="bg-white p-6 border border-sacred-green">
+								<div className="aspect-[1/1.2] bg-gray-100 mb-4 animate-pulse" />
+								<div className="h-4 bg-gray-200 rounded w-16 mb-2 animate-pulse" />
+								<div className="h-6 bg-gray-200 rounded w-full mb-2 animate-pulse" />
+								<div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
 							</div>
-							<span className="text-xs uppercase tracking-wider text-[#b8962e] mb-2 block">
-								{kajian.category}
-							</span>
-							<h4 className="font-serif-cormorant font-semibold text-lg text-[#1a3d2b] mb-2">
-								{kajian.title}
-							</h4>
-							<p className="text-[#6b6b6b] text-sm mb-3 line-clamp-2">
-								{kajian.excerpt}
-							</p>
-							<span className="font-mono-jetbrains text-xs text-[#6b6b6b]">
-								{kajian.date}
-							</span>
-						</motion.div>
-					))}
-				</div>
+						))}
+					</div>
+				) : otherEvents.length > 0 ? (
+					<div className="grid md:grid-cols-3 gap-6 mb-8">
+						{otherEvents.slice(0, 3).map((event, index) => (
+							<motion.div
+								key={event.id}
+								initial={{ opacity: 0, y: 30 }}
+								whileInView={{ opacity: 1, y: 0 }}
+								viewport={{ once: true }}
+								transition={{ delay: index * 0.1 }}
+								className="bg-white p-6 border border-sacred-green hover:border-sacred-gold transition-colors duration-300 group cursor-pointer"
+							>
+								{event.image_url ? (
+									<img
+										src={event.image_url}
+										alt={event.title}
+										className="aspect-[1/1.2] w-full object-cover mb-4 group-hover:scale-[1.02] transition-transform duration-500"
+									/>
+								) : (
+									<div className="aspect-[1/1.2] bg-gradient-to-br from-sacred-green/5 to-sacred-gold/5 mb-4 flex items-center justify-center">
+										<Calendar size={32} className="text-sacred-green/20 group-hover:text-sacred-gold/30 transition-colors" />
+									</div>
+								)}
+								{event.date && (
+									<span className="font-mono-jetbrains text-xs uppercase tracking-wider text-sacred-gold mb-2 block">
+										{format(new Date(event.date), 'd MMM yyyy', { locale: id })}
+									</span>
+								)}
+								<h4 className="font-serif-cormorant font-semibold text-lg text-sacred-green mb-2 group-hover:text-sacred-gold transition-colors">
+									{event.title}
+								</h4>
+								<p className="text-sacred-muted text-sm mb-3 line-clamp-2">
+									{event.description}
+								</p>
+								{event.time && (
+									<span className="font-mono-jetbrains text-xs text-sacred-muted">
+										{event.time}
+									</span>
+								)}
+							</motion.div>
+						))}
+					</div>
+				) : !isLoading ? (
+					<div className="text-center py-12 text-sacred-muted">
+						Tidak ada kajian lain yang tersedia saat ini
+					</div>
+				) : null}
 
 				{/* CTA */}
 				<motion.div
@@ -149,14 +180,15 @@ export function KajianSection() {
 					viewport={{ once: true }}
 					className="text-center"
 				>
-					<a
-						href="#"
-						className="inline-flex items-center gap-2 text-[#1a3d2b] font-serif-cormorant relative group"
+					<button
+						type="button"
+						className="inline-flex items-center gap-2 text-sacred-green font-serif-cormorant relative group"
+						onClick={() => console.log('Navigate to all events')}
 					>
 						Lihat Semua Artikel
 						<ArrowRight size={16} />
-						<span className="absolute bottom-0 left-0 w-0 h-px bg-[#b8962e] transition-all duration-300 group-hover:w-full" />
-					</a>
+						<span className="absolute bottom-0 left-0 w-0 h-px bg-sacred-gold transition-all duration-300 group-hover:w-full" />
+					</button>
 				</motion.div>
 			</div>
 		</section>

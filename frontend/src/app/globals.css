@@ -1,10 +1,14 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-
+/*
+  ---break---
+*/
 @custom-variant dark (&:is(.dark *));
 
 @theme {
   --font-sans: var(--font-plus-jakarta-sans), system-ui, sans-serif;
+
+  --header-height: 3.5rem;
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -342,6 +346,10 @@ html.lenis {
 	color: var(--sacred-gold);
 }
 
+.text-sacred-muted {
+	color: var(--sacred-muted);
+}
+
 .bg-sacred-green {
 	background-color: var(--sacred-green);
 }
@@ -362,6 +370,36 @@ html.lenis {
 .magnetic {
 	transition: transform 0.2s ease-out;
 	will-change: transform;
+}
+
+/* Custom Scrollbar */
+* {
+	scrollbar-width: 8px;
+	scrollbar-color: hsl(var(--muted) / 0.3);
+	scrollbar-track-color: transparent;
+}
+
+*::-webkit-scrollbar {
+	width: 8px;
+	background: transparent;
+}
+
+*::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+	background-color: hsl(var(--muted) / 0.5);
+	border-radius: 9999px;
+	border: 2px solid transparent;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+	background-color: hsl(var(--muted) / 0.7);
+}
+
+*::-webkit-scrollbar-corner {
+	background-color: transparent;
 }
 
 /* Reveal on scroll utility */

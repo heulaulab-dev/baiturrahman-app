@@ -3,11 +3,17 @@ import type {
   MosqueInfo,
   Event,
   Announcement,
+  AnnouncementsResponse,
   PrayerTime,
   Donation,
   PaymentMethod,
   ContentSection,
   StructureMember,
+  Khutbah,
+  HistoryEntry,
+  Struktur,
+  ApiResponse,
+  PaymentMethodsResponse,
 } from '@/types'
 
 // Mosque Info
@@ -34,20 +40,20 @@ export const getPrayerTimesByMonth = async (
 
 // Events
 export const getEvents = async (): Promise<Event[]> => {
-  const response = await api.get<Event[]>('/v1/events')
-  return response.data
+  const response = await api.get<ApiResponse<Event[]>>('/v1/events')
+  return response.data.data
 }
 
 export const getEventBySlug = async (slug: string): Promise<Event> => {
-  const response = await api.get<Event>(`/v1/events/${slug}`)
-  return response.data
+  const response = await api.get<ApiResponse<Event>>(`/v1/events/${slug}`)
+  return response.data.data
 }
 
 // Announcements
 export const getAnnouncements = async (): Promise<Announcement[]> => {
-  const response = await api.get<Announcement[]>('/v1/announcements')
-  return response.data
-}
+  const response = await api.get<ApiResponse<Announcement[]>>('/v1/announcements');
+  return response.data.data
+} 
 
 // Donations
 export const createDonation = async (data: {
@@ -61,8 +67,8 @@ export const createDonation = async (data: {
 }
 
 export const getPaymentMethods = async (): Promise<PaymentMethod[]> => {
-  const response = await api.get<PaymentMethod[]>('/v1/payment-methods')
-  return response.data
+  const response = await api.get<ApiResponse<PaymentMethod[]>>('/v1/payment-methods')
+  return response.data.data
 }
 
 // Content
@@ -74,5 +80,44 @@ export const getContentSections = async (): Promise<ContentSection[]> => {
 // Structure
 export const getStructures = async (): Promise<StructureMember[]> => {
   const response = await api.get<StructureMember[]>('/v1/structure')
+  return response.data
+}
+
+// Khutbah
+export const getLatestKhutbah = async (): Promise<Khutbah> => {
+  const response = await api.get<Khutbah>('/v1/khutbahs/latest')
+  return response.data
+}
+
+export const getKhutbahArchive = async (): Promise<Khutbah[]> => {
+  const response = await api.get<Khutbah[]>('/v1/khutbahs/archive')
+  return response.data
+}
+
+// History Entries (Public)
+export const getHistoryEntries = async (
+  params?: { status?: string; category?: string; page?: number; limit?: number }
+): Promise<{ data: HistoryEntry[]; page: number; limit: number; total: number }> => {
+  const response = await api.get('/v1/history-entries', { params })
+  return response.data
+}
+
+export const getHistoryEntriesByDateRange = async (
+  from: string,
+  to: string
+): Promise<HistoryEntry[]> => {
+  const response = await api.get('/v1/history-entries/date-range', { params: { from, to } })
+  return response.data
+}
+
+// Strukturs (Public)
+export const getPublicStrukturs = async (): Promise<Struktur[]> => {
+  const response = await api.get<Struktur[]>('/v1/strukturs')
+  return response.data
+}
+
+// Tentang Kami (Public)
+export const getTentangKami = async (): Promise<ContentSection> => {
+  const response = await api.get<ContentSection>('/v1/content/tentang-kami')
   return response.data
 }

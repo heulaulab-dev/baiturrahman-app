@@ -1,6 +1,6 @@
 'use client'
 
-import { MapPin, Phone, Mail, Facebook, Instagram, Youtube } from 'lucide-react'
+import { MapPin, Phone, Mail, Globe, CircleFadingPlus } from 'lucide-react'
 import { useMosqueInfo } from '@/services/hooks'
 
 export function Footer() {
@@ -29,7 +29,7 @@ export function Footer() {
             <div className="space-y-3">
               {mosqueInfo?.address && (
                 <div className="flex items-start space-x-3">
-                  <MapPin size={20} className="text-primary flex-shrink-0 mt-1" />
+                  <MapPin size={20} className="text-primary shrink-0 mt-1" />
                   <span className="text-muted-foreground">{mosqueInfo.address}</span>
                 </div>
               )}
@@ -59,7 +59,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="p-2 bg-secondary rounded-lg hover:bg-primary transition-colors"
                 >
-                  <Facebook size={20} />
+                  <CircleFadingPlus size={20} />
                 </a>
               )}
               {mosqueInfo?.instagram && (
@@ -69,7 +69,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="p-2 bg-secondary rounded-lg hover:bg-primary transition-colors"
                 >
-                  <Instagram size={20} />
+                  <CircleFadingPlus size={20} />
                 </a>
               )}
               {mosqueInfo?.youtube && (
@@ -79,7 +79,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="p-2 bg-secondary rounded-lg hover:bg-primary transition-colors"
                 >
-                  <Youtube size={20} />
+                  <CircleFadingPlus size={20} />
                 </a>
               )}
             </div>

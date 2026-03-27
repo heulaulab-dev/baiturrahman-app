@@ -21,9 +21,9 @@ function capitalize(str: string): string {
 export function CategoryBreakdown({ data, isLoading }: CategoryBreakdownProps) {
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="flex flex-col gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="space-y-2">
+          <div key={i} className="flex flex-col gap-2">
             <div className="flex justify-between">
               <div className="h-4 w-20 bg-muted/50 animate-pulse rounded" />
               <div className="h-4 w-24 bg-muted/50 animate-pulse rounded" />
@@ -36,24 +36,24 @@ export function CategoryBreakdown({ data, isLoading }: CategoryBreakdownProps) {
   }
 
   if (!data || Object.keys(data).length === 0) {
-    return <p className="text-sm text-muted py-4">Belum ada data kategori</p>;
+    return <p className="text-sm text-muted-foreground py-4">Belum ada data kategori</p>;
   }
 
   const entries = Object.entries(data).sort(([, a], [, b]) => b.total - a.total);
   const maxTotal = Math.max(...entries.map(([, v]) => v.total), 1);
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       {entries.map(([category, value]) => {
         const pct = (value.total / maxTotal) * 100;
 
         return (
           <div key={category}>
             <div className="flex items-baseline justify-between mb-1.5">
-              <span className="text-sm font-medium text-foreground">
+              <span className="text-sm font-medium">
                 {capitalize(category)}
               </span>
-              <span className="text-sm font-mono text-muted">
+              <span className="text-sm font-mono text-muted-foreground">
                 {formatCurrency(value.total)}
               </span>
             </div>
@@ -63,7 +63,7 @@ export function CategoryBreakdown({ data, isLoading }: CategoryBreakdownProps) {
                 style={{ width: `${Math.max(pct, 2)}%` }}
               />
             </div>
-            <p className="text-xs text-muted mt-1">{value.count} transaksi</p>
+            <p className="text-xs text-muted-foreground mt-1">{value.count} transaksi</p>
           </div>
         );
       })}

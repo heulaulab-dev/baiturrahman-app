@@ -3,11 +3,9 @@ import { Plus_Jakarta_Sans, Cormorant_Garamond, JetBrains_Mono, Noto_Naskh_Arabi
 import './globals.css'
 import { SmoothScroll } from '@/components/providers/SmoothScroll'
 import { QueryProvider } from '@/components/providers/QueryProvider'
-import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import { SmoothScrollHandler } from '@/components/providers/SmoothScrollHandler'
-import { Navbar } from '@/components/landing/Navbar'
-import { Footer } from '@/components/landing/Footer'
 import { AuthProvider } from '@/context/AuthContext'
+import { Toaster } from 'sonner'
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -48,20 +46,21 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="id" className="scroll-smooth" suppressHydrationWarning>
-      <body className={`${plusJakartaSans.variable} ${cormorantGaramond.variable} ${jetbrainsMono.variable} ${notoNaskhArabic.variable}`}>
-        <AuthProvider>
-          <QueryProvider>
-            <ThemeProvider>
-              <SmoothScroll />
-              <SmoothScrollHandler />
-              <div className="flex flex-col min-h-screen">
-                <main className="flex-1">{children}</main>
-              </div>
-            </ThemeProvider>
-          </QueryProvider>
-        </AuthProvider>
-      </body>
-    </html>
-  )
+		<html lang='id' className='scroll-smooth' suppressHydrationWarning>
+			<body
+				className={`${plusJakartaSans.variable} ${cormorantGaramond.variable} ${jetbrainsMono.variable} ${notoNaskhArabic.variable}`}
+			>
+				<AuthProvider>
+					<QueryProvider>
+						<SmoothScroll />
+						<SmoothScrollHandler />
+						<div className='flex flex-col min-h-screen'>
+							<main className='flex-1'>{children}</main>
+							<Toaster />
+						</div>
+					</QueryProvider>
+				</AuthProvider>
+			</body>
+		</html>
+	);
 }

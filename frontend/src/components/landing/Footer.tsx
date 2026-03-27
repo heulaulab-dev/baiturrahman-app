@@ -1,6 +1,6 @@
 'use client';
 
-import { Instagram, Youtube, Facebook, Twitter } from 'lucide-react';
+import {CircleFadingPlus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Logo from '@/public/Logomark.svg';
@@ -21,10 +21,10 @@ const prayerTimes = [
 ];
 
 const socialLinks = [
-	{ icon: Instagram, href: 'https://instagram.com/baiturrahman' },
-	{ icon: Youtube, href: 'https://youtube.com/baiturrahman' },
-	{ icon: Facebook, href: 'https://facebook.com/baiturrahman' },
-	{ icon: Twitter, href: 'https://twitter.com/baiturrahman' },
+	{ icon: CircleFadingPlus, href: 'https://instagram.com/baiturrahman' },
+	{ icon: CircleFadingPlus, href: 'https://youtube.com/baiturrahman' },
+	{ icon: CircleFadingPlus, href: 'https://facebook.com/baiturrahman' },
+	{ icon: CircleFadingPlus, href: 'https://twitter.com/baiturrahman' },
 ];
 
 export function Footer() {

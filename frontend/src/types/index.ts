@@ -22,6 +22,7 @@ export interface LoginResponse {
 export interface LoginRequest {
   email: string
   password: string
+  rememberMe?: boolean
 }
 
 export interface MosqueInfo {
@@ -82,6 +83,20 @@ export interface Event {
   updated_at: string
 }
 
+interface EventsResponse {
+	success: boolean;
+	data: Event[];
+	page: number;
+	limit: number;
+	total: number;
+	total_pages: number;
+}
+
+interface EventResponse {
+	success: boolean;
+	data: Event;
+}
+
 export interface Announcement {
   id: string
   title: string
@@ -90,6 +105,17 @@ export interface Announcement {
   created_at: string
   updated_at: string
 }
+
+export interface AnnouncementsResponse {
+	success: boolean;
+	data: Announcement[];
+	page: number;
+	limit: number;
+	total: number;
+	total_pages: number;
+}
+
+
 
 export interface Khutbah {
   id: string
@@ -127,6 +153,15 @@ export interface PaymentMethod {
   instructions?: string
   is_active: boolean
   display_order: number
+}
+
+export interface PaymentMethodsResponse {
+	success: boolean;
+	data: PaymentMethod[];
+	page: number;
+	limit: number;
+	total: number;
+	total_pages: number;
 }
 
 export interface ContentSection {

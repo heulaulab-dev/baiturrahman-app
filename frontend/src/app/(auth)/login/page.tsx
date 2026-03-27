@@ -1,36 +1,58 @@
-import Link from 'next/link'
-import { LoginForm } from '@/components/auth/LoginForm'
+'use client';
+
+import { LoginForm } from '@/components/auth/LoginForm';
+import Image from 'next/image';
+import Logo from '@/public/Logo.svg';
+import { LoginRequest } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, Suspense } from 'react';
+import { getCookie } from '@/lib/cookies';
+import loginImage from '@/public/images/login-image.jpg';
+
+function LoginContent() {
+	const { login, isAuthenticated, isLoading } = useAuth();
+	const router = useRouter();
+	const searchParams = useSearchParams();
+
+	const rememberMeCookie = getCookie('token') !== null;
+
+	useEffect(() => {
+		if (!isLoading && isAuthenticated) {
+			const redirect = searchParams.get('redirect');
+			router.push(redirect || '/dashboard');
+		}
+	}, [isAuthenticated, isLoading, router, searchParams]);
+
+	const onSubmit = async (data: LoginRequest) => {
+		try {
+			const redirect = searchParams.get('redirect');
+			await login(data, redirect || '/dashboard', data.rememberMe ?? false);
+		} catch (error) {
+			console.error('Submission failed:', error);
+		}
+	};
+
+	if (isLoading || isAuthenticated) return null;
+
+	return (
+		<LoginForm
+			logo={<Image src={Logo} alt='Baiturrahman' width={160} height={160} />}
+			title='Masuk ke dashboard admin'
+			description='Masuk ke dashboard admin'
+			imageSrc={loginImage.src}
+			imageAlt='Masuk ke dashboard admin'
+			onSubmit={onSubmit}
+			forgotPasswordHref='/forgot-password'
+			createAccountHref='/register'
+		/>
+	);
+}
 
 export default function LoginPage() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <img src="/Logo.svg" alt="Baiturrahman" className="h-16" />
-          </div>
-          <h1 className="text-2xl font-semibold text-foreground mb-2">
-            Masjid Baiturrahim
-          </h1>
-          <p className="text-muted-foreground">
-            Masuk ke dashboard admin
-          </p>
-        </div>
-
-        {/* Login Card */}
-        <div className="bg-background border border-border rounded-lg p-6 shadow-sm">
-          <LoginForm />
-        </div>
-
-        {/* Footer */}
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          Lupa password?{' '}
-          <Link href="/reset-password" className="text-primary hover:underline">
-            Reset password
-          </Link>
-        </p>
-      </div>
-    </div>
-  );
+	return (
+		<Suspense fallback={null}>
+			<LoginContent />
+		</Suspense>
+	);
 }

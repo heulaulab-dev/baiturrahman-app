@@ -9,9 +9,10 @@ interface AuthContextType {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean
-  login: (credentials: LoginRequest) => Promise<void>
+  login: (credentials: LoginRequest, redirectUrl?: string, rememberMe?: boolean) => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
+  isRemembered: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -22,6 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
 
   const isAuthenticated = !!user
+  const isRemembered = authService.isPersistent()
 
   // Fetch current user on mount
   useEffect(() => {
@@ -46,10 +48,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchUser()
   }, [])
 
-  const login = async (credentials: LoginRequest) => {
-    const { user: userData } = await authService.login(credentials)
+  const login = async (credentials: LoginRequest, redirectUrl?: string, rememberMe = false) => {
+    const { user: userData } = await authService.login(credentials, rememberMe)
     setUser(userData)
-    router.push('/dashboard')
+    router.push(redirectUrl || '/dashboard')
   }
 
   const logout = async () => {
@@ -70,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoading, isAuthenticated, login, logout, refreshUser }}
+      value={{ user, isLoading, isAuthenticated, login, logout, refreshUser, isRemembered }}
     >
       {children}
     </AuthContext.Provider>

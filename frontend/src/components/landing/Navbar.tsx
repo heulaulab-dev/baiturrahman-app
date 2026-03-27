@@ -35,7 +35,7 @@ export function Navbar() {
 			<nav
 				className={`
 					fixed top-0 left-0 right-0 z-50 transition-all duration-300
-					${isScrolled ? 'bg-white/80 backdrop-blur-md border-b border-primary' : 'bg-transparent'}
+					${isScrolled ? 'bg-white/80 backdrop-blur-md border-b' : 'bg-transparent'}
 				`}
 			>
 				<div className="mx-auto px-4 sm:px-6 lg:px-8 container">

@@ -1,6 +1,6 @@
 'use client'
 
-import { MapPin, Phone, Mail, Facebook, Instagram, Youtube } from 'lucide-react'
+import { MapPin, Phone, Mail, Globe, CircleFadingPlus } from 'lucide-react'
 import { useMosqueInfo } from '@/services/hooks'
 
 export function Footer() {
@@ -59,7 +59,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="p-2 bg-secondary rounded-lg hover:bg-primary transition-colors"
                 >
-                  <Facebook size={20} />
+                  <CircleFadingPlus size={20} />
                 </a>
               )}
               {mosqueInfo?.instagram && (
@@ -69,7 +69,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="p-2 bg-secondary rounded-lg hover:bg-primary transition-colors"
                 >
-                  <Instagram size={20} />
+                  <CircleFadingPlus size={20} />
                 </a>
               )}
               {mosqueInfo?.youtube && (
@@ -79,7 +79,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="p-2 bg-secondary rounded-lg hover:bg-primary transition-colors"
                 >
-                  <Youtube size={20} />
+                  <CircleFadingPlus size={20} />
                 </a>
               )}
             </div>

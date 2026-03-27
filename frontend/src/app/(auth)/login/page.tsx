@@ -7,6 +7,7 @@ import { LoginRequest } from '@/types'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
+import { getCookie } from '@/lib/cookies'
 import loginImage from '@/public/images/login-image.jpg'
 
 
@@ -14,6 +15,9 @@ export default function LoginPage() {
   const { login, isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
+
+  // Get remember me preference from cookie
+  const rememberMeCookie = getCookie('token') !== null
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -26,23 +30,27 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginRequest) => {
     try {
       const redirect = searchParams.get('redirect')
-      await login(data, redirect || '/dashboard')
+      await login(data, redirect || '/dashboard', data.rememberMe ?? false)
     } catch (error) {
-      console.error("Submission failed:", error);
+      console.error("Submission failed:", error)
     }
   }
 
-  // Don't render if loading
-  if (isLoading) {
-    return null
-  }
-
-  // Don't render if already authenticated (redirect will happen)
-  if (isAuthenticated) {
+  // Don't render if loading or already authenticated (redirect will happen)
+  if (isLoading || isAuthenticated) {
     return null
   }
 
   return (
-    <LoginForm logo={<Image src={Logo} alt="Baiturrahman" width={160} height={160} />} title="Masuk ke dashboard admin" description="Masuk ke dashboard admin" imageSrc={loginImage.src} imageAlt="Masuk ke dashboard admin" onSubmit={onSubmit} forgotPasswordHref="/forgot-password" createAccountHref="/register" />
+    <LoginForm
+      logo={<Image src={Logo} alt="Baiturrahman" width={160} height={160} />}
+      title="Masuk ke dashboard admin"
+      description="Masuk ke dashboard admin"
+      imageSrc={loginImage.src}
+      imageAlt="Masuk ke dashboard admin"
+      onSubmit={onSubmit}
+      forgotPasswordHref="/forgot-password"
+      createAccountHref="/register"
+    />
   );
 }

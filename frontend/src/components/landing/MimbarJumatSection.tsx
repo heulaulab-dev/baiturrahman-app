@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Download, FileText } from 'lucide-react';
 import { useLatestKhutbah, useKhutbahArchive } from '@/services/hooks';
@@ -73,7 +74,7 @@ export function MimbarJumatSection() {
 									</div>
 
 									{latestKhutbah.file_url && (
-										<a
+										<Link
 											href={latestKhutbah.file_url}
 											target="_blank"
 											rel="noopener noreferrer"
@@ -81,7 +82,7 @@ export function MimbarJumatSection() {
 										>
 											<Download size={20} />
 											<span className="font-serif-cormorant">Unduh Khutbah</span>
-										</a>
+										</Link>
 									)}
 								</>
 							) : (
@@ -111,7 +112,7 @@ export function MimbarJumatSection() {
 						) : khutbahArchive && khutbahArchive.length > 0 ? (
 							<>
 								<div className="mb-8">
-									<a
+									<Link
 										href={latestKhutbah?.file_url || '#'}
 										target="_blank"
 										rel="noopener noreferrer"
@@ -119,7 +120,7 @@ export function MimbarJumatSection() {
 									>
 										<Download size={20} />
 										<span className="font-serif-cormorant">Unduh Khutbah Terbaru</span>
-									</a>
+									</Link>
 								</div>
 
 								<div>
@@ -152,7 +153,7 @@ export function MimbarJumatSection() {
 													</div>
 												</div>
 												{khutbah.file_url && (
-													<a
+													<Link
 														href={khutbah.file_url}
 														target="_blank"
 														rel="noopener noreferrer"
@@ -160,7 +161,7 @@ export function MimbarJumatSection() {
 														onClick={(e) => e.stopPropagation()}
 													>
 														<Download size={16} />
-													</a>
+													</Link>
 												)}
 											</motion.div>
 										))}

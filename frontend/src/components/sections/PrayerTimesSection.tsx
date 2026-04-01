@@ -13,7 +13,14 @@ interface PrayerCardProps {
 	isNow?: boolean;
 }
 
-function PrayerCard({ name, time, icon, isNext, isNow }: PrayerCardProps) {
+function PrayerCard({ name, time, icon, isNext, isNow }: Readonly<PrayerCardProps>) {
+	let cardClassName = 'text-center transition-all duration-300 hover:shadow-md';
+	if (isNext) cardClassName = 'text-center transition-all duration-300 border-2 border-primary/50';
+	if (isNow) cardClassName = 'text-center transition-all duration-300 border-2 border-primary shadow-lg scale-105';
+
+	const iconWrapClassName = isNow ? 'p-3 rounded-full bg-primary text-primary-foreground' : 'p-3 rounded-full bg-gray-100 dark:bg-gray-800';
+	const timeClassName = isNow ? 'text-2xl font-bold text-primary' : 'text-2xl font-bold text-gray-900 dark:text-white';
+
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
@@ -21,35 +28,15 @@ function PrayerCard({ name, time, icon, isNext, isNow }: PrayerCardProps) {
 			viewport={{ once: true }}
 			transition={{ duration: 0.5 }}
 		>
-			<Card
-				className={`text-center transition-all duration-300 ${
-					isNow
-						? 'border-2 border-primary shadow-lg scale-105'
-						: isNext
-						? 'border-2 border-primary/50'
-						: 'hover:shadow-md'
-				}`}
-			>
+			<Card className={cardClassName}>
 				<CardContent className='p-6'>
 					<div className='flex justify-center mb-3'>
-						<div
-							className={`p-3 rounded-full ${
-								isNow
-									? 'bg-primary text-primary-foreground'
-									: 'bg-gray-100 dark:bg-gray-800'
-							}`}
-						>
+						<div className={iconWrapClassName}>
 							{icon}
 						</div>
 					</div>
 					<h3 className='mb-2 font-semibold dark:text-white text-lg'>{name}</h3>
-					<p
-						className={`text-2xl font-bold ${
-							isNow ? 'text-primary' : 'text-gray-900 dark:text-white'
-						}`}
-					>
-						{time}
-					</p>
+					<p className={timeClassName}>{time}</p>
 					{isNow && (
 						<span className='inline-block bg-primary mt-2 px-3 py-1 rounded-full text-primary-foreground text-xs'>
 							Now
@@ -64,15 +51,8 @@ function PrayerCard({ name, time, icon, isNext, isNow }: PrayerCardProps) {
 export function PrayerTimesSection() {
 	const today = new Date().toISOString().split('T')[0];
 	const { data: prayerTimes, isLoading } = usePrayerTimes(today);
-
-	// For now, use placeholder data since API is not set up yet
-	const prayerData = prayerTimes || {
-		fajr: '04:45',
-		dhuhr: '12:15',
-		asr: '15:30',
-		maghrib: '18:20',
-		isha: '19:35',
-	};
+	const prayerData = prayerTimes ?? null;
+	const displayTime = (value?: string) => (isLoading ? '...' : value || '--:--');
 
 	return (
 		<section id='prayer-times' className='py-20'>
@@ -93,34 +73,34 @@ export function PrayerTimesSection() {
 						})}
 					</p>
 					<p className='mt-2 text-sm'>
-						Sumber: Kemenag RI | Imsak 04:35 | Sunrise 05:55
+						Sumber: API
 					</p>
 				</motion.div>
 
 				<div className='gap-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mx-auto max-w-6xl'>
 					<PrayerCard
 						name='Subuh'
-						time={prayerData.fajr}
+						time={displayTime(prayerData?.fajr)}
 						icon={<Moon size={24} />}
 					/>
 					<PrayerCard
 						name='Dzuhur'
-						time={prayerData.dhuhr}
+						time={displayTime(prayerData?.dhuhr)}
 						icon={<Sun size={24} />}
 					/>
 					<PrayerCard
 						name='Ashar'
-						time={prayerData.asr}
+						time={displayTime(prayerData?.asr)}
 						icon={<Cloud size={24} />}
 					/>
 					<PrayerCard
 						name='Maghrib'
-						time={prayerData.maghrib}
+						time={displayTime(prayerData?.maghrib)}
 						icon={<Sun size={24} />}
 					/>
 					<PrayerCard
 						name='Isya'
-						time={prayerData.isha}
+						time={displayTime(prayerData?.isha)}
 						icon={<Moon size={24} />}
 					/>
 				</div>

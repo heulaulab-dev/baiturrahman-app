@@ -3,7 +3,13 @@ import {
   getDonationStats,
   getAdminDonations,
   confirmDonation,
+  getAdminPaymentMethods,
+  createPaymentMethod,
+  updatePaymentMethod,
+  deletePaymentMethod,
   getAdminEvents,
+  getAdminAnnouncements,
+  getAdminKhutbahs,
   getAdminUsers,
   getTentangKami,
   updateTentangKami,
@@ -23,7 +29,6 @@ import {
   getActiveStruktursCount,
   updateMosqueInfo,
 } from './adminApiService'
-import { useMosqueInfo } from './hooks'
 
 export const useDonationStats = () => {
   return useQuery({
@@ -51,6 +56,22 @@ export const useRecentDonations = (limit = 5) => {
   })
 }
 
+export const useAdminDonations = (params?: {
+  page?: number
+  limit?: number
+  status?: 'pending' | 'confirmed' | 'cancelled'
+  category?: string
+  from?: string
+  to?: string
+}) => {
+  return useQuery({
+    queryKey: ['admin', 'donations', 'list', params],
+    queryFn: () => getAdminDonations(params),
+    staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
+  })
+}
+
 export const useConfirmDonation = () => {
   const queryClient = useQueryClient()
 
@@ -63,10 +84,67 @@ export const useConfirmDonation = () => {
   })
 }
 
+export const useAdminPaymentMethods = () => {
+  return useQuery({
+    queryKey: ['admin', 'payment-methods'],
+    queryFn: getAdminPaymentMethods,
+    staleTime: 1000 * 30,
+  })
+}
+
+export const useCreatePaymentMethod = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createPaymentMethod,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'payment-methods'] })
+      queryClient.invalidateQueries({ queryKey: ['payment-methods'] })
+    },
+  })
+}
+
+export const useUpdatePaymentMethod = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => updatePaymentMethod(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'payment-methods'] })
+      queryClient.invalidateQueries({ queryKey: ['payment-methods'] })
+    },
+  })
+}
+
+export const useDeletePaymentMethod = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deletePaymentMethod,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'payment-methods'] })
+      queryClient.invalidateQueries({ queryKey: ['payment-methods'] })
+    },
+  })
+}
+
 export const useAdminEvents = (limit = 10) => {
   return useQuery({
     queryKey: ['admin', 'events', limit],
     queryFn: () => getAdminEvents({ limit, page: 1 }),
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
+export const useAdminAnnouncements = (limit = 10) => {
+  return useQuery({
+    queryKey: ['admin', 'announcements', limit],
+    queryFn: () => getAdminAnnouncements({ limit, page: 1 }),
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
+export const useAdminKhutbahs = (limit = 10) => {
+  return useQuery({
+    queryKey: ['admin', 'khutbahs', limit],
+    queryFn: () => getAdminKhutbahs({ limit, page: 1 }),
     staleTime: 1000 * 60 * 5,
   })
 }

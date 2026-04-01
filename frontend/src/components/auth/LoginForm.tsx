@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Loader2 } from 'lucide-react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -174,12 +175,12 @@ export function LoginForm({ logo, title, description, imageSrc, imageAlt, onSubm
 											</FormItem>
 										)}
 									/>
-									<a
+									<Link
 										href={forgotPasswordHref}
 										className='text-sm font-medium text-primary hover:underline'
 									>
 										Forgotten Password
-									</a>
+									</Link>
 								</motion.div>
 
 								<motion.div variants={itemVariants}>
@@ -198,12 +199,12 @@ export function LoginForm({ logo, title, description, imageSrc, imageAlt, onSubm
 							className='px-8 text-center text-sm text-muted-foreground'
 						>
 							Don't have an account?{' '}
-							<a
+							<Link
 								href={createAccountHref}
 								className='font-medium text-primary hover:underline'
 							>
 								Create one here
-							</a>
+							</Link>
 							.
 						</motion.p>
 					</motion.div>

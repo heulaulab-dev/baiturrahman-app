@@ -1,12 +1,22 @@
 'use client';
 
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Mail, Clock, Globe } from 'lucide-react';
-import { CircleFadingPlus } from 'lucide-react';
-
+import { MapPin, Phone, Mail, Clock, Globe, CircleFadingPlus } from 'lucide-react';
 import { useMosqueInfo } from '@/services/hooks';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 const layananOptions = [
 	'Umum',
@@ -18,12 +28,19 @@ const layananOptions = [
 
 export function ContactSection() {
 	const { data: mosqueInfo, isLoading } = useMosqueInfo();
+	const [selectedService, setSelectedService] = useState<string>('');
+	const [isSubmitting, setIsSubmitting] = useState(false);
+
+	const [name, setName] = useState('');
+	const [email, setEmail] = useState('');
+	const [phone, setPhone] = useState('');
+	const [message, setMessage] = useState('');
 
 	const contactInfo = {
-		address: mosqueInfo?.address || 'Jl. Masjid Baiturrahman No. 1, Jakarta Selatan, Indonesia',
-		phone: mosqueInfo?.phone || '+62 21 1234 5678',
-		email: mosqueInfo?.email || 'info@baiturrahman.or.id',
-		website: mosqueInfo?.website || 'https://baiturrahman.or.id',
+		address: mosqueInfo?.address || '',
+		phone: mosqueInfo?.phone || '',
+		email: mosqueInfo?.email || '',
+		website: mosqueInfo?.website || '',
 	};
 
 	const socialLinks = [
@@ -53,12 +70,23 @@ export function ContactSection() {
 						whileInView={{ opacity: 1, x: 0 }}
 						viewport={{ once: true }}
 					>
-						{/* Map Placeholder */}
-						<div className="aspect-[4/3] bg-sacred-green/10 border border-sacred-green flex items-center justify-center mb-6">
-							<div className="text-center">
-								<MapPin size={48} className="text-sacred-green/30 mx-auto mb-2" />
-								<span className="text-sm text-sacred-muted">Peta Lokasi Masjid</span>
-							</div>
+						{/* Embedded Map */}
+						<div className="mb-6 aspect-4/3 overflow-hidden border border-sacred-green bg-sacred-green/5">
+							{mosqueInfo?.maps_embed_url ? (
+								<iframe
+									title="Peta Lokasi Masjid Baiturrahim"
+									src={mosqueInfo.maps_embed_url}
+									className="h-full w-full"
+									style={{ border: 0 }}
+									allowFullScreen
+									loading="lazy"
+									referrerPolicy="no-referrer-when-downgrade"
+								/>
+							) : (
+								<div className="flex h-full w-full items-center justify-center text-sm text-sacred-muted">
+									Peta belum dikonfigurasi
+								</div>
+							)}
 						</div>
 
 						{/* Contact Info */}
@@ -73,39 +101,39 @@ export function ContactSection() {
 								<>
 									{contactInfo.address && (
 										<div className="flex items-start gap-3">
-											<MapPin size={20} className="text-sacred-green flex-shrink-0 mt-0.5" />
+											<MapPin size={20} className="text-sacred-green shrink-0 mt-0.5" />
 											<span className="text-sacred-muted">{contactInfo.address}</span>
 										</div>
 									)}
 									{contactInfo.phone && (
 										<div className="flex items-center gap-3">
-											<Phone size={20} className="text-sacred-green flex-shrink-0" />
+											<Phone size={20} className="text-sacred-green shrink-0" />
 											<span className="text-sacred-muted">{contactInfo.phone}</span>
 										</div>
 									)}
 									{contactInfo.email && (
 										<div className="flex items-center gap-3">
-											<Mail size={20} className="text-sacred-green flex-shrink-0" />
+											<Mail size={20} className="text-sacred-green shrink-0" />
 											<span className="text-sacred-muted">{contactInfo.email}</span>
 										</div>
 									)}
 									{contactInfo.website && (
 										<div className="flex items-center gap-3">
-											<Globe size={20} className="text-sacred-green flex-shrink-0" />
-											<a
+											<Globe size={20} className="text-sacred-green shrink-0" />
+											<Link
 												href={contactInfo.website}
 												target="_blank"
 												rel="noopener noreferrer"
 												className="text-sacred-gold hover:underline"
 											>
 												{contactInfo.website}
-											</a>
+											</Link>
 										</div>
 									)}
 								</>
 							)}
 							<div className="flex items-start gap-3">
-								<Clock size={20} className="text-sacred-green flex-shrink-0 mt-0.5" />
+								<Clock size={20} className="text-sacred-green shrink-0 mt-0.5" />
 								<span className="text-sacred-muted">Shubuh - Isya: 24 Jam | Jumat: Khusus Sholat</span>
 							</div>
 						</div>
@@ -116,7 +144,7 @@ export function ContactSection() {
 								{socialLinks.map((social) => {
 									const Icon = social.icon;
 									return (
-										<a
+										<Link
 											key={social.href}
 											href={social.href}
 											target="_blank"
@@ -124,7 +152,7 @@ export function ContactSection() {
 											className="p-2 border border-sacred-green text-sacred-green hover:border-sacred-gold hover:text-sacred-gold transition-colors"
 										>
 											<Icon size={20} />
-										</a>
+										</Link>
 									);
 								})}
 							</div>
@@ -137,32 +165,84 @@ export function ContactSection() {
 						whileInView={{ opacity: 1, x: 0 }}
 						viewport={{ once: true }}
 					>
-						<form className="space-y-6">
+						<form
+							className="space-y-6"
+							onSubmit={async (e) => {
+								e.preventDefault();
+								if (isSubmitting) return;
+
+								setIsSubmitting(true);
+								try {
+									const res = await fetch('/api/contact', {
+										method: 'POST',
+										headers: { 'Content-Type': 'application/json' },
+										body: JSON.stringify({
+											name,
+											email,
+											phone,
+											service: selectedService,
+											message,
+										}),
+									});
+
+									const json = (await res.json().catch(() => ({}))) as { error?: string };
+									if (!res.ok) {
+										throw new Error(json.error || `Failed sending message (${res.status})`);
+									}
+
+									toast.success('Pesan terkirim. Terima kasih!');
+									setName('');
+									setEmail('');
+									setPhone('');
+									setSelectedService('');
+									setMessage('');
+								} catch (err) {
+									const msg = err instanceof Error ? err.message : 'Gagal mengirim pesan';
+									toast.error(msg);
+								} finally {
+									setIsSubmitting(false);
+								}
+							}}
+						>
 							<div>
-								<label htmlFor="contact-name" className="block text-sm text-sacred-green mb-2">Nama</label>
+								<Label htmlFor="contact-name" className="block text-sm text-sacred-green mb-2">
+									Nama
+								</Label>
 								<Input
 									id="contact-name"
 									type="text"
+									value={name}
+									onChange={(e) => setName(e.target.value)}
 									placeholder="Nama lengkap"
 									className="w-full"
+									required
 								/>
 							</div>
 
 							<div className="grid sm:grid-cols-2 gap-4">
 								<div>
-									<label htmlFor="contact-email" className="block text-sm text-sacred-green mb-2">Email</label>
+									<Label htmlFor="contact-email" className="block text-sm text-sacred-green mb-2">
+										Email
+									</Label>
 									<Input
 										id="contact-email"
 										type="email"
+										value={email}
+										onChange={(e) => setEmail(e.target.value)}
 										placeholder="email@contoh.com"
 										className="w-full"
+										required
 									/>
 								</div>
 								<div>
-									<label htmlFor="contact-phone" className="block text-sm text-sacred-green mb-2">WhatsApp</label>
+									<Label htmlFor="contact-phone" className="block text-sm text-sacred-green mb-2">
+										WhatsApp
+									</Label>
 									<Input
 										id="contact-phone"
 										type="tel"
+										value={phone}
+										onChange={(e) => setPhone(e.target.value)}
 										placeholder="+62 xxx xxxx xxxx"
 										className="w-full"
 									/>
@@ -170,34 +250,48 @@ export function ContactSection() {
 							</div>
 
 							<div>
-								<label htmlFor="contact-service" className="block text-sm text-sacred-green mb-2">Layanan</label>
-								<select
-									id="contact-service"
-									className="w-full px-3 py-2 border border-sacred-green bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sacred-green"
-								>
-									<option value="">Pilih layanan</option>
-									{layananOptions.map((option) => (
-										<option key={option} value={option}>{option}</option>
-									))}
-								</select>
+								<Label htmlFor="contact-service" className="block text-sm text-sacred-green mb-2">
+									Layanan
+								</Label>
+								<Select value={selectedService} onValueChange={setSelectedService}>
+									<SelectTrigger
+										id="contact-service"
+										className="w-full rounded-none border-sacred-green bg-white text-sm focus:ring-sacred-green"
+									>
+										<SelectValue placeholder="Pilih layanan" />
+									</SelectTrigger>
+									<SelectContent>
+										{layananOptions.map((option) => (
+											<SelectItem key={option} value={option}>
+												{option}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 							</div>
 
 							<div>
-								<label htmlFor="contact-message" className="block text-sm text-sacred-green mb-2">Pesan</label>
+								<Label htmlFor="contact-message" className="block text-sm text-sacred-green mb-2">
+									Pesan
+								</Label>
 								<Textarea
 									id="contact-message"
 									rows={5}
+									value={message}
+									onChange={(e) => setMessage(e.target.value)}
 									placeholder="Tulis pesan Anda..."
 									className="w-full"
+									required
 								/>
 							</div>
 
-							<button
+							<Button
 								type="submit"
-								className="w-full bg-sacred-gold text-white py-4 font-serif-cormorant text-lg hover:bg-sacred-gold-light transition-colors"
+								className="w-full rounded-none bg-sacred-gold py-6 font-serif-cormorant text-lg text-white hover:bg-sacred-gold-light"
+								disabled={isSubmitting}
 							>
-								Kirim Pesan
-							</button>
+								{isSubmitting ? 'Mengirim...' : 'Kirim Pesan'}
+							</Button>
 						</form>
 					</motion.div>
 				</div>

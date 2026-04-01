@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Book, Users, Heart, Calendar, Map, BookOpen } from 'lucide-react';
+import { Book, Heart, Calendar } from 'lucide-react';
 import { useState } from 'react';
 
 const services = [
@@ -9,12 +9,7 @@ const services = [
 		name: 'Kajian Harian',
 		description: 'Pembelajaran rutin setiap hari dengan berbagai tema',
 		icon: Book,
-	},
-	{
-		name: 'Muallaf Center',
-		description: 'Bimbingan dan pendampingan untuk para muallaf',
-		icon: Users,
-	},
+	},	
 	{
 		name: 'Zakat & Wakaf',
 		description: 'Layanan penyaluran zakat dan wakaf terpercaya',
@@ -24,16 +19,6 @@ const services = [
 		name: 'Reservasi Ruangan',
 		description: 'Fasilitas ruangan untuk kegiatan dan acara',
 		icon: Calendar,
-	},
-	{
-		name: 'Kunjungan Rombongan',
-		description: 'Sambutan dan edukasi untuk kunjungan kelompok',
-		icon: Map,
-	},
-	{
-		name: 'Perpustakaan Islam',
-		description: 'Koleksi buku dan literatur Islam lengkap',
-		icon: BookOpen,
 	},
 ];
 

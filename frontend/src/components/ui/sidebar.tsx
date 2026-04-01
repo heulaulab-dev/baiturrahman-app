@@ -32,10 +32,14 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
+export type SidebarControlMode = "expanded" | "collapsed" | "hover"
+
 type SidebarContextProps = {
   state: "expanded" | "collapsed"
   open: boolean
   setOpen: (open: boolean) => void
+  controlMode: SidebarControlMode
+  setControlMode: (mode: SidebarControlMode) => void
   openMobile: boolean
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
@@ -75,6 +79,8 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
+    const [controlMode, setControlMode] =
+      React.useState<SidebarControlMode>("expanded")
 
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.
@@ -102,6 +108,11 @@ const SidebarProvider = React.forwardRef<
         : setOpen((open) => !open)
     }, [isMobile, setOpen, setOpenMobile])
 
+    React.useEffect(() => {
+      if (isMobile) return
+      setOpen(controlMode === "expanded")
+    }, [controlMode, isMobile, setOpen])
+
     // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -127,12 +138,24 @@ const SidebarProvider = React.forwardRef<
         state,
         open,
         setOpen,
+        controlMode,
+        setControlMode,
         isMobile,
         openMobile,
         setOpenMobile,
         toggleSidebar,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+      [
+        state,
+        open,
+        setOpen,
+        controlMode,
+        setControlMode,
+        isMobile,
+        openMobile,
+        setOpenMobile,
+        toggleSidebar,
+      ]
     )
 
     return (

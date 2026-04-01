@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Users } from 'lucide-react';
 import { usePublicStrukturs } from '@/services/hooks';
 import { ApiResponse, Struktur } from '@/types';
@@ -64,11 +65,15 @@ export function StrukturSection() {
                   {/* Photo */}
                   <div className="flex justify-center mb-4">
                     {struktur.photo_url ? (
-                      <img
-                        src={struktur.photo_url}
-                        alt={struktur.name}
-                        className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
-                      />
+                      <div className="relative h-24 w-24 overflow-hidden rounded-full border-4 border-white shadow-md">
+                        <Image
+                          src={struktur.photo_url}
+                          alt={struktur.name}
+                          fill
+                          className="object-cover"
+                          sizes="96px"
+                        />
+                      </div>
                     ) : (
                       <div className="w-24 h-24 rounded-full bg-sacred-green/10 border-4 border-white flex items-center justify-center">
                         <Users className="w-10 h-10 text-sacred-green" />

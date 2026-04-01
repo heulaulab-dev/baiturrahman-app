@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Globe, TrendingUp, Save, Loader2, Eye } from 'lucide-react';
+import { Save, Loader2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,12 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useMosqueInfo } from '@/services/hooks';
-import { useUpdateMosqueInfo } from '@/services/adminHooks';
-import type { MosqueInfo } from '@/types';
+import { useUpdateMosqueInfo, useDonationStats, useAdminUsers, useAdminEvents } from '@/services/adminHooks';
 
 export function MosqueProfile() {
   const { data: mosqueInfo, isLoading } = useMosqueInfo();
   const updateMutation = useUpdateMosqueInfo();
+  const { data: donationStats } = useDonationStats();
+  const { data: usersResponse } = useAdminUsers();
+  const { data: eventsResponse } = useAdminEvents(1);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -81,7 +83,7 @@ export function MosqueProfile() {
     try {
       await updateMutation.mutateAsync(formData);
       toast.success('Profil masjid berhasil diperbarui');
-    } catch (error) {
+    } catch {
       toast.error('Gagal memperbarui profil masjid');
     }
   };
@@ -89,7 +91,7 @@ export function MosqueProfile() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-muted" />
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -101,7 +103,7 @@ export function MosqueProfile() {
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold text-foreground">Informasi Masjid</h3>
           <Button variant="outline" size="sm" onClick={() => setPreviewMode(!previewMode)}>
-            {previewMode ? <Eye className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
+            <Eye className="w-4 h-4 mr-2" />
             {previewMode ? 'Edit' : 'Preview'}
           </Button>
         </div>
@@ -121,7 +123,7 @@ export function MosqueProfile() {
                 )}
                 <div>
                   <h1 className="text-2xl font-bold">{formData.name}</h1>
-                  <p className="text-muted mt-1">{formData.description}</p>
+                  <p className="text-muted-foreground mt-1">{formData.description}</p>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -138,7 +140,7 @@ export function MosqueProfile() {
                   </div>
                 )}
               </div>
-              <div className="space-y-2 text-sm text-muted">
+              <div className="space-y-2 text-sm text-muted-foreground">
                 <p><strong>Alamat:</strong> {formData.address}, {formData.city}, {formData.province}</p>
                 <p><strong>Telepon:</strong> {formData.phone}</p>
                 <p><strong>Email:</strong> {formData.email}</p>
@@ -153,7 +155,7 @@ export function MosqueProfile() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Basic Info */}
                 <div className="space-y-4">
-                  <h4 className="text-sm font-medium tracking-wider text-muted uppercase">Informasi Dasar</h4>
+                  <h4 className="text-sm font-medium tracking-wider text-muted-foreground uppercase">Informasi Dasar</h4>
                   <div className="space-y-2">
                     <Label htmlFor="name">Nama Masjid *</Label>
                     <Input
@@ -177,7 +179,7 @@ export function MosqueProfile() {
 
                 {/* Contact Info */}
                 <div className="space-y-4">
-                  <h4 className="text-sm font-medium tracking-wider text-muted uppercase">Informasi Kontak</h4>
+                  <h4 className="text-sm font-medium tracking-wider text-muted-foreground uppercase">Informasi Kontak</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="address">Alamat *</Label>
@@ -222,7 +224,7 @@ export function MosqueProfile() {
                         id="established_year"
                         type="number"
                         value={formData.established_year || ''}
-                        onChange={(e) => setFormData({ ...formData, established_year: e.target.value ? parseInt(e.target.value) : undefined })}
+                        onChange={(e) => setFormData({ ...formData, established_year: e.target.value ? Number.parseInt(e.target.value, 10) : undefined })}
                       />
                     </div>
                   </div>
@@ -260,7 +262,7 @@ export function MosqueProfile() {
 
                 {/* Images */}
                 <div className="space-y-4">
-                  <h4 className="text-sm font-medium tracking-wider text-muted uppercase">Gambar</h4>
+                  <h4 className="text-sm font-medium tracking-wider text-muted-foreground uppercase">Gambar</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="logo_url">URL Logo</Label>
@@ -285,7 +287,7 @@ export function MosqueProfile() {
 
                 {/* Vision & Mission */}
                 <div className="space-y-4">
-                  <h4 className="text-sm font-medium tracking-wider text-muted uppercase">Visi & Misi</h4>
+                  <h4 className="text-sm font-medium tracking-wider text-muted-foreground uppercase">Visi & Misi</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="vision">Visi</Label>
@@ -312,7 +314,7 @@ export function MosqueProfile() {
 
                 {/* Social Media */}
                 <div className="space-y-4">
-                  <h4 className="text-sm font-medium tracking-wider text-muted uppercase">Media Sosial</h4>
+                  <h4 className="text-sm font-medium tracking-wider text-muted-foreground uppercase">Media Sosial</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="facebook">Facebook</Label>
@@ -384,28 +386,24 @@ export function MosqueProfile() {
       {/* Right Column - Stats */}
       <Card>
         <CardHeader>
-          <CardTitle>Statistik Website</CardTitle>
-          <CardDescription>Overview statistik website</CardDescription>
+          <CardTitle>Statistik Sistem</CardTitle>
+          <CardDescription>Ringkasan data dari API dashboard</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 border border-border bg-background rounded-md">
-            <div className="text-xs font-medium text-muted uppercase mb-2">Pengunjung</div>
-            <div className="text-2xl font-mono text-foreground mb-1">12,456</div>
-            <div className="text-sm text-muted">bulan ini</div>
-            <div className="flex items-center gap-1 text-emerald-500 text-xs mt-1">
-              <TrendingUp className="w-3 h-3" />
-              <span>+34%</span>
-            </div>
+            <div className="text-xs font-medium text-muted-foreground uppercase mb-2">Total Donasi</div>
+            <div className="text-2xl font-mono text-foreground mb-1">{(donationStats?.total_count ?? 0).toLocaleString('id-ID')}</div>
+            <div className="text-sm text-muted-foreground">transaksi</div>
           </div>
           <div className="p-4 border border-border bg-background rounded-md">
-            <div className="text-xs font-medium text-muted uppercase mb-2">Artikel Dilihat</div>
-            <div className="text-2xl font-mono text-foreground mb-1">3,456</div>
-            <div className="text-sm text-muted">total</div>
+            <div className="text-xs font-medium text-muted-foreground uppercase mb-2">Pengguna Admin</div>
+            <div className="text-2xl font-mono text-foreground mb-1">{(usersResponse?.total ?? 0).toLocaleString('id-ID')}</div>
+            <div className="text-sm text-muted-foreground">akun</div>
           </div>
           <div className="p-4 border border-border bg-background rounded-md">
-            <div className="text-xs font-medium text-muted uppercase mb-2">Donasi</div>
-            <div className="text-2xl font-mono text-foreground mb-1">472</div>
-            <div className="text-sm text-muted">transaksi</div>
+            <div className="text-xs font-medium text-muted-foreground uppercase mb-2">Event</div>
+            <div className="text-2xl font-mono text-foreground mb-1">{(eventsResponse?.total ?? 0).toLocaleString('id-ID')}</div>
+            <div className="text-sm text-muted-foreground">total</div>
           </div>
         </CardContent>
       </Card>

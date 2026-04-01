@@ -1,34 +1,53 @@
 'use client';
-
-import {CircleFadingPlus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import Logo from '@/public/Logomark.svg';
+import Logo from '@/public/Logo.svg';
+import InstagramIcon from '@/public/icon/instagram.svg';
+import YoutubeIcon from '@/public/icon/youtube.svg';
+import FacebookIcon from '@/public/icon/facebook.svg';
+import TwitterIcon from '@/public/icon/twitter.svg';
+import WhatsappIcon from '@/public/icon/whatsapp.svg';
+
+import {
+	LANDING_PRAYER_PILLS,
+	useMuslimProLandingPrayerTimes,
+} from '@/components/landing/useMuslimProLandingPrayerTimes';
 import { useMosqueInfo } from '@/services/hooks';
 
-const quickLinks = {
-	Tentang: ['Tentang Kami', 'Sejarah', 'Visi Misi'] ,
-	Jadwal: ['Jadwal Sholat', 'Jadwal Kajian', 'Khutbah Jumat'],
-	Layanan: ['Zakat & Wakaf', 'Muallaf Center', 'Reservasi', 'Perpustakaan'],
+interface QuickLinkItem {
+	label: string;
+	href: string;
+}
+
+const quickLinks: Record<string, QuickLinkItem[]> = {
+	Tentang: [
+		{ label: 'Tentang Kami', href: '/#tentang-kami' },
+		{ label: 'Sejarah', href: '/#sejarah' },
+		{ label: 'Visi Misi', href: '/#visi-misi' },
+	],
+	Jadwal: [
+		{ label: 'Jadwal Sholat', href: '/#jadwal' },
+		{ label: 'Jadwal Kajian', href: '/#kajian' },
+		{ label: 'Khutbah Jumat', href: '/#mimbar-jumat' },
+	],
+	Layanan: [
+		{ label: 'Zakat & Wakaf', href: '/#layanan' },
+		{ label: 'Reservasi', href: '/#layanan' },
+		{ label: 'Donasi', href: '/#donasi' },
+	],
 };
 
-const prayerTimes = [
-	{ name: 'Subuh', time: '04:32' },
-	{ name: 'Dzuhur', time: '12:04' },
-	{ name: 'Ashar', time: '15:21' },
-	{ name: 'Maghrib', time: '18:03' },
-	{ name: 'Isya', time: '19:15' },
-];
-
 const socialLinks = [
-	{ icon: CircleFadingPlus, href: 'https://instagram.com/baiturrahman' },
-	{ icon: CircleFadingPlus, href: 'https://youtube.com/baiturrahman' },
-	{ icon: CircleFadingPlus, href: 'https://facebook.com/baiturrahman' },
-	{ icon: CircleFadingPlus, href: 'https://twitter.com/baiturrahman' },
+	{ icon: InstagramIcon, href: 'https://instagram.com/baiturrahim' },
+	{ icon: YoutubeIcon, href: 'https://youtube.com/baiturrahim' },
+	{ icon: FacebookIcon, href: 'https://facebook.com/baiturrahim' },
+	{ icon: TwitterIcon, href: 'https://twitter.com/baiturrahim' },
+	{ icon: WhatsappIcon, href: 'https://wa.me/6281234567890' },
 ];
 
 export function Footer() {
 	const { data: mosqueInfo } = useMosqueInfo();
+	const { isLoading, pillTimes } = useMuslimProLandingPrayerTimes();
 
 	return (
 		<footer className="bg-white border-t border-sacred-green py-16">
@@ -37,13 +56,13 @@ export function Footer() {
 					{/* Left: Brand */}
 					<div className="md:col-span-1">
 						<div className="flex items-center gap-3 mb-4">
-							<Image src={Logo} alt="Baiturrahman" width={100} height={100} />
+							<Image src={Logo} alt="Baiturrahim" className="w-100" />
 						</div>
 						<p className="text-sm text-sacred-muted mb-4">
 							{mosqueInfo?.description || 'Pusat ibadah dan kegiatan keagamaan Muslim'}
 						</p>
 						<p className="text-xs text-sacred-muted">
-							&copy; {new Date().getFullYear()} {mosqueInfo?.name || 'Masjid Baiturrahman'}. All rights reserved.
+							&copy; {new Date().getFullYear()} {mosqueInfo?.name || 'Masjid Baiturrahim'}. All rights reserved.
 						</p>
 					</div>
 
@@ -56,13 +75,13 @@ export function Footer() {
 										{category}
 									</h4>
 									<ul className="space-y-2">
-										{links.map((link) => (
-											<li key={link}>		
+										{links.map((item) => (
+											<li key={item.label}>
 												<Link
-													href={`#${link}`}
+													href={item.href}
 													className="text-sm text-sacred-muted relative group"
-												>	
-													{link}
+												>
+													{item.label}
 													<span className="absolute bottom-0 left-0 w-0 h-px bg-sacred-gold transition-all duration-300 group-hover:w-full" />
 												</Link>
 											</li>
@@ -79,11 +98,18 @@ export function Footer() {
 							Jadwal Sholat
 						</h4>
 						<div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-6">
-							{prayerTimes.map((prayer) => (
+							{LANDING_PRAYER_PILLS.map((prayer) => (
 								<div key={prayer.name} className="flex justify-between gap-2">
 									<span className="text-sm text-sacred-muted">{prayer.name}</span>
 									<span className="font-mono-jetbrains text-sm text-sacred-green">
-										{prayer.time}
+										{isLoading ? (
+											<span
+												className="inline-block w-10 h-3 rounded bg-gray-200 dark:bg-gray-800 animate-pulse"
+												aria-hidden="true"
+											/>
+										) : (
+											pillTimes?.[prayer.index]
+										)}
 									</span>
 								</div>
 							))}
@@ -99,7 +125,7 @@ export function Footer() {
 										rel="noopener noreferrer"
 										className="p-2 border border-sacred-green text-sacred-green hover:border-sacred-gold hover:text-sacred-gold transition-colors"
 									>
-										<Icon size={18} />
+										<Image src={Icon} alt={social.href} width={18} height={18} />
 									</Link>
 								);
 							})}

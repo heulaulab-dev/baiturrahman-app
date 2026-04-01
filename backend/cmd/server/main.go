@@ -207,6 +207,16 @@ func main() {
 			admin.POST("/users", h.CreateUser)
 			admin.PUT("/users/:id", h.UpdateUser)
 			admin.DELETE("/users/:id", h.DeleteUser)
+
+			// Inventaris
+			admin.GET("/inventaris/aset-tetap", h.GetAsetTetap)
+			admin.POST("/inventaris/aset-tetap", h.CreateAsetTetap)
+			admin.PUT("/inventaris/aset-tetap/:id", h.UpdateAsetTetap)
+			admin.DELETE("/inventaris/aset-tetap/:id", h.DeleteAsetTetap)
+			admin.GET("/inventaris/barang", h.GetBarangTidakTetap)
+			admin.POST("/inventaris/barang", h.CreateBarangTidakTetap)
+			admin.PUT("/inventaris/barang/:id", h.UpdateBarangTidakTetap)
+			admin.DELETE("/inventaris/barang/:id", h.DeleteBarangTidakTetap)
 		}
 	}
 

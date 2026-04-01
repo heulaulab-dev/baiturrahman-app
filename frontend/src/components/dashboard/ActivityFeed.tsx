@@ -30,9 +30,9 @@ function relativeTime(dateString: string): string {
 }
 
 const statusConfig: Record<string, { color: string; label: string }> = {
-  confirmed: { color: 'bg-chart-1', label: 'dikonfirmasi' },
+  confirmed: { color: 'bg-primary', label: 'dikonfirmasi' },
   cancelled: { color: 'bg-destructive', label: 'dibatalkan' },
-  pending: { color: 'bg-chart-5', label: 'pending' },
+  pending: { color: 'bg-accent', label: 'pending' },
 };
 
 export function ActivityFeed() {
@@ -43,8 +43,8 @@ export function ActivityFeed() {
   if (isLoading) {
     return (
       <div className="flex flex-col gap-3">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-start gap-3">
+        {['a', 'b', 'c', 'd', 'e'].map((skeletonKey) => (
+          <div key={skeletonKey} className="flex items-start gap-3">
             <div className="w-2 h-2 rounded-full bg-muted/50 animate-pulse mt-2 shrink-0" />
             <div className="flex flex-col gap-1 flex-1">
               <div className="h-4 w-3/4 bg-muted/50 animate-pulse rounded" />

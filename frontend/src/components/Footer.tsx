@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { MapPin, Phone, Mail, Globe, CircleFadingPlus } from 'lucide-react'
 import { useMosqueInfo } from '@/services/hooks'
 
@@ -53,34 +54,34 @@ export function Footer() {
             <h3 className="font-semibold text-lg mb-4 dark:text-white">Ikuti Kami</h3>
             <div className="flex space-x-4">
               {mosqueInfo?.facebook && (
-                <a
+                <Link
                   href={mosqueInfo.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 bg-secondary rounded-lg hover:bg-primary transition-colors"
                 >
                   <CircleFadingPlus size={20} />
-                </a>
+                </Link>
               )}
               {mosqueInfo?.instagram && (
-                <a
+                <Link
                   href={mosqueInfo.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 bg-secondary rounded-lg hover:bg-primary transition-colors"
                 >
                   <CircleFadingPlus size={20} />
-                </a>
+                </Link>
               )}
               {mosqueInfo?.youtube && (
-                <a
+                <Link
                   href={mosqueInfo.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 bg-secondary rounded-lg hover:bg-primary transition-colors"
                 >
                   <CircleFadingPlus size={20} />
-                </a>
+                </Link>
               )}
             </div>
           </div>

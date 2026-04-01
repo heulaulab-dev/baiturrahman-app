@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { PrayerCountdown } from '@/components/landing/PrayerCountdown';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 export function HeroSection() {
@@ -57,19 +58,22 @@ export function HeroSection() {
 						transition={{ duration: 0.6, delay: 0.7 }}
 						className='flex flex-col sm:flex-row items-center justify-center gap-4 mb-8'
 					>
-						<Link
-							href='#kajian'
-							className='inline-flex items-center gap-2 border-2 border-sacred-green text-sacred-green hover:bg-sacred-green hover:text-white px-8 py-6 text-base font-normal transition-colors duration-300'
+						<Button
+							asChild
+							variant='outline'
+							className='h-auto rounded-none border-2 border-sacred-green bg-transparent px-8 py-6 text-base font-normal text-sacred-green shadow-none hover:bg-sacred-green hover:text-white'
 						>
-							Jadwal Kajian
-							<ArrowRight size={20} />
-						</Link>
-						<Link
-							href='#donasi'
-							className='inline-flex items-center gap-2 bg-sacred-gold text-white hover:bg-sacred-gold-light px-8 py-6 text-base font-normal transition-colors duration-300'
+							<Link href='#kajian' className='inline-flex items-center gap-2'>
+								Jadwal Kajian
+								<ArrowRight size={20} />
+							</Link>
+						</Button>
+						<Button
+							asChild
+							className='h-auto rounded-none border-0 bg-sacred-gold px-8 py-6 text-base font-normal text-white shadow-none hover:bg-sacred-gold-light'
 						>
-							Donasi Sekarang
-						</Link>
+							<Link href='#donasi'>Donasi Sekarang</Link>
+						</Button>
 					</motion.div>
 				</div>
 

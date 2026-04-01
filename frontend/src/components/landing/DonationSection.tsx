@@ -8,6 +8,14 @@ import { useMutation } from '@tanstack/react-query';
 import { usePaymentMethods, createDonation } from '@/services/hooks';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
 
 const stats = [
 	{ value: '50.000+', label: 'Jamaah/Bulan' },
@@ -53,7 +61,7 @@ export function DonationSection() {
 
 		donationMutation.mutate({
 			donor_name: donorName,
-			amount: parseFloat(donationAmount),
+			amount: Number.parseFloat(donationAmount),
 			payment_method_id: selectedPaymentMethod,
 			message: donationMessage,
 		});
@@ -299,7 +307,9 @@ export function DonationSection() {
 							) : (
 								<form onSubmit={handleDonationSubmit} className="space-y-4">
 									<div>
-										<label htmlFor="donor-name" className="block text-sm text-sacred-green mb-1">Nama Donatur</label>
+										<Label htmlFor="donor-name" className="block text-sm text-sacred-green mb-1">
+											Nama Donatur
+										</Label>
 										<Input
 											id="donor-name"
 											type="text"
@@ -310,7 +320,9 @@ export function DonationSection() {
 										/>
 									</div>
 									<div>
-										<label htmlFor="donation-amount" className="block text-sm text-sacred-green mb-1">Jumlah Donasi (Rp)</label>
+										<Label htmlFor="donation-amount" className="block text-sm text-sacred-green mb-1">
+											Jumlah Donasi (Rp)
+										</Label>
 										<Input
 											id="donation-amount"
 											type="number"
@@ -322,34 +334,42 @@ export function DonationSection() {
 										/>
 									</div>
 									<div>
-										<label htmlFor="payment-method" className="block text-sm text-sacred-green mb-1">Metode Pembayaran</label>
-										<select
-											id="payment-method"
-											value={selectedPaymentMethod || ''}
-											onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-											className="w-full px-3 py-2 border border-sacred-green bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sacred-green"
-											required
+										<Label htmlFor="payment-method" className="block text-sm text-sacred-green mb-1">
+											Metode Pembayaran
+										</Label>
+										<Select
+											value={selectedPaymentMethod ?? ''}
+											onValueChange={(value) => setSelectedPaymentMethod(value)}
 										>
-											<option value="">Pilih metode pembayaran</option>
-											{bankMethods.map((method) => (
-												<option key={method.id} value={method.id}>
-													{method.name} - {method.account_number}
-												</option>
-											))}
-											{qrisMethods.map((method) => (
-												<option key={method.id} value={method.id}>
-													QRIS
-												</option>
-											))}
-											{ewalletMethods.map((method) => (
-												<option key={method.id} value={method.id}>
-													{method.name} - {method.account_number}
-												</option>
-											))}
-										</select>
+											<SelectTrigger
+												id="payment-method"
+												className="w-full rounded-none border-sacred-green bg-white text-sm focus:ring-sacred-green"
+											>
+												<SelectValue placeholder="Pilih metode pembayaran" />
+											</SelectTrigger>
+											<SelectContent>
+												{bankMethods.map((method) => (
+													<SelectItem key={method.id} value={method.id}>
+														{method.name} - {method.account_number}
+													</SelectItem>
+												))}
+												{qrisMethods.map((method) => (
+													<SelectItem key={method.id} value={method.id}>
+														QRIS
+													</SelectItem>
+												))}
+												{ewalletMethods.map((method) => (
+													<SelectItem key={method.id} value={method.id}>
+														{method.name} - {method.account_number}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
 									</div>
 									<div>
-										<label htmlFor="donation-message" className="block text-sm text-sacred-muted mb-1">Pesan (opsional)</label>
+										<Label htmlFor="donation-message" className="block text-sm text-sacred-muted mb-1">
+											Pesan (opsional)
+										</Label>
 										<Input
 											id="donation-message"
 											type="text"
@@ -405,7 +425,9 @@ export function DonationSection() {
 							<h4 className="font-serif-cormorant text-lg text-sacred-green mb-4">Kalkulator Zakat Maal</h4>
 							<div className="space-y-4">
 								<div>
-									<label htmlFor="wealth-total" className="block text-sm text-sacred-green mb-1">Total Harta (Rp)</label>
+									<Label htmlFor="wealth-total" className="block text-sm text-sacred-green mb-1">
+										Total Harta (Rp)
+									</Label>
 									<Input
 										id="wealth-total"
 										type="number"
@@ -414,7 +436,9 @@ export function DonationSection() {
 									/>
 								</div>
 								<div>
-									<label htmlFor="nishab-info" className="block text-sm text-sacred-muted mb-1">Nishab (Rp 85.000.000)</label>
+									<Label htmlFor="nishab-info" className="block text-sm text-sacred-muted mb-1">
+										Nishab (Rp 85.000.000)
+									</Label>
 									<span id="nishab-info" className="text-sm text-sacred-green">Minimal untuk wajib zakat</span>
 								</div>
 									<Button type="button" className="w-full rounded-none">

@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { ChevronDown, Edit, Check, X, UserPlus, Clock } from 'lucide-react';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
 
 const prayerTimes = [
 	{ nama: 'Subuh', imam: 'H. Ahmad Faishal', muadzin: 'Budi Santoso' },
@@ -36,43 +39,29 @@ export default function JadwalPage() {
 
 	return (
 		<div className="space-y-6 p-6">
-			{/* Tabs */}
-			<div className="flex border-border rounded-lg bg-muted/30">
-				<button
-					onClick={() => setActiveTab('petugas-jumat')}
-					className={`px-6 py-3 font-medium transition-colors ${activeTab === 'petugas-jumat' ? 'bg-background' : ''}`}
-				>
-					Petugas Jumat
-				</button>
-				<button
-					onClick={() => setActiveTab('imam-rawatib')}
-					className={`px-6 py-3 font-medium transition-colors ${activeTab === 'imam-rawatib' ? 'bg-background' : ''}`}
-				>
-					Imam Rawatib
-				</button>
-				<button
-					onClick={() => setActiveTab('kajian-harian')}
-					className={`px-6 py-3 font-medium transition-colors ${activeTab === 'kajian-harian' ? 'bg-background' : ''}`}
-				>
-					Kajian Harian
-				</button>
-			</div>
+			<Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+				<TabsList className="h-auto gap-2 bg-muted/30 p-2">
+					<TabsTrigger value="petugas-jumat">Petugas Jumat</TabsTrigger>
+					<TabsTrigger value="imam-rawatib">Imam Rawatib</TabsTrigger>
+					<TabsTrigger value="kajian-harian">Kajian Harian</TabsTrigger>
+				</TabsList>
+			</Tabs>
 
 			{/* Petugas Jumat Tab */}
-			{activeTab === 'petugas-jumat' && (
+			<TabsContent value="petugas-jumat" className="mt-0">
 				<div className="space-y-6">
 					<div className="flex items-center justify-between mb-6">
 						<h2 className="text-3xl font-semibold text-foreground">Petugas Jumat</h2>
-						<button className="px-4 py-2 rounded-md font-medium transition-colors bg-foreground text-background hover:bg-muted/90">
+						<Button>
 							Generate PDF Jadwal
-						</button>
+						</Button>
 					</div>
 
 					<div className="p-6 border-border rounded-lg bg-background">
 						<div className="grid grid-cols-7 gap-2 mb-4">
 							{days.map((day, index) => (
 								<div key={day} className="text-center">
-									<div className="text-sm font-medium text-muted mb-2">{day}</div>
+									<div className="text-sm font-medium text-muted-foreground mb-2">{day}</div>
 									<button
 										onClick={() => setSelectedDay(index < 5 ? `${day} ${index + 1}` : null)}
 										className={`
@@ -91,21 +80,21 @@ export default function JadwalPage() {
 							<>
 								<div className="mt-6">
 									<div className="flex items-center gap-3 mb-4">
-										<button
+										<Button
+											variant="ghost"
 											onClick={() => setSelectedDay(null)}
-											className="p-2 text-muted hover:text-foreground transition-colors"
 										>
 											Cancel
-										</button>
+										</Button>
 										<h3 className="text-lg font-semibold text-foreground">
 											{selectedDay}
 										</h3>
-										<button
+										<Button
 											onClick={() => setShowAssignmentModal(true)}
-											className="ml-auto p-2 bg-foreground text-background rounded-md font-medium transition-colors hover:bg-muted/90"
+											className="ml-auto"
 										>
 											Atur Petugas
-										</button>
+										</Button>
 									</div>
 								</div>
 
@@ -115,9 +104,9 @@ export default function JadwalPage() {
 											key={prayer.nama}
 											className="flex flex-col items-center justify-center p-3 border-border rounded-md hover:bg-muted/30 transition-colors"
 										>
-											<div className="text-sm text-muted mb-1">{prayer.nama}</div>
+											<div className="text-sm text-muted-foreground mb-1">{prayer.nama}</div>
 											<div className="text-foreground font-semibold">{prayer.imam}</div>
-											<div className="text-xs text-muted">{prayer.muadzin}</div>
+											<div className="text-xs text-muted-foreground">{prayer.muadzin}</div>
 										</div>
 									))}
 								</div>
@@ -125,12 +114,13 @@ export default function JadwalPage() {
 						)}
 					</div>
 				</div>
-			)}
+			</TabsContent>
 
 			{/* Imam Rawatib Tab */}
-			{activeTab === 'imam-rawatib' && (
+			<TabsContent value="imam-rawatib" className="mt-0">
 				<div className="space-y-6">
-					<div className="p-6 border-border rounded-lg bg-background">
+					<Card>
+						<CardContent className="p-6">
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
 							{prayerTimes.map((prayer) => (
 								<div key={prayer.nama} className="space-y-3">
@@ -139,13 +129,13 @@ export default function JadwalPage() {
 										<div className="flex gap-2">
 											<button
 												onClick={() => setShowAssignmentModal(true)}
-												className="text-muted hover:text-foreground transition-colors p-1"
+												className="text-muted-foreground hover:text-foreground transition-colors p-1"
 											>
 												<Edit className="w-4 h-4" />
 											</button>
 											<button
 												onClick={() => setShowAssignmentModal(true)}
-												className="text-muted hover:text-foreground transition-colors p-1"
+												className="text-muted-foreground hover:text-foreground transition-colors p-1"
 											>
 												<UserPlus className="w-4 h-4" />
 											</button>
@@ -153,32 +143,32 @@ export default function JadwalPage() {
 									</div>
 									<div className="space-y-2">
 										<div>
-											<div className="text-sm text-muted">Imam</div>
+											<div className="text-sm text-muted-foreground">Imam</div>
 											<div className="text-foreground">{prayer.imam}</div>
 										</div>
 										<div>
-											<div className="text-sm text-muted">Muadzin</div>
+											<div className="text-sm text-muted-foreground">Muadzin</div>
 											<div className="text-foreground">{prayer.muadzin}</div>
 										</div>
 									</div>
 								</div>
 							))}
 						</div>
-					</div>
+						</CardContent>
+					</Card>
 				</div>
-			)}
+			</TabsContent>
 
 			{/* Kajian Harian Tab */}
-			{activeTab === 'kajian-harian' && (
+			<TabsContent value="kajian-harian" className="mt-0">
 				<div className="space-y-6">
 					<div className="flex items-center justify-between mb-6">
 						<h2 className="text-3xl font-semibold text-foreground">Kajian Harian</h2>
-						<button
+						<Button
 							onClick={() => setShowKajianForm(true)}
-							className="px-4 py-2 rounded-md font-medium transition-colors bg-foreground text-background hover:bg-muted/90"
 						>
 							+ Tambah Kajian
-						</button>
+						</Button>
 					</div>
 
 					<div className="space-y-4">
@@ -190,25 +180,25 @@ export default function JadwalPage() {
 								<div className="flex items-start justify-between mb-3">
 									<div className="flex items-center gap-3">
 										<div className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center shrink-0">
-											<Clock className="w-5 h-5 text-muted" />
+											<Clock className="w-5 h-5 text-muted-foreground" />
 										</div>
 										<div>
 											<div className="text-lg font-semibold text-foreground">{kajian.nama}</div>
-											<div className="text-sm text-muted">{kajian.kitab}</div>
+											<div className="text-sm text-muted-foreground">{kajian.kitab}</div>
 										</div>
 									</div>
 									<div className="flex items-center gap-2">
-										<div className="text-sm text-muted">oleh {kajian.ustadz}</div>
-										<button className="text-muted hover:text-foreground transition-colors p-1">
+										<div className="text-sm text-muted-foreground">oleh {kajian.ustadz}</div>
+										<button className="text-muted-foreground hover:text-foreground transition-colors p-1">
 											<Edit className="w-4 h-4" />
 										</button>
 										<StatusBadge status={kajian.aktif ? 'success' : 'warning'}>
 											{kajian.aktif ? 'Aktif' : 'Tidak Aktif'}
 										</StatusBadge>
-										<ChevronDown className="w-4 h-4 text-muted" />
+										<ChevronDown className="w-4 h-4 text-muted-foreground" />
 									</div>
 								</div>
-								<div className="text-sm text-muted">
+								<div className="text-sm text-muted-foreground">
 									<Check className="w-3 h-3 mr-1 inline" />
 									{kajian.waktu}
 								</div>
@@ -218,25 +208,30 @@ export default function JadwalPage() {
 
 					{showKajianForm && (
 						<div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm">
-							<div onClick={() => setShowKajianForm(false)} className="absolute inset-0 bg-background/80" />
+							<button
+								type="button"
+								onClick={() => setShowKajianForm(false)}
+								className="absolute inset-0 bg-background/80"
+								aria-label="Tutup form kajian"
+							/>
 							<div className="absolute right-0 top-0 bottom-0 w-[480px] max-h-[90vh] bg-background border-border rounded-lg shadow-xl overflow-y-auto">
 								<div className="p-6 border-b border-border">
 									<div className="flex items-center justify-between">
 										<h3 className="text-lg font-semibold text-foreground">Tambah Kajian Baru</h3>
-										<button onClick={() => setShowKajianForm(false)} className="text-muted hover:text-foreground">
+										<button onClick={() => setShowKajianForm(false)} className="text-muted-foreground hover:text-foreground">
 											<X className="w-5 h-5" />
 										</button>
 									</div>
 								</div>
 								<form className="p-6 space-y-4">
 									<div>
-										<label className="block text-sm text-muted mb-2">Nama Kajian</label>
-										<input type="text" placeholder="Contoh: Tafsir Al-Baqarah" className="w-full px-4 py-2 bg-background border-border text-foreground rounded-md outline-none" />
+										<label htmlFor="nama-kajian" className="block text-sm text-muted-foreground mb-2">Nama Kajian</label>
+										<input id="nama-kajian" type="text" placeholder="Contoh: Tafsir Al-Baqarah" className="w-full px-4 py-2 bg-background border-border text-foreground rounded-md outline-none" />
 									</div>
 									<div className="grid grid-cols-2 gap-4">
 										<div>
-											<label className="block text-sm text-muted mb-2">Kitab</label>
-											<select className="w-full px-4 py-2 bg-background border-border text-foreground rounded-md outline-none">
+											<label htmlFor="kitab-kajian" className="block text-sm text-muted-foreground mb-2">Kitab</label>
+											<select id="kitab-kajian" className="w-full px-4 py-2 bg-background border-border text-foreground rounded-md outline-none">
 												<option value="Tafsir">Tafsir</option>
 												<option value="Fiqh">Fiqh</option>
 												<option value="Tasawuf">Tasawuf</option>
@@ -244,68 +239,73 @@ export default function JadwalPage() {
 											</select>
 										</div>
 										<div>
-											<label className="block text-sm text-muted mb-2">Ustadz</label>
-											<input type="text" placeholder="Nama ustadz" className="w-full px-4 py-2 bg-background border-border text-foreground rounded-md outline-none" />
+											<label htmlFor="ustadz-kajian" className="block text-sm text-muted-foreground mb-2">Ustadz</label>
+											<input id="ustadz-kajian" type="text" placeholder="Nama ustadz" className="w-full px-4 py-2 bg-background border-border text-foreground rounded-md outline-none" />
 										</div>
 									</div>
 									<div>
-										<label className="block text-sm text-muted mb-2">Jam Mulai</label>
-										<input type="time" className="w-full px-4 py-2 bg-background border-border text-foreground rounded-md outline-none" />
+										<label htmlFor="jam-kajian" className="block text-sm text-muted-foreground mb-2">Jam Mulai</label>
+										<input id="jam-kajian" type="time" className="w-full px-4 py-2 bg-background border-border text-foreground rounded-md outline-none" />
 									</div>
 								</form>
 								<div className="flex gap-3 p-6 border-t border-border">
 									<button type="submit" className="flex-1 py-3 px-4 rounded-md font-medium transition-colors bg-foreground text-background hover:bg-muted/90">Simpan</button>
-									<button type="button" onClick={() => setShowKajianForm(false)} className="flex-1 py-3 px-4 rounded-md font-medium transition-colors bg-muted/30 text-muted hover:bg-muted/50">Batal</button>
+									<button type="button" onClick={() => setShowKajianForm(false)} className="flex-1 py-3 px-4 rounded-md font-medium transition-colors bg-muted text-muted-foreground hover:bg-muted/80">Batal</button>
 								</div>
 							</div>
 						</div>
 					)}
 				</div>
-			)}
+			</TabsContent>
 
 			{/* Petugas Assignment Modal */}
 			{showAssignmentModal && (
 				<div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm">
-					<div onClick={() => setShowAssignmentModal(false)} className="absolute inset-0 bg-background/80" />
+					<button
+						type="button"
+						onClick={() => setShowAssignmentModal(false)}
+						className="absolute inset-0 bg-background/80"
+						aria-label="Tutup modal petugas"
+					/>
 					<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] bg-background border-border rounded-lg shadow-xl">
 						<div className="p-6">
 							<div className="flex items-center justify-between mb-6">
 								<h3 className="text-lg font-semibold text-foreground">Atur Petugas Jumat</h3>
-								<button onClick={() => setShowAssignmentModal(false)} className="text-muted hover:text-foreground">
+								<button onClick={() => setShowAssignmentModal(false)} className="text-muted-foreground hover:text-foreground">
 									<X className="w-5 h-5" />
 								</button>
 							</div>
 
 							<div className="space-y-4">
 								<div>
-									<div className="text-sm text-muted mb-2">Khatib Jumat</div>
+									<div className="text-sm text-muted-foreground mb-2">Khatib Jumat</div>
 									<input type="text" defaultValue={jumatSchedule.khatib} className="w-full px-4 py-2 bg-background border-border text-foreground rounded-md outline-none" />
 								</div>
 								<div>
-									<div className="text-sm text-muted mb-2">Tema Khutbah</div>
+									<div className="text-sm text-muted-foreground mb-2">Tema Khutbah</div>
 									<input type="text" defaultValue={jumatSchedule.tema} className="w-full px-4 py-2 bg-background border-border text-foreground rounded-md outline-none" />
 								</div>
 								<div className="flex items-center gap-3">
-									<div className="text-sm text-muted w-16">Imam 1</div>
+									<div className="text-sm text-muted-foreground w-16">Imam 1</div>
 									<input type="text" defaultValue={jumatSchedule.imam[0]} className="flex-1 px-4 py-2 bg-background border-border text-foreground rounded-md outline-none" />
 								</div>
 								<div className="flex items-center gap-3">
-									<div className="text-sm text-muted w-16">Imam 2</div>
+									<div className="text-sm text-muted-foreground w-16">Imam 2</div>
 									<input type="text" defaultValue={jumatSchedule.imam[1]} className="flex-1 px-4 py-2 bg-background border-border text-foreground rounded-md outline-none" />
 								</div>
 								<div className="flex items-center gap-3">
-									<div className="text-sm text-muted w-16">Muadzin 1</div>
+									<div className="text-sm text-muted-foreground w-16">Muadzin 1</div>
 									<input type="text" defaultValue={jumatSchedule.muadzin[0]} className="flex-1 px-4 py-2 bg-background border-border text-foreground rounded-md outline-none" />
 								</div>
 								<div className="flex items-center gap-3">
-									<div className="text-sm text-muted w-16">Muadzin 2</div>
+									<div className="text-sm text-muted-foreground w-16">Muadzin 2</div>
 									<input type="text" defaultValue={jumatSchedule.muadzin[1]} className="flex-1 px-4 py-2 bg-background border-border text-foreground rounded-md outline-none" />
 								</div>
 							</div>
 						</div>
 						<div className="flex gap-3 p-6 border-t border-border">
 							<button type="submit" className="flex-1 py-3 px-4 rounded-md font-medium transition-colors bg-foreground text-background hover:bg-muted/90">Simpan</button>
-							<button type="button" onClick={() => setShowAssignmentModal(false)} className="flex-1 py-3 px-4 rounded-md font-medium transition-colors bg-muted/30 text-muted hover:bg-muted/50">Batal</button>
+							<button type="button" onClick={() => setShowAssignmentModal(false)} className="flex-1 py-3 px-4 rounded-md font-medium transition-colors bg-muted text-muted-foreground hover:bg-muted/80">Batal</button>
 						</div>
 					</div>
 				</div>

@@ -15,7 +15,6 @@ import {
 import { Separator } from "@/components/ui/separator"
 import {
   SidebarControlMode,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
@@ -59,7 +58,8 @@ function getBreadcrumbTitle(pathname: string): { title: string; href: string } {
     "bantuan": "Bantuan",
   }
 
-  const currentTitle = pathMap[segments[segments.length - 1]] || segments[segments.length - 1]
+  const lastSegment = segments.at(-1)
+  const currentTitle = pathMap[lastSegment ?? ""] || lastSegment || "Dashboard"
 
   return {
     title: currentTitle,
@@ -78,7 +78,7 @@ export function SiteHeader() {
         {isMobile ? null : (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
+              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Sidebar control menu">
                 <PanelLeft className="h-4 w-4" />
                 <span className="sr-only">Sidebar control</span>
               </Button>

@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, Clock, MapPin, CheckCircle2, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const rooms = [
 	{ id: 'aula-utama', name: 'Aula Utama Masjid', capacity: 500 },
@@ -31,12 +33,11 @@ export default function ReservasiPage() {
 			{/* Page Header */}
 			<div className="flex items-center justify-between mb-6">
 				<h2 className="text-3xl font-semibold text-foreground">Reservasi Ruangan</h2>
-				<button
+				<Button
 					onClick={() => setShowNewModal(true)}
-					className="px-4 py-2 rounded-md font-medium transition-colors bg-foreground text-background hover:bg-muted/90"
 				>
 					+ Buat Reservasi Baru
-				</button>
+				</Button>
 			</div>
 
 			{/* Reservations List */}
@@ -50,110 +51,120 @@ export default function ReservasiPage() {
 					<div className="text-center">Status</div>
 				</div>
 				{reservationsData.map((reservasi) => (
-					<div
+					<button
 						key={reservasi.id}
 						onClick={() => setSelectedReservation(reservasi)}
-						className={`grid grid-cols-[1fr_160px_120px_120px_100px_80px] border-t border-border h-14 items-center px-4 text-sm hover:bg-muted/30 transition-colors cursor-pointer ${selectedReservation?.id === reservasi.id ? 'bg-muted/20' : ''}`}
+						className={`grid w-full grid-cols-[1fr_160px_120px_120px_100px_80px] border-t border-border h-14 items-center px-4 text-left text-sm hover:bg-muted/30 transition-colors ${selectedReservation?.id === reservasi.id ? 'bg-muted/20' : ''}`}
 					>
 						<div className="text-foreground font-medium">{reservasi.pemohon}</div>
-						<div className="text-muted text-xs">{getRoomName(reservasi.ruangan)}</div>
-						<div className="text-muted text-xs">{reservasi.tanggal}</div>
-						<div className="text-muted text-xs">{reservasi.waktu}</div>
-						<div className="text-muted text-xs">{reservasi.keperluan}</div>
+						<div className="text-muted-foreground text-xs">{getRoomName(reservasi.ruangan)}</div>
+						<div className="text-muted-foreground text-xs">{reservasi.tanggal}</div>
+						<div className="text-muted-foreground text-xs">{reservasi.waktu}</div>
+						<div className="text-muted-foreground text-xs">{reservasi.keperluan}</div>
 						<div className="flex justify-center">
 							<StatusBadge status={reservasi.status === 'disetujui' ? 'success' : 'warning'}>
 								{reservasi.status === 'disetujui' ? 'Disetujui' : 'Pending'}
 							</StatusBadge>
 						</div>
-					</div>
+					</button>
 				))}
 			</div>
 
 			{/* Detail Panel */}
 			{selectedReservation && (
-				<div className="border border-border rounded-lg bg-background p-6">
-					<div className="flex items-center justify-between mb-4">
-						<h3 className="text-lg font-semibold text-foreground">Detail Reservasi</h3>
-						<button onClick={() => setSelectedReservation(null)} className="text-muted hover:text-foreground">
+				<Card>
+					<CardHeader className="flex-row items-center justify-between space-y-0">
+						<CardTitle>Detail Reservasi</CardTitle>
+						<Button variant="ghost" size="icon" onClick={() => setSelectedReservation(null)} aria-label="Tutup detail reservasi">
 							<X className="w-5 h-5" />
-						</button>
+						</Button>
+					</CardHeader>
+					<CardContent>
+					<div className="flex items-center justify-between mb-4">
+						<div />
 					</div>
 					<div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
 						<div>
-							<div className="text-muted mb-1">Pemohon</div>
+							<div className="text-muted-foreground mb-1">Pemohon</div>
 							<div className="text-foreground font-medium">{selectedReservation.pemohon}</div>
 						</div>
 						<div>
-							<div className="text-muted mb-1">Ruangan</div>
+							<div className="text-muted-foreground mb-1">Ruangan</div>
 							<div className="text-foreground">{getRoomName(selectedReservation.ruangan)}</div>
 						</div>
 						<div>
-							<div className="text-muted mb-1">Tanggal</div>
+							<div className="text-muted-foreground mb-1">Tanggal</div>
 							<div className="text-foreground">{selectedReservation.tanggal}</div>
 						</div>
 						<div>
-							<div className="text-muted mb-1">Waktu</div>
+							<div className="text-muted-foreground mb-1">Waktu</div>
 							<div className="text-foreground">{selectedReservation.waktu}</div>
 						</div>
 					</div>
 					{selectedReservation.status === 'pending' && (
 						<div className="flex gap-3 mt-6">
-							<button className="py-2.5 px-6 rounded-md font-medium transition-colors bg-foreground text-background hover:bg-foreground/90 text-sm">
+							<Button size="sm">
 								Setujui
-							</button>
-							<button className="py-2.5 px-6 rounded-md font-medium transition-colors bg-muted/30 text-muted hover:bg-muted/50 text-sm">
+							</Button>
+							<Button variant="secondary" size="sm">
 								Tolak
-							</button>
+							</Button>
 						</div>
 					)}
-				</div>
+					</CardContent>
+				</Card>
 			)}
 
 			{/* New Reservation Modal */}
 			{showNewModal && (
 				<div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm">
-					<div onClick={() => setShowNewModal(false)} className="absolute inset-0 bg-background/80" />
+					<button
+						onClick={() => setShowNewModal(false)}
+						className="absolute inset-0 bg-background/80"
+						type="button"
+						aria-label="Tutup modal reservasi baru"
+					/>
 					<div className="absolute right-0 top-0 bottom-0 w-[480px] bg-background border-l border-border shadow-xl overflow-y-auto">
 						<div className="flex items-center justify-between border-b border-border p-4">
 							<h3 className="text-lg font-semibold text-foreground">Buat Reservasi Baru</h3>
-							<button onClick={() => setShowNewModal(false)} className="text-muted hover:text-foreground">
+							<button onClick={() => setShowNewModal(false)} className="text-muted-foreground hover:text-foreground">
 								<X className="w-5 h-5" />
 							</button>
 						</div>
 						<form className="p-6 space-y-4">
 							<div>
-								<label className="block text-sm text-muted mb-2">Nama Pemohon</label>
-								<input type="text" placeholder="Nama lengkap" className="w-full px-4 py-2 bg-background border border-border text-foreground rounded-md outline-none" />
+								<label htmlFor="nama-pemohon" className="block text-sm text-muted-foreground mb-2">Nama Pemohon</label>
+								<input id="nama-pemohon" type="text" placeholder="Nama lengkap" className="w-full px-4 py-2 bg-background border border-border text-foreground rounded-md outline-none" />
 							</div>
 							<div className="grid grid-cols-2 gap-4">
 								<div>
-									<label className="block text-sm text-muted mb-2">Tanggal</label>
-									<input type="date" className="w-full px-4 py-2 bg-background border border-border text-foreground rounded-md outline-none" />
+									<label htmlFor="tanggal-reservasi" className="block text-sm text-muted-foreground mb-2">Tanggal</label>
+									<input id="tanggal-reservasi" type="date" className="w-full px-4 py-2 bg-background border border-border text-foreground rounded-md outline-none" />
 								</div>
 								<div>
-									<label className="block text-sm text-muted mb-2">Waktu</label>
+									<label htmlFor="waktu-mulai" className="block text-sm text-muted-foreground mb-2">Waktu</label>
 									<div className="flex items-center gap-2">
-										<input type="time" className="flex-1 px-3 py-2 bg-background border border-border text-foreground rounded-md outline-none" />
-										<span className="text-muted">-</span>
-										<input type="time" className="flex-1 px-3 py-2 bg-background border border-border text-foreground rounded-md outline-none" />
+										<input id="waktu-mulai" type="time" className="flex-1 px-3 py-2 bg-background border border-border text-foreground rounded-md outline-none" />
+										<span className="text-muted-foreground">-</span>
+										<input id="waktu-selesai" type="time" className="flex-1 px-3 py-2 bg-background border border-border text-foreground rounded-md outline-none" />
 									</div>
 								</div>
 							</div>
 							<div>
-								<label className="block text-sm text-muted mb-2">Ruangan</label>
-								<select className="w-full px-4 py-2 bg-background border border-border text-foreground rounded-md outline-none">
+								<label htmlFor="ruangan" className="block text-sm text-muted-foreground mb-2">Ruangan</label>
+								<select id="ruangan" className="w-full px-4 py-2 bg-background border border-border text-foreground rounded-md outline-none">
 									{rooms.map(room => (
 										<option key={room.id} value={room.id}>{room.name} ({room.capacity})</option>
 									))}
 								</select>
 							</div>
 							<div>
-								<label className="block text-sm text-muted mb-2">Catatan</label>
-								<textarea rows={3} placeholder="Tambahkan catatan..." className="w-full px-4 py-2 bg-background border border-border text-foreground rounded-md outline-none resize-none" />
+								<label htmlFor="catatan" className="block text-sm text-muted-foreground mb-2">Catatan</label>
+								<textarea id="catatan" rows={3} placeholder="Tambahkan catatan..." className="w-full px-4 py-2 bg-background border border-border text-foreground rounded-md outline-none resize-none" />
 							</div>
 							<div className="flex gap-3 pt-4">
 								<button type="submit" className="flex-1 py-3 px-4 rounded-md font-medium bg-foreground text-background hover:bg-foreground/90 transition-colors">Buat Reservasi</button>
-								<button type="button" onClick={() => setShowNewModal(false)} className="flex-1 py-3 px-4 rounded-md font-medium bg-muted/30 text-muted hover:bg-muted/50 transition-colors">Batal</button>
+								<button type="button" onClick={() => setShowNewModal(false)} className="flex-1 py-3 px-4 rounded-md font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors">Batal</button>
 							</div>
 						</form>
 					</div>

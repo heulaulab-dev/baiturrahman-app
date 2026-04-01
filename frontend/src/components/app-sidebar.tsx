@@ -203,7 +203,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <span className='truncate font-semibold'>
                       Masjid Baiturrahim
                     </span>
-                    <span className='truncate text-xs'>Sistem Manajemen</span>
+                    <span className='truncate text-xs text-sidebar-foreground/70'>Sistem Manajemen</span>
                   </div>
                 </Link>
               </SidebarMenuButton>

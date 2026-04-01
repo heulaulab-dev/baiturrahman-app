@@ -1,8 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { ArrowUpDown, ArrowUp, ArrowDown, Search, FileText, ExternalLink, MoreHorizontal, Check, X, Trash2, Plus, Filter } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowUp, ArrowDown, Search, FileText, ExternalLink, MoreHorizontal, Check, X, Trash2, Filter } from 'lucide-react';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const paymentMethods = [
 	{ id: 'qris', name: 'QRIS', type: 'qris' },
@@ -83,95 +93,102 @@ export default function DonasiPage() {
 			{/* Page Header */}
 			<div className="flex items-center justify-between mb-6">
 				<h2 className="text-3xl font-semibold text-foreground">Manajemen Donasi</h2>
-				<button className="px-4 py-2 rounded-md font-medium transition-colors bg-muted/30 text-muted hover:bg-muted/50">
+				<Button variant="secondary">
 					Export CSV
-				</button>
+				</Button>
 			</div>
 
 			{/* Filter Bar */}
 			<div className="flex flex-wrap items-center gap-4 mb-6 p-4 border-border bg-muted/30">
 				<div className="flex items-center gap-2 relative">
-					<Search className="w-4 h-4 text-muted" />
-					<input
+					<Search className="w-4 h-4 text-muted-foreground" />
+					<Input
 						type="text"
 						placeholder="Cari donatur..."
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
-						className="pl-10 pr-4 py-2 bg-background border-border text-foreground rounded-md focus:border-foreground focus:ring-1 focus:ring-foreground/20 outline-none"
+						className="pl-10"
 					/>
 				</div>
 
 				<div className="flex gap-2">
-					<Filter className="w-4 h-4 text-muted" />
-					<select
-						value={filter}
-						onChange={(e) => setFilter(e.target.value as typeof filter)}
-						className="py-2 px-4 bg-background border-border text-foreground rounded-md focus:border-foreground focus:ring-1 focus:ring-foreground/20 outline-none"
-					>
-						{categories.map(cat => (
-							<option key={cat} value={cat}>{cat}</option>
-						))}
-					</select>
+					<Filter className="w-4 h-4 text-muted-foreground" />
+					<Select value={filter} onValueChange={setFilter}>
+						<SelectTrigger className="w-48">
+							<SelectValue placeholder="Kategori donasi" />
+						</SelectTrigger>
+						<SelectContent>
+							{categories.map((cat) => (
+								<SelectItem key={cat} value={cat}>
+									{cat}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
 
 				<div className="flex gap-2">
-					<button
+					<Button
+						variant={sortField === 'tanggal' ? 'secondary' : 'ghost'}
 						onClick={() => handleSort('tanggal')}
-						className={`px-3 py-2 rounded-md transition-colors ${sortField === 'tanggal' ? 'bg-muted/50' : ''}`}
 					>
 						Tanggal
 						{sortField === 'tanggal' && (
-							<span className="ml-2 text-muted">
+							<span className="ml-2 text-muted-foreground">
 								{sortDirection === 'asc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUp className="w-3 h-3" />}
 							</span>
 						)}
-					</button>
-					<button
+					</Button>
+					<Button
+						variant={sortField === 'nominal' ? 'secondary' : 'ghost'}
 						onClick={() => handleSort('nominal')}
-						className={`px-3 py-2 rounded-md transition-colors ${sortField === 'nominal' ? 'bg-muted/50' : ''}`}
 					>
 						Nominal
 						{sortField === 'nominal' && (
-							<span className="ml-2 text-muted">
+							<span className="ml-2 text-muted-foreground">
 								{sortDirection === 'asc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUp className="w-3 h-3" />}
 							</span>
 						)}
-					</button>
+					</Button>
 				</div>
 
-				<button onClick={handleExport} className="px-4 py-2 rounded-md font-medium transition-colors bg-foreground text-background hover:bg-muted/90">
+				<Button onClick={handleExport}>
 					Export
-				</button>
+				</Button>
 			</div>
 
 			{/* Summary Row */}
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+				<Card>
+					<CardHeader className="pb-2">
+						<CardTitle className="text-xs font-medium text-muted-foreground uppercase">Total Periode</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div className="text-2xl font-mono text-foreground mb-1">Rp {totalPeriode.toLocaleString('id-ID')}</div>
+						<div className="text-sm text-muted-foreground">384 transaksi</div>
+					</CardContent>
+				</Card>
 				<div className="p-6 border-border hover:bg-muted/30 transition-colors">
-					<div className="text-xs font-medium text-muted uppercase mb-2">Total Periode</div>
-					<div className="text-2xl font-mono text-foreground mb-1">Rp {totalPeriode.toLocaleString('id-ID')}</div>
-					<div className="text-sm text-muted">384 transaksi</div>
-				</div>
-				<div className="p-6 border-border hover:bg-muted/30 transition-colors">
-					<div className="text-xs font-medium text-muted uppercase mb-2">Jumlah Transaksi</div>
+					<div className="text-xs font-medium text-muted-foreground uppercase mb-2">Jumlah Transaksi</div>
 					<div className="text-2xl font-mono text-foreground mb-1">{filteredData.length}</div>
-					<div className="text-sm text-muted">kali ini</div>
+					<div className="text-sm text-muted-foreground">kali ini</div>
 				</div>
 				<div className="p-6 border-border hover:bg-muted/30 transition-colors">
-					<div className="text-xs font-medium text-muted uppercase mb-2">Rata-rata Donasi</div>
+					<div className="text-xs font-medium text-muted-foreground uppercase mb-2">Rata-rata Donasi</div>
 					<div className="text-2xl font-mono text-foreground mb-1">Rp {rataDonasi.toLocaleString('id-ID')}</div>
-					<div className="text-sm text-muted">per transaksi</div>
+					<div className="text-sm text-muted-foreground">per transaksi</div>
 				</div>
 				<div className="p-6 border-border hover:bg-muted/30 transition-colors">
-					<div className="text-xs font-medium text-muted uppercase mb-2">Donatur Baru</div>
+					<div className="text-xs font-medium text-muted-foreground uppercase mb-2">Donatur Baru</div>
 					<div className="text-2xl font-mono text-foreground mb-1">47</div>
-					<div className="text-sm text-muted">bulan ini</div>
+					<div className="text-sm text-muted-foreground">bulan ini</div>
 				</div>
 			</div>
 
 			{/* Main Table */}
 			<div className="border-border bg-background rounded-md overflow-hidden">
 				{/* Table Header */}
-				<div className="grid grid-cols-[50px_3rem_5rem_6rem_5rem_5rem_5rem] bg-muted/30 h-12 items-center text-xs font-medium tracking-widest text-muted">
+				<div className="grid grid-cols-[50px_3rem_5rem_6rem_5rem_5rem_5rem] bg-muted/30 h-12 items-center text-xs font-medium tracking-widest text-muted-foreground">
 					<div className="p-3 flex items-center">
 						<input
 							type="checkbox"
@@ -198,14 +215,17 @@ export default function DonasiPage() {
 				{/* Table Body */}
 				<div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 350px)' }}>
 					{filteredData.map((donasi, index) => (
-						<div
+						<button
 							key={donasi.id}
-							onClick={() => setShowDetailDrawer(true)}
+							onClick={() => {
+								setSelectedDonasi(donasi);
+								setShowDetailDrawer(true);
+							}}
 							className={`
-								grid grid-cols-[50px_3rem_5rem_6rem_5rem_5rem_5rem] border-b border-border
+								grid w-full grid-cols-[50px_3rem_5rem_6rem_5rem_5rem_5rem] border-b border-border
 								h-12 items-center text-sm
 								${selectedRows.includes(donasi.id) ? 'bg-muted/50' : ''}
-								hover:bg-muted/30 transition-colors
+								hover:bg-muted/30 transition-colors text-left
 							`}
 						>
 							<div className="p-3 flex items-center">
@@ -216,7 +236,7 @@ export default function DonasiPage() {
 									className="w-4 h-4 border-border rounded focus:ring-1 focus:ring-foreground/20"
 								/>
 							</div>
-							<div className="text-center text-xs tracking-widest text-muted">#{index + 1}</div>
+							<div className="text-center text-xs tracking-widest text-muted-foreground">#{index + 1}</div>
 							<div className="text-foreground font-medium truncate">
 								{donasi.nama}
 							</div>
@@ -229,7 +249,7 @@ export default function DonasiPage() {
 							<div className="text-center">
 								{paymentMethods.find(pm => pm.id === donasi.metode)?.name || '-'}
 							</div>
-							<div className="text-muted">{donasi.tanggal}</div>
+							<div className="text-muted-foreground">{donasi.tanggal}</div>
 							<div className="text-center">
 								<StatusBadge status={donasi.status}>
 									{donasi.status === 'success' && 'Terkonfirmasi'}
@@ -238,35 +258,38 @@ export default function DonasiPage() {
 								</StatusBadge>
 							</div>
 							<div className="text-center">
-								<button
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon"
 									onClick={(e) => {
 										e.stopPropagation();
 										setSelectedDonasi(donasi);
 										setShowDetailDrawer(true);
 									}}
-									className="p-1.5 text-muted hover:text-foreground transition-colors"
 								>
 									<MoreHorizontal className="w-4 h-4" />
-								</button>
+								</Button>
 							</div>
-						</div>
+						</button>
 					))}
 				</div>
 
 				{/* Table Footer */}
-				<div className="grid grid-cols-[50px_3rem_5rem_6rem_5rem_5rem_5rem] bg-muted/30 h-12 items-center text-xs font-medium text-muted border-t border-border">
+				<div className="grid grid-cols-[50px_3rem_5rem_6rem_5rem_5rem_5rem] bg-muted/30 h-12 items-center text-xs font-medium text-muted-foreground border-t border-border">
 					<div className="col-span-2 flex items-center gap-2 pl-3">
-						<button className="text-muted hover:text-foreground transition-colors disabled:opacity-50" disabled={selectedRows.length === 0}>
+						<Button variant="ghost" className="h-auto p-0 text-muted-foreground hover:text-foreground" disabled={selectedRows.length === 0}>
 							<Check className="w-4 h-4" />
 							<span className="ml-2">Konfirmasi Terpilih ({selectedRows.length})</span>
-						</button>
-						<button
+						</Button>
+						<Button
 							onClick={handleExport}
-							className="text-muted hover:text-foreground transition-colors flex items-center gap-2"
+							variant="ghost"
+							className="h-auto p-0 text-muted-foreground hover:text-foreground"
 						>
 							<ExternalLink className="w-4 h-4" />
 							Export
-						</button>
+						</Button>
 					</div>
 					<div className="flex items-center gap-2 justify-between text-center">
 						<button
@@ -275,14 +298,14 @@ export default function DonasiPage() {
 								setSortField('tanggal');
 								setSortDirection('desc');
 							}}
-							className="text-muted hover:text-foreground transition-colors"
+							className="text-muted-foreground hover:text-foreground transition-colors"
 						>
 							Previous
 						</button>
-						<span className="font-mono text-muted">
+						<span className="font-mono text-muted-foreground">
 							{Math.min(Math.ceil(filteredData.length / 20), filteredData.length)} of {filteredData.length}
 						</span>
-						<button className="text-muted hover:text-foreground transition-colors">
+						<button className="text-muted-foreground hover:text-foreground transition-colors">
 							Next →
 						</button>
 					</div>
@@ -306,9 +329,11 @@ export default function DonasiPage() {
 			{/* Detail Drawer */}
 			{showDetailDrawer && selectedDonasi && (
 				<div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm">
-					<div
+					<button
 						onClick={() => setShowDetailDrawer(false)}
 						className="absolute inset-0 bg-background/80"
+						type="button"
+						aria-label="Tutup detail donasi"
 					/>
 					<div
 						className={`
@@ -320,30 +345,30 @@ export default function DonasiPage() {
 						<div className="p-6 border-b border-border">
 							<div className="flex items-center justify-between">
 								<h3 className="text-lg font-semibold text-foreground">Detail Donasi</h3>
-								<button onClick={() => setShowDetailDrawer(false)} className="text-muted hover:text-foreground">
+								<Button type="button" variant="ghost" size="icon" onClick={() => setShowDetailDrawer(false)} aria-label="Tutup detail donasi">
 									<X className="w-5 h-5" />
-								</button>
+								</Button>
 							</div>
 						</div>
 
 						{/* Donatur Info */}
 						<div className="space-y-4 p-6">
 							<div className="flex items-start gap-4">
-								<div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center flex-shrink-0">
-									<div className="text-2xl font-semibold text-muted">AF</div>
+								<div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center shrink-0">
+									<div className="text-2xl font-semibold text-muted-foreground">AF</div>
 								</div>
 								<div>
-									<div className="text-sm text-muted">Nama</div>
+									<div className="text-sm text-muted-foreground">Nama</div>
 									<div className="text-lg font-semibold text-foreground">{selectedDonasi.nama}</div>
 								</div>
 							</div>
 							<div className="grid grid-cols-2 gap-4 text-sm">
 								<div>
-									<div className="text-muted">No. HP</div>
+									<div className="text-muted-foreground">No. HP</div>
 									<div className="text-foreground">0812-3456-7890</div>
 								</div>
 								<div>
-									<div className="text-muted">Email</div>
+									<div className="text-muted-foreground">Email</div>
 									<div className="text-foreground truncate">ahmad.fauzi@email.com</div>
 								</div>
 							</div>
@@ -351,17 +376,18 @@ export default function DonasiPage() {
 
 						{/* Bukti Transfer */}
 						<div className="p-6 bg-muted/30">
-							<div className="text-sm text-muted mb-2">Bukti Transfer</div>
+							<div className="text-sm text-muted-foreground mb-2">Bukti Transfer</div>
 							<div className="w-full aspect-video bg-muted/50 rounded flex items-center justify-center">
-								<FileText className="w-12 h-12 text-muted" />
-								<span className="text-sm text-muted">Upload bukti transfer</span>
+								<FileText className="w-12 h-12 text-muted-foreground" />
+								<span className="text-sm text-muted-foreground">Upload bukti transfer</span>
 							</div>
 						</div>
 
 						{/* Catatan Field */}
 						<div className="p-6">
-							<label className="block text-sm text-muted mb-2">Catatan (Opsional)</label>
+							<label htmlFor="catatan-donasi" className="block text-sm text-muted-foreground mb-2">Catatan (Opsional)</label>
 							<textarea
+								id="catatan-donasi"
 								placeholder="Tambahkan catatan untuk donasi ini..."
 								className="w-full px-4 py-3 bg-background border-border text-foreground rounded-md focus:border-foreground focus:ring-1 focus:ring-foreground/20 outline-none resize-none h-24"
 							/>
@@ -369,12 +395,12 @@ export default function DonasiPage() {
 
 						{/* Actions */}
 						<div className="flex gap-3 p-6 border-t border-border">
-							<button className="flex-1 py-3 px-4 rounded-md font-medium transition-colors bg-destructive text-background hover:bg-destructive/90">
+							<Button className="flex-1" variant="destructive">
 								Ditolak
-							</button>
-							<button className="flex-1 py-3 px-4 rounded-md font-medium transition-colors bg-success text-background hover:bg-success/90">
+							</Button>
+							<Button className="flex-1">
 								Konfirmasi
-							</button>
+							</Button>
 						</div>
 					</div>
 				</div>

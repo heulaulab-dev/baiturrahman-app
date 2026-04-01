@@ -1,8 +1,28 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Filter, UserPlus, Edit2, Trash2, MoreHorizontal, CheckCircle2, Clock, X } from 'lucide-react';
+import { Search, Filter, UserPlus, MoreHorizontal } from 'lucide-react';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
+import {
+	Tabs,
+	TabsList,
+	TabsTrigger,
+} from '@/components/ui/tabs';
+import {
+	Sheet,
+	SheetContent,
+	SheetHeader,
+	SheetTitle,
+} from '@/components/ui/sheet';
 
 const membersData = [
 	{ id: '1', nama: 'H. Ahmad Hamidin, M.Q.', nik: '3201xxxxxxxxxxxx', status: 'aktif', bergabung: '2020-01-15', foto: null, muallaf: false },
@@ -16,6 +36,10 @@ const membersData = [
 ];
 
 const filterOptions = ['Semua', 'Aktif', 'Tidak Aktif', 'Muallaf'];
+
+function getInitials(nama: string) {
+	return nama.split(' ').slice(0, 2).map((n) => n[0]).join('');
+}
 
 export default function JamaahPage() {
 	const [filter, setFilter] = useState('Semua');
@@ -40,10 +64,6 @@ export default function JamaahPage() {
 	const aktifCount = membersData.filter(m => m.status === 'aktif').length;
 	const muallafCount = membersData.filter(m => m.muallaf === true).length;
 
-	function getInitials(nama: string) {
-		return nama.split(' ').slice(0, 2).map(n => n[0]).join('');
-	}
-
 	function getStatusBadge(status: string) {
 		if (status === 'aktif') return <StatusBadge status="success">Aktif</StatusBadge>;
 		if (status === 'tidak-aktif') return <StatusBadge status="danger">Tidak Aktif</StatusBadge>;
@@ -55,54 +75,59 @@ export default function JamaahPage() {
 			{/* Page Header */}
 			<div className="flex flex-wrap items-center justify-between gap-4 mb-6">
 				<h2 className="text-3xl font-semibold text-foreground">Struktur Anggota Jamaah</h2>
-				<button className="py-2.5 px-4 rounded-md font-medium transition-colors bg-foreground text-background hover:bg-muted/90 flex items-center gap-2">
+				<Button className="gap-2">
 					<UserPlus className="w-4 h-4" />
 					Tambah Anggota
-				</button>
+				</Button>
 			</div>
 
 			{/* Filters */}
 			<div className="flex flex-wrap items-center gap-3">
 				<div className="relative">
-					<Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
-					<input
+					<Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+					<Input
 						type="text"
 						placeholder="Cari anggota..."
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
-						className="pl-10 pr-4 py-2 bg-background border border-border text-foreground rounded-md outline-none w-64"
+						className="w-64 pl-10"
 					/>
 				</div>
 				<div className="flex items-center gap-2">
-					<Filter className="w-4 h-4 text-muted" />
-					<select
-						value={filter}
-						onChange={(e) => setFilter(e.target.value)}
-						className="py-2 px-4 bg-background border border-border text-foreground rounded-md outline-none"
-					>
-						{filterOptions.map(opt => (
-							<option key={opt} value={opt}>{opt}</option>
-						))}
-					</select>
+					<Filter className="w-4 h-4 text-muted-foreground" />
+					<Select value={filter} onValueChange={setFilter}>
+						<SelectTrigger className="w-44">
+							<SelectValue placeholder="Filter status" />
+						</SelectTrigger>
+						<SelectContent>
+							{filterOptions.map((opt) => (
+								<SelectItem key={opt} value={opt}>
+									{opt}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
 				<div className="flex items-center gap-2 p-2 border border-border bg-muted/30 rounded-md">
-					<div className="text-xs text-muted">Aktif:</div>
+					<div className="text-xs text-muted-foreground">Aktif:</div>
 					<div className="text-xl font-semibold text-foreground">{aktifCount}</div>
 				</div>
 				<div className="flex items-center gap-2 p-2 border border-border bg-muted/30 rounded-md">
-					<div className="text-xs text-muted">Muallaf:</div>
+					<div className="text-xs text-muted-foreground">Muallaf:</div>
 					<div className="text-xl font-semibold text-foreground">{muallafCount}</div>
 				</div>
-				<div className="flex items-center gap-1 border border-border rounded-md p-1 ml-auto">
-					<button onClick={() => setViewMode('table')} className={`px-4 py-2 rounded-md transition-colors text-sm ${viewMode === 'table' ? 'bg-muted/50' : ''}`}>Table</button>
-					<button onClick={() => setViewMode('grid')} className={`px-4 py-2 rounded-md transition-colors text-sm ${viewMode === 'grid' ? 'bg-muted/50' : ''}`}>Grid</button>
-				</div>
+				<Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'table' | 'grid')} className="ml-auto">
+					<TabsList>
+						<TabsTrigger value="table">Table</TabsTrigger>
+						<TabsTrigger value="grid">Grid</TabsTrigger>
+					</TabsList>
+				</Tabs>
 			</div>
 
 			{/* Table View */}
 			{viewMode === 'table' && (
 				<div className="border border-border bg-background rounded-md overflow-hidden">
-					<div className="grid grid-cols-[40px_48px_1fr_120px_100px_80px] bg-muted/30 h-10 items-center px-4 text-xs font-medium tracking-wider text-muted uppercase">
+					<div className="grid grid-cols-[40px_48px_1fr_120px_100px_80px] bg-muted/30 h-10 items-center px-4 text-xs font-medium tracking-wider text-muted-foreground uppercase">
 						<div><input type="checkbox" className="w-4 h-4 border-border rounded" /></div>
 						<div>Foto</div>
 						<div>Nama Lengkap</div>
@@ -111,26 +136,26 @@ export default function JamaahPage() {
 						<div className="text-center">Aksi</div>
 					</div>
 					{filteredData.map((member) => (
-						<div
+						<button
 							key={member.id}
 							onClick={() => { setSelectedMember(member); setShowDetailDrawer(true); }}
-							className="grid grid-cols-[40px_48px_1fr_120px_100px_80px] border-t border-border h-14 items-center px-4 text-sm hover:bg-muted/30 transition-colors cursor-pointer"
+							className="grid w-full grid-cols-[40px_48px_1fr_120px_100px_80px] border-t border-border h-14 items-center px-4 text-left text-sm hover:bg-muted/30 transition-colors"
 						>
 							<div><input type="checkbox" className="w-4 h-4 border-border rounded" onClick={(e) => e.stopPropagation()} /></div>
-							<div className="w-9 h-9 rounded-full bg-muted/50 flex items-center justify-center text-xs font-semibold text-muted">
+							<div className="w-9 h-9 rounded-full bg-muted/50 flex items-center justify-center text-xs font-semibold text-muted-foreground">
 								{getInitials(member.nama)}
 							</div>
 							<div className="min-w-0">
 								<div className="text-foreground font-medium truncate">{member.nama}</div>
 							</div>
 							<div>{getStatusBadge(member.status)}</div>
-							<div className="text-muted text-xs">{member.bergabung}</div>
+							<div className="text-muted-foreground text-xs">{member.bergabung}</div>
 							<div className="text-center">
-								<button onClick={(e) => e.stopPropagation()} className="p-1.5 text-muted hover:text-foreground transition-colors">
+								<button onClick={(e) => e.stopPropagation()} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
 									<MoreHorizontal className="w-4 h-4" />
 								</button>
 							</div>
-						</div>
+						</button>
 					))}
 				</div>
 			)}
@@ -139,40 +164,37 @@ export default function JamaahPage() {
 			{viewMode === 'grid' && (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 					{filteredData.map((member) => (
-						<div
+						<button
 							key={member.id}
 							onClick={() => { setSelectedMember(member); setShowDetailDrawer(true); }}
-							className="border border-border bg-background hover:bg-muted/30 transition-colors rounded-lg overflow-hidden cursor-pointer"
+							className="border border-border bg-background hover:bg-muted/30 transition-colors rounded-lg overflow-hidden text-left"
 						>
 							<div className="p-4 flex items-start gap-3">
-								<div className="w-14 h-14 rounded-full bg-muted/50 flex items-center justify-center shrink-0 text-lg font-semibold text-muted">
+								<div className="w-14 h-14 rounded-full bg-muted/50 flex items-center justify-center shrink-0 text-lg font-semibold text-muted-foreground">
 									{getInitials(member.nama)}
 								</div>
 								<div className="min-w-0 flex-1">
 									<div className="text-foreground font-semibold truncate">{member.nama}</div>
-									<div className="text-xs text-muted mt-1">{member.bergabung}</div>
+									<div className="text-xs text-muted-foreground mt-1">{member.bergabung}</div>
 									<div className="mt-2">{getStatusBadge(member.status)}</div>
 								</div>
 							</div>
-						</div>
+						</button>
 					))}
 				</div>
 			)}
 
 			{/* Detail Drawer */}
-			{showDetailDrawer && selectedMember && (
-				<div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm">
-					<div onClick={() => setShowDetailDrawer(false)} className="absolute inset-0 bg-background/80" />
-					<div className="absolute right-0 top-0 bottom-0 w-[480px] bg-background border-l border-border shadow-xl overflow-y-auto">
-						<div className="p-6 border-b border-border flex items-center justify-between">
-							<h3 className="text-lg font-semibold text-foreground">Detail Anggota</h3>
-							<button onClick={() => setShowDetailDrawer(false)} className="text-muted hover:text-foreground">
-								<X className="w-5 h-5" />
-							</button>
-						</div>
+			<Sheet open={showDetailDrawer && !!selectedMember} onOpenChange={setShowDetailDrawer}>
+				<SheetContent side="right" className="w-[480px] sm:max-w-[480px] overflow-y-auto">
+					<SheetHeader>
+						<SheetTitle>Detail Anggota</SheetTitle>
+					</SheetHeader>
+					{selectedMember && (
+						<>
 						<div className="p-6 space-y-6">
 							<div className="flex items-start gap-4">
-								<div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center shrink-0 text-3xl font-semibold text-muted">
+								<div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center shrink-0 text-3xl font-semibold text-muted-foreground">
 									{getInitials(selectedMember.nama)}
 								</div>
 								<div>
@@ -182,22 +204,25 @@ export default function JamaahPage() {
 							</div>
 							<div className="grid grid-cols-2 gap-4 text-sm">
 								<div>
-									<div className="text-muted">Bergabung</div>
+									<div className="text-muted-foreground">Bergabung</div>
 									<div className="text-foreground">{selectedMember.bergabung}</div>
 								</div>
 								<div>
-									<div className="text-muted">Muallaf</div>
+									<div className="text-muted-foreground">Muallaf</div>
 									<div className="text-foreground">{selectedMember.muallaf ? 'Ya' : 'Tidak'}</div>
 								</div>
 							</div>
 						</div>
-						<div className="flex gap-3 p-6 border-t border-border">
-							<button className="flex-1 py-3 px-4 rounded-md font-medium transition-colors bg-foreground text-background hover:bg-muted/90">Simpan</button>
-							<button onClick={() => setShowDetailDrawer(false)} className="flex-1 py-3 px-4 rounded-md font-medium transition-colors bg-muted/30 text-muted hover:bg-muted/50">Tutup</button>
+						<div className="flex gap-3 border-t border-border p-6">
+							<Button className="flex-1">Simpan</Button>
+							<Button variant="secondary" className="flex-1" onClick={() => setShowDetailDrawer(false)}>
+								Tutup
+							</Button>
 						</div>
-					</div>
-				</div>
-			)}
+						</>
+					)}
+				</SheetContent>
+			</Sheet>
 		</div>
 	);
 }

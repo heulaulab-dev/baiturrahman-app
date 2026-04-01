@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { TrendingUp, TrendingDown, BarChart3, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const expenseCategories = [
 	{ id: '1', name: 'Listrik & Air', amount: 15000000, trend: 'up' as const },
@@ -23,56 +26,52 @@ export default function LaporanPage() {
 			{/* Page Header */}
 			<div className="flex items-center justify-between mb-6">
 				<h2 className="text-3xl font-semibold text-foreground">Laporan Keuangan</h2>
-				<button className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors bg-muted/30 text-muted hover:bg-muted/50">
+				<Button variant="secondary" className="gap-2">
 					<Download className="w-4 h-4" />
 					Export Laporan
-				</button>
+				</Button>
 			</div>
 
 			{/* Period Selector */}
-			<div className="flex items-center gap-1 p-1 border border-border rounded-lg bg-muted/30">
-				{[
-					{ key: 'bulan-ini' as const, label: 'Bulan Ini' },
-					{ key: '3-bulan' as const, label: '3 Bulan Lalu' },
-					{ key: 'tahun-ini' as const, label: 'Tahun Ini' },
-				].map((p) => (
-					<button
-						key={p.key}
-						onClick={() => setPeriod(p.key)}
-						className={`px-4 py-2 rounded-md font-medium transition-colors text-sm ${period === p.key ? 'bg-background text-foreground' : 'text-muted hover:bg-muted/50'}`}
-					>
-						{p.label}
-					</button>
-				))}
-			</div>
+			<Tabs value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
+				<TabsList className="h-auto gap-2 bg-muted/30 p-2">
+					<TabsTrigger value="bulan-ini">Bulan Ini</TabsTrigger>
+					<TabsTrigger value="3-bulan">3 Bulan Lalu</TabsTrigger>
+					<TabsTrigger value="tahun-ini">Tahun Ini</TabsTrigger>
+				</TabsList>
+			</Tabs>
 
 			{/* Summary Cards */}
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-				<div className="p-6 border border-border bg-muted/30">
-					<div className="text-sm font-medium text-muted uppercase mb-2">Total Pemasukan</div>
+				<Card>
+					<CardHeader className="pb-2">
+						<CardTitle className="text-sm font-medium text-muted-foreground uppercase">Total Pemasukan</CardTitle>
+					</CardHeader>
+					<CardContent>
 					<div className="text-2xl font-mono text-foreground mb-1">Rp 127.850.000</div>
-					<div className="text-xs text-muted">Periode ini</div>
-				</div>
+					<div className="text-xs text-muted-foreground">Periode ini</div>
+					</CardContent>
+				</Card>
 				<div className="p-6 border border-border bg-muted/30">
-					<div className="text-sm font-medium text-muted uppercase mb-2">Total Pengeluaran</div>
+					<div className="text-sm font-medium text-muted-foreground uppercase mb-2">Total Pengeluaran</div>
 					<div className="text-2xl font-mono text-foreground mb-1">Rp {totalExpense.toLocaleString('id-ID')}</div>
-					<div className="text-xs text-muted">Periode ini</div>
+					<div className="text-xs text-muted-foreground">Periode ini</div>
 				</div>
 				<div className="p-6 border border-border bg-muted/30">
-					<div className="text-sm font-medium text-muted uppercase mb-2">Saldo Bersih</div>
+					<div className="text-sm font-medium text-muted-foreground uppercase mb-2">Saldo Bersih</div>
 					<div className="text-2xl font-mono text-foreground mb-1">Rp 84.650.000</div>
-					<div className="text-xs text-muted">Periode ini</div>
+					<div className="text-xs text-muted-foreground">Periode ini</div>
 				</div>
 				<div className="p-6 border border-border bg-muted/30">
-					<div className="text-sm font-medium text-muted uppercase mb-2">Dana Wakaf</div>
+					<div className="text-sm font-medium text-muted-foreground uppercase mb-2">Dana Wakaf</div>
 					<div className="text-2xl font-mono text-foreground mb-1">Rp 1.500.000.000</div>
-					<div className="text-xs text-muted">Terkumpul</div>
+					<div className="text-xs text-muted-foreground">Terkumpul</div>
 				</div>
 			</div>
 
 			{/* Expense Breakdown */}
 			<div className="border border-border bg-background rounded-lg overflow-hidden">
-				<div className="grid grid-cols-[40px_1fr_160px_60px_80px] bg-muted/30 h-10 items-center px-4 text-xs font-medium tracking-wider text-muted uppercase">
+				<div className="grid grid-cols-[40px_1fr_160px_60px_80px] bg-muted/30 h-10 items-center px-4 text-xs font-medium tracking-wider text-muted-foreground uppercase">
 					<div>#</div>
 					<div>Kategori</div>
 					<div className="text-right">Jumlah</div>
@@ -81,13 +80,13 @@ export default function LaporanPage() {
 				</div>
 				{expenseCategories.map((cat, index) => (
 					<div key={cat.id} className="grid grid-cols-[40px_1fr_160px_60px_80px] border-t border-border h-12 items-center px-4 text-sm hover:bg-muted/30 transition-colors">
-						<div className="text-muted">#{index + 1}</div>
+						<div className="text-muted-foreground">#{index + 1}</div>
 						<div className="text-foreground font-medium">{cat.name}</div>
 						<div className="text-right font-mono text-foreground">Rp {cat.amount.toLocaleString('id-ID')}</div>
 						<div className="flex justify-center">
-							{cat.trend === 'up' ? <TrendingUp className="w-4 h-4 text-emerald-500" /> : <TrendingDown className="w-4 h-4 text-red-500" />}
+							{cat.trend === 'up' ? <TrendingUp className="w-4 h-4 text-primary" /> : <TrendingDown className="w-4 h-4 text-destructive" />}
 						</div>
-						<div className="text-center text-xs text-muted">
+						<div className="text-center text-xs text-muted-foreground">
 							{cat.trend === 'up' ? '+12%' : '-8%'}
 						</div>
 					</div>
@@ -102,7 +101,7 @@ export default function LaporanPage() {
 						<div key={cat.id} className="p-4 border border-border bg-muted/30 rounded-md">
 							<div className="flex items-center justify-between mb-2">
 								<div className="flex items-center gap-2">
-									<BarChart3 className="w-4 h-4 text-muted" />
+									<BarChart3 className="w-4 h-4 text-muted-foreground" />
 									<span className="text-sm font-medium text-foreground">{cat.name}</span>
 								</div>
 								<div className="text-right font-mono text-sm text-foreground">

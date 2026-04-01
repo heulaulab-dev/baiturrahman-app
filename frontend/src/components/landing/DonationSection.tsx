@@ -4,11 +4,10 @@ import { motion } from 'framer-motion';
 import { Shield, FileText, QrCode, Calculator, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 import Image from 'next/image';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { usePaymentMethods, createDonation } from '@/services/hooks';
-import { Input } from '../ui/input';
-import { Button } from '../ui/button';
-import { PaymentMethod } from '@/types';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 const stats = [
 	{ value: '50.000+', label: 'Jamaah/Bulan' },
@@ -103,14 +102,15 @@ export function DonationSection() {
 
 							<div className="flex items-center gap-3 p-4 border border-sacred-green">
 								<FileText size={24} className="text-sacred-green shrink-0" />
-								<button
+								<Button
 									type="button"
-									className="text-sm text-sacred-gold relative group cursor-pointer bg-transparent border-none p-0 font-inherit"
+									variant="ghost"
+									className="relative h-auto p-0 text-sm font-normal text-sacred-gold hover:bg-transparent hover:text-sacred-gold"
 									onClick={() => console.log('Download report')}
 								>
 									Laporan Transparansi
 									<span className="absolute bottom-0 left-0 w-0 h-px bg-sacred-gold transition-all duration-300 group-hover:w-full" />
-								</button>
+								</Button>
 							</div>
 
 							<div className="grid grid-cols-2 gap-3 pt-4">
@@ -131,19 +131,23 @@ export function DonationSection() {
 								))}
 							</div>
 
-							<motion.button
-								type="button"
+							<motion.div
 								initial={{ opacity: 0 }}
 								whileInView={{ opacity: 1 }}
 								viewport={{ once: true }}
-								onClick={() => {
-									setShowDonationForm(!showDonationForm);
-									setShowCalculator(false);
-								}}
-								className="w-full py-3 border border-sacred-green text-sacred-green font-serif-cormorant hover:bg-sacred-green hover:text-white transition-colors"
 							>
-								Isi Form Donasi
-							</motion.button>
+								<Button
+									type="button"
+									variant="outline"
+									className="h-auto w-full rounded-none border-sacred-green py-3 font-serif-cormorant text-sacred-green hover:bg-sacred-green hover:text-white"
+									onClick={() => {
+										setShowDonationForm(!showDonationForm);
+										setShowCalculator(false);
+									}}
+								>
+									Isi Form Donasi
+								</Button>
+							</motion.div>
 						</div>
 					</motion.div>
 
@@ -207,17 +211,19 @@ export function DonationSection() {
 												<span className="text-xs text-sacred-muted">a.n. {bank.account_name || '--'}</span>
 											</div>
 											{bank.account_number && (
-												<button
+												<Button
 													type="button"
+													variant="ghost"
+													size="icon"
+													className="h-8 w-8 shrink-0 text-sacred-muted hover:bg-sacred-green/10 hover:text-sacred-muted"
 													onClick={() => handleCopyAccount(bank.account_number!)}
-													className="p-1 hover:bg-sacred-green/10 rounded transition-colors"
 												>
 													{copiedAccount === bank.account_number ? (
 														<Check size={16} className="text-sacred-gold" />
 													) : (
-														<Copy size={16} className="text-sacred-muted" />
+														<Copy size={16} />
 													)}
-												</button>
+												</Button>
 											)}
 										</div>
 									</motion.div>
@@ -250,17 +256,19 @@ export function DonationSection() {
 													<span className="text-xs text-sacred-muted">a.n. {wallet.account_name || '--'}</span>
 												</div>
 												{wallet.account_number && (
-													<button
+													<Button
 														type="button"
+														variant="ghost"
+														size="icon"
+														className="h-8 w-8 shrink-0 text-sacred-muted hover:bg-sacred-green/10 hover:text-sacred-muted"
 														onClick={() => handleCopyAccount(wallet.account_number!)}
-														className="p-1 hover:bg-sacred-green/10 rounded transition-colors"
 													>
 														{copiedAccount === wallet.account_number ? (
 															<Check size={16} className="text-sacred-gold" />
 														) : (
-															<Copy size={16} className="text-sacred-muted" />
+															<Copy size={16} />
 														)}
-													</button>
+													</Button>
 												)}
 											</div>
 										</motion.div>
@@ -373,18 +381,19 @@ export function DonationSection() {
 					viewport={{ once: true }}
 					className="mt-12 text-center"
 				>
-					<button
+					<Button
 						type="button"
+						variant="ghost"
+						className="group relative mx-auto flex h-auto items-center gap-2 rounded-none p-0 font-serif-cormorant text-sacred-green hover:bg-transparent hover:text-sacred-green"
 						onClick={() => {
 							setShowCalculator(!showCalculator);
 							setShowDonationForm(false);
 						}}
-						className="flex items-center gap-2 mx-auto text-sacred-green font-serif-cormorant relative group"
 					>
 						<Calculator size={18} />
 						<span>Kalkulator Zakat</span>
 						<span className="absolute bottom-0 left-0 w-0 h-px bg-sacred-gold transition-all duration-300 group-hover:w-full" />
-					</button>
+					</Button>
 
 					{showCalculator && (
 						<motion.div
@@ -408,9 +417,9 @@ export function DonationSection() {
 									<label htmlFor="nishab-info" className="block text-sm text-sacred-muted mb-1">Nishab (Rp 85.000.000)</label>
 									<span id="nishab-info" className="text-sm text-sacred-green">Minimal untuk wajib zakat</span>
 								</div>
-								<Button className="w-full" type="button">
-									Hitung Zakat
-								</Button>
+									<Button type="button" className="w-full rounded-none">
+										Hitung Zakat
+									</Button>
 							</div>
 						</motion.div>
 					)}

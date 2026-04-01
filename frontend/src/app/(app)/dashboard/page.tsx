@@ -9,6 +9,7 @@ import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 import { DonationBarChart } from '@/components/dashboard/DonationBarChart';
 import { CategoryBreakdown } from '@/components/dashboard/CategoryBreakdown';
 import { useDonationStats, useAdminEvents, useAdminUsers } from '@/services/adminHooks';
+import { Card, CardContent } from '@/components/ui/card';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('id-ID', {
@@ -30,8 +31,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statsLoading ? (
           <>
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="p-6 border-border">
+            {['donasi', 'pending', 'event', 'pengguna'].map((skeletonKey) => (
+              <div key={skeletonKey} className="rounded-md border border-border p-6">
                 <div className="h-3 w-32 bg-muted/50 animate-pulse rounded mb-3" />
                 <div className="h-8 w-40 bg-muted/50 animate-pulse rounded" />
               </div>
@@ -115,14 +116,18 @@ export default function DashboardPage() {
 
       {/* Section 3: Bottom Row — Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="p-6 border border-border rounded-md">
-          <h3 className="text-sm font-semibold mb-4">Donasi per Bulan</h3>
-          <DonationBarChart data={stats?.by_month} isLoading={statsLoading} />
-        </div>
-        <div className="p-6 border border-border rounded-md">
-          <h3 className="text-sm font-semibold mb-4">Ringkasan Kategori</h3>
-          <CategoryBreakdown data={stats?.by_category} isLoading={statsLoading} />
-        </div>
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="mb-4 text-sm font-semibold text-foreground">Donasi per Bulan</h3>
+            <DonationBarChart data={stats?.by_month} isLoading={statsLoading} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="mb-4 text-sm font-semibold text-foreground">Ringkasan Kategori</h3>
+            <CategoryBreakdown data={stats?.by_category} isLoading={statsLoading} />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

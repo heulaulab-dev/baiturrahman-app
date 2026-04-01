@@ -1,3 +1,5 @@
+import { Badge } from '@/components/ui/badge';
+
 interface StatCardProps {
 	label: string;
 	value: string;
@@ -5,26 +7,24 @@ interface StatCardProps {
 	badge?: string;
 }
 
-export function StatCard({ label, value, trend, badge }: StatCardProps) {
+export function StatCard({ label, value, trend, badge }: Readonly<StatCardProps>) {
 	return (
-		<div className="p-6 border-border hover:bg-muted/30 transition-colors">
+		<div className="rounded-md border border-border p-6 transition-colors hover:bg-muted/30">
 			<div className="flex items-start justify-between mb-2">
 				<span className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
 					{label}
 				</span>
 				{trend && (
-					<span
-						className={`
-							px-2 py-0.5 rounded text-xs font-medium
-							${trend === 'up' ? 'bg-chart-1/10 text-chart-1' : 'bg-destructive/10 text-destructive'}
-						`}
+					<Badge
+						variant="outline"
+						className={`px-2 py-0.5 text-xs font-medium ${trend === 'up' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}
 					>
 						{trend === 'up' ? '↑' : '↓'}
-					</span>
+					</Badge>
 				)}
 				{badge && <span className="px-2 py-0.5 rounded text-xs font-medium text-muted-foreground">{badge}</span>}
 			</div>
-			<div className="text-3xl font-mono">{value}</div>
+			<div className="text-3xl font-mono text-foreground">{value}</div>
 		</div>
 	);
 }

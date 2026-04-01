@@ -3,6 +3,10 @@ import {
   getDonationStats,
   getAdminDonations,
   confirmDonation,
+  getAdminPaymentMethods,
+  createPaymentMethod,
+  updatePaymentMethod,
+  deletePaymentMethod,
   getAdminEvents,
   getAdminUsers,
   getTentangKami,
@@ -23,7 +27,6 @@ import {
   getActiveStruktursCount,
   updateMosqueInfo,
 } from './adminApiService'
-import { useMosqueInfo } from './hooks'
 
 export const useDonationStats = () => {
   return useQuery({
@@ -59,6 +62,47 @@ export const useConfirmDonation = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'donations'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'donation-stats'] })
+    },
+  })
+}
+
+export const useAdminPaymentMethods = () => {
+  return useQuery({
+    queryKey: ['admin', 'payment-methods'],
+    queryFn: getAdminPaymentMethods,
+    staleTime: 1000 * 30,
+  })
+}
+
+export const useCreatePaymentMethod = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createPaymentMethod,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'payment-methods'] })
+      queryClient.invalidateQueries({ queryKey: ['payment-methods'] })
+    },
+  })
+}
+
+export const useUpdatePaymentMethod = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => updatePaymentMethod(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'payment-methods'] })
+      queryClient.invalidateQueries({ queryKey: ['payment-methods'] })
+    },
+  })
+}
+
+export const useDeletePaymentMethod = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deletePaymentMethod,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'payment-methods'] })
+      queryClient.invalidateQueries({ queryKey: ['payment-methods'] })
     },
   })
 }

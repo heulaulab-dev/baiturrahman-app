@@ -4,6 +4,7 @@ import type {
   DonationStats,
   Event,
   User,
+  PaymentMethod,
   ApiResponse,
   PaginatedResponse,
   HistoryEntry,
@@ -36,6 +37,39 @@ export const getAdminDonations = async (
 export const confirmDonation = async (id: string): Promise<DonationFull> => {
   const response = await api.put<ApiResponse<DonationFull>>(`/v1/admin/donations/${id}/confirm`)
   return response.data.data
+}
+
+export const getAdminPaymentMethods = async (): Promise<PaymentMethod[]> => {
+  const response = await api.get<ApiResponse<PaymentMethod[]>>('/v1/admin/payment-methods', {
+    params: { active: 'false' },
+  })
+  return response.data.data
+}
+
+export const createPaymentMethod = async (data: {
+  name: string
+  type: PaymentMethod['type']
+  account_number?: string
+  account_name?: string
+  qr_code_url?: string
+  instructions?: string
+  is_active?: boolean
+  display_order?: number
+}): Promise<PaymentMethod> => {
+  const response = await api.post<ApiResponse<PaymentMethod>>('/v1/admin/payment-methods', data)
+  return response.data.data
+}
+
+export const updatePaymentMethod = async (
+  id: string,
+  data: Partial<PaymentMethod>
+): Promise<PaymentMethod> => {
+  const response = await api.put<ApiResponse<PaymentMethod>>(`/v1/admin/payment-methods/${id}`, data)
+  return response.data.data
+}
+
+export const deletePaymentMethod = async (id: string): Promise<void> => {
+  await api.delete(`/v1/admin/payment-methods/${id}`)
 }
 
 export const getAdminEvents = async (

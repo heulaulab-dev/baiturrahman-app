@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { PanelLeft } from "lucide-react"
 import { SearchForm } from "@/components/search-form"
 import {
   Breadcrumb,
@@ -12,7 +13,21 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
-import { SidebarTrigger } from "@/components/ui/sidebar"
+import {
+  SidebarControlMode,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 function getBreadcrumbTitle(pathname: string): { title: string; href: string } {
   const segments = pathname.split("/").filter(Boolean)
@@ -55,11 +70,41 @@ function getBreadcrumbTitle(pathname: string): { title: string; href: string } {
 export function SiteHeader() {
   const pathname = usePathname()
   const breadcrumb = getBreadcrumbTitle(pathname)
+  const { isMobile, controlMode, setControlMode } = useSidebar()
 
   return (
     <header className="flex sticky top-0 z-50 h-14 w-full items-center border-b bg-background">
       <div className="flex h-full w-full items-center gap-2 px-4">
-        <SidebarTrigger />
+        {isMobile ? null : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7">
+                <PanelLeft className="h-4 w-4" />
+                <span className="sr-only">Sidebar control</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-44">
+              <DropdownMenuLabel>Sidebar control</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup
+                value={controlMode}
+                onValueChange={(value) =>
+                  setControlMode(value as SidebarControlMode)
+                }
+              >
+                <DropdownMenuRadioItem value="expanded">
+                  Expanded
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="collapsed">
+                  Collapsed
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="hover">
+                  Expand on hover
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
         <Separator orientation="vertical" className="mr-2 h-4" />
         <Breadcrumb className="hidden sm:block">
           <BreadcrumbList>

@@ -63,12 +63,17 @@ export function ContactSection() {
 						whileInView={{ opacity: 1, x: 0 }}
 						viewport={{ once: true }}
 					>
-						{/* Map Placeholder */}
-						<div className="aspect-[4/3] bg-sacred-green/10 border border-sacred-green flex items-center justify-center mb-6">
-							<div className="text-center">
-								<MapPin size={48} className="text-sacred-green/30 mx-auto mb-2" />
-								<span className="text-sm text-sacred-muted">Peta Lokasi Masjid</span>
-							</div>
+						{/* Embedded Map */}
+						<div className="mb-6 aspect-4/3 overflow-hidden border border-sacred-green bg-sacred-green/5">
+							<iframe
+								title="Peta Lokasi Masjid Baiturrahim"
+								src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31736.622320367333!2d106.84360707431638!3d-6.120231599999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6a1fc6ece53a27%3A0xf612c5f69bfcbdb3!2sMasjid%20Baiturrahim!5e0!3m2!1sen!2sid!4v1775024737305!5m2!1sen!2sid"
+								className="h-full w-full"
+								style={{ border: 0 }}
+								allowFullScreen
+								loading="lazy"
+								referrerPolicy="no-referrer-when-downgrade"
+							/>
 						</div>
 
 						{/* Contact Info */}
@@ -83,25 +88,25 @@ export function ContactSection() {
 								<>
 									{contactInfo.address && (
 										<div className="flex items-start gap-3">
-											<MapPin size={20} className="text-sacred-green flex-shrink-0 mt-0.5" />
+											<MapPin size={20} className="text-sacred-green shrink-0 mt-0.5" />
 											<span className="text-sacred-muted">{contactInfo.address}</span>
 										</div>
 									)}
 									{contactInfo.phone && (
 										<div className="flex items-center gap-3">
-											<Phone size={20} className="text-sacred-green flex-shrink-0" />
+											<Phone size={20} className="text-sacred-green shrink-0" />
 											<span className="text-sacred-muted">{contactInfo.phone}</span>
 										</div>
 									)}
 									{contactInfo.email && (
 										<div className="flex items-center gap-3">
-											<Mail size={20} className="text-sacred-green flex-shrink-0" />
+											<Mail size={20} className="text-sacred-green shrink-0" />
 											<span className="text-sacred-muted">{contactInfo.email}</span>
 										</div>
 									)}
 									{contactInfo.website && (
 										<div className="flex items-center gap-3">
-											<Globe size={20} className="text-sacred-green flex-shrink-0" />
+											<Globe size={20} className="text-sacred-green shrink-0" />
 											<Link
 												href={contactInfo.website}
 												target="_blank"
@@ -115,7 +120,7 @@ export function ContactSection() {
 								</>
 							)}
 							<div className="flex items-start gap-3">
-								<Clock size={20} className="text-sacred-green flex-shrink-0 mt-0.5" />
+								<Clock size={20} className="text-sacred-green shrink-0 mt-0.5" />
 								<span className="text-sacred-muted">Shubuh - Isya: 24 Jam | Jumat: Khusus Sholat</span>
 							</div>
 						</div>

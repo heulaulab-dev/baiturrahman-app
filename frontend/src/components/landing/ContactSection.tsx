@@ -1,10 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Mail, Clock, Globe } from 'lucide-react';
-import { CircleFadingPlus } from 'lucide-react';
-
+import { MapPin, Phone, Mail, Clock, Globe, CircleFadingPlus } from 'lucide-react';
 import { useMosqueInfo } from '@/services/hooks';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -92,14 +92,14 @@ export function ContactSection() {
 									{contactInfo.website && (
 										<div className="flex items-center gap-3">
 											<Globe size={20} className="text-sacred-green flex-shrink-0" />
-											<a
+											<Link
 												href={contactInfo.website}
 												target="_blank"
 												rel="noopener noreferrer"
 												className="text-sacred-gold hover:underline"
 											>
 												{contactInfo.website}
-											</a>
+											</Link>
 										</div>
 									)}
 								</>
@@ -116,7 +116,7 @@ export function ContactSection() {
 								{socialLinks.map((social) => {
 									const Icon = social.icon;
 									return (
-										<a
+										<Link
 											key={social.href}
 											href={social.href}
 											target="_blank"
@@ -124,7 +124,7 @@ export function ContactSection() {
 											className="p-2 border border-sacred-green text-sacred-green hover:border-sacred-gold hover:text-sacred-gold transition-colors"
 										>
 											<Icon size={20} />
-										</a>
+										</Link>
 									);
 								})}
 							</div>
@@ -192,12 +192,12 @@ export function ContactSection() {
 								/>
 							</div>
 
-							<button
+							<Button
 								type="submit"
-								className="w-full bg-sacred-gold text-white py-4 font-serif-cormorant text-lg hover:bg-sacred-gold-light transition-colors"
+								className="w-full rounded-none bg-sacred-gold py-6 font-serif-cormorant text-lg text-white hover:bg-sacred-gold-light"
 							>
 								Kirim Pesan
-							</button>
+							</Button>
 						</form>
 					</motion.div>
 				</div>

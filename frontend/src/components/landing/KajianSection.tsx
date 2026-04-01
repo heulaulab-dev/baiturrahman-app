@@ -1,10 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowRight, Calendar, MapPin, User } from 'lucide-react';
+import { ArrowRight, Calendar, MapPin } from 'lucide-react';
 import { useEvents } from '@/services/hooks';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+import Image from 'next/image';
+
+import { Button } from '@/components/ui/button';
 
 const categories = ['Tafsir', 'Fiqh', 'Tasawuf', 'Khutbah', 'Keislaman'];
 
@@ -46,7 +49,7 @@ export function KajianSection() {
 				{isLoading ? (
 					<div className="mb-12 bg-white p-8 border border-sacred-green">
 						<div className="grid md:grid-cols-2 gap-8 items-center">
-							<div className="aspect-[4/3] bg-gray-100 animate-pulse" />
+							<div className="aspect-4/3 bg-gray-100 animate-pulse" />
 							<div className="space-y-4">
 								<div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
 								<div className="h-8 bg-gray-200 rounded w-3/4 animate-pulse" />
@@ -64,11 +67,15 @@ export function KajianSection() {
 					>
 						<div className="grid md:grid-cols-2 gap-8 items-center">
 							{featuredEvent.image_url ? (
-								<img
-									src={featuredEvent.image_url}
-									alt={featuredEvent.title}
-									className="aspect-[4/3] w-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
-								/>
+								<div className="relative aspect-[4/3] w-full overflow-hidden">
+									<Image
+										src={featuredEvent.image_url}
+										alt={featuredEvent.title}
+										fill
+										className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+										sizes="(max-width: 768px) 100vw, 50vw"
+									/>
+								</div>
 							) : (
 								<div className="aspect-[4/3] bg-gradient-to-br from-[#1a3d2b]/10 to-[#b8962e]/10 flex items-center justify-center">
 									<Calendar size={48} className="text-sacred-green/20" />
@@ -138,11 +145,15 @@ export function KajianSection() {
 								className="bg-white p-6 border border-sacred-green hover:border-sacred-gold transition-colors duration-300 group cursor-pointer"
 							>
 								{event.image_url ? (
-									<img
-										src={event.image_url}
-										alt={event.title}
-										className="aspect-[1/1.2] w-full object-cover mb-4 group-hover:scale-[1.02] transition-transform duration-500"
-									/>
+									<div className="relative mb-4 aspect-[1/1.2] w-full overflow-hidden">
+										<Image
+											src={event.image_url}
+											alt={event.title}
+											fill
+											className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+											sizes="(max-width: 768px) 100vw, 33vw"
+										/>
+									</div>
 								) : (
 									<div className="aspect-[1/1.2] bg-gradient-to-br from-sacred-green/5 to-sacred-gold/5 mb-4 flex items-center justify-center">
 										<Calendar size={32} className="text-sacred-green/20 group-hover:text-sacred-gold/30 transition-colors" />
@@ -180,15 +191,14 @@ export function KajianSection() {
 					viewport={{ once: true }}
 					className="text-center"
 				>
-					<button
-						type="button"
+					<Button
+						variant="outline"
 						className="inline-flex items-center gap-2 text-sacred-green font-serif-cormorant relative group"
 						onClick={() => console.log('Navigate to all events')}
 					>
-						Lihat Semua Artikel
+						Lihat Semua Kajian
 						<ArrowRight size={16} />
-						<span className="absolute bottom-0 left-0 w-0 h-px bg-sacred-gold transition-all duration-300 group-hover:w-full" />
-					</button>
+					</Button>
 				</motion.div>
 			</div>
 		</section>

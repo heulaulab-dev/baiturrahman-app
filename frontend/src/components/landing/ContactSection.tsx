@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 const layananOptions = [
 	'Umum',
@@ -28,6 +29,12 @@ const layananOptions = [
 export function ContactSection() {
 	const { data: mosqueInfo, isLoading } = useMosqueInfo();
 	const [selectedService, setSelectedService] = useState<string>('');
+	const [isSubmitting, setIsSubmitting] = useState(false);
+
+	const [name, setName] = useState('');
+	const [email, setEmail] = useState('');
+	const [phone, setPhone] = useState('');
+	const [message, setMessage] = useState('');
 
 	const contactInfo = {
 		address: mosqueInfo?.address || 'Jl. Masjid Baiturrahman No. 1, Jakarta Selatan, Indonesia',
@@ -152,7 +159,45 @@ export function ContactSection() {
 						whileInView={{ opacity: 1, x: 0 }}
 						viewport={{ once: true }}
 					>
-						<form className="space-y-6">
+						<form
+							className="space-y-6"
+							onSubmit={async (e) => {
+								e.preventDefault();
+								if (isSubmitting) return;
+
+								setIsSubmitting(true);
+								try {
+									const res = await fetch('/api/contact', {
+										method: 'POST',
+										headers: { 'Content-Type': 'application/json' },
+										body: JSON.stringify({
+											name,
+											email,
+											phone,
+											service: selectedService,
+											message,
+										}),
+									});
+
+									const json = (await res.json().catch(() => ({}))) as { error?: string };
+									if (!res.ok) {
+										throw new Error(json.error || `Failed sending message (${res.status})`);
+									}
+
+									toast.success('Pesan terkirim. Terima kasih!');
+									setName('');
+									setEmail('');
+									setPhone('');
+									setSelectedService('');
+									setMessage('');
+								} catch (err) {
+									const msg = err instanceof Error ? err.message : 'Gagal mengirim pesan';
+									toast.error(msg);
+								} finally {
+									setIsSubmitting(false);
+								}
+							}}
+						>
 							<div>
 								<Label htmlFor="contact-name" className="block text-sm text-sacred-green mb-2">
 									Nama
@@ -160,8 +205,11 @@ export function ContactSection() {
 								<Input
 									id="contact-name"
 									type="text"
+									value={name}
+									onChange={(e) => setName(e.target.value)}
 									placeholder="Nama lengkap"
 									className="w-full"
+									required
 								/>
 							</div>
 
@@ -173,8 +221,11 @@ export function ContactSection() {
 									<Input
 										id="contact-email"
 										type="email"
+										value={email}
+										onChange={(e) => setEmail(e.target.value)}
 										placeholder="email@contoh.com"
 										className="w-full"
+										required
 									/>
 								</div>
 								<div>
@@ -184,6 +235,8 @@ export function ContactSection() {
 									<Input
 										id="contact-phone"
 										type="tel"
+										value={phone}
+										onChange={(e) => setPhone(e.target.value)}
 										placeholder="+62 xxx xxxx xxxx"
 										className="w-full"
 									/>
@@ -218,16 +271,20 @@ export function ContactSection() {
 								<Textarea
 									id="contact-message"
 									rows={5}
+									value={message}
+									onChange={(e) => setMessage(e.target.value)}
 									placeholder="Tulis pesan Anda..."
 									className="w-full"
+									required
 								/>
 							</div>
 
 							<Button
 								type="submit"
 								className="w-full rounded-none bg-sacred-gold py-6 font-serif-cormorant text-lg text-white hover:bg-sacred-gold-light"
+								disabled={isSubmitting}
 							>
-								Kirim Pesan
+								{isSubmitting ? 'Mengirim...' : 'Kirim Pesan'}
 							</Button>
 						</form>
 					</motion.div>

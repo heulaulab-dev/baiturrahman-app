@@ -10,10 +10,27 @@ import {
 } from '@/components/landing/useMuslimProLandingPrayerTimes';
 import { useMosqueInfo } from '@/services/hooks';
 
-const quickLinks = {
-	Tentang: ['Tentang Kami', 'Sejarah', 'Visi Misi'] ,
-	Jadwal: ['Jadwal Sholat', 'Jadwal Kajian', 'Khutbah Jumat'],
-	Layanan: ['Zakat & Wakaf', 'Reservasi', 'Donasi'],
+interface QuickLinkItem {
+	label: string;
+	href: string;
+}
+
+const quickLinks: Record<string, QuickLinkItem[]> = {
+	Tentang: [
+		{ label: 'Tentang Kami', href: '/#tentang-kami' },
+		{ label: 'Sejarah', href: '/#sejarah' },
+		{ label: 'Visi Misi', href: '/#visi-misi' },
+	],
+	Jadwal: [
+		{ label: 'Jadwal Sholat', href: '/#jadwal' },
+		{ label: 'Jadwal Kajian', href: '/#kajian' },
+		{ label: 'Khutbah Jumat', href: '/#mimbar-jumat' },
+	],
+	Layanan: [
+		{ label: 'Zakat & Wakaf', href: '/#layanan' },
+		{ label: 'Reservasi', href: '/#layanan' },
+		{ label: 'Donasi', href: '/#donasi' },
+	],
 };
 
 const socialLinks = [
@@ -53,13 +70,13 @@ export function Footer() {
 										{category}
 									</h4>
 									<ul className="space-y-2">
-										{links.map((link) => (
-											<li key={link}>		
+										{links.map((item) => (
+											<li key={item.label}>
 												<Link
-													href={`#${link}`}
+													href={item.href}
 													className="text-sm text-sacred-muted relative group"
-												>	
-													{link}
+												>
+													{item.label}
 													<span className="absolute bottom-0 left-0 w-0 h-px bg-sacred-gold transition-all duration-300 group-hover:w-full" />
 												</Link>
 											</li>

@@ -10,6 +10,7 @@ import {
   CalendarDays,
   FileText,
   LayoutDashboard,
+  Boxes,
 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { NavMain } from "@/components/nav-main"
@@ -81,6 +82,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {
           title: "Manajemen Donasi",
           url: "/donasi",
+        },
+      ],
+    },
+    {
+      title: "Inventaris",
+      url: "/inventaris",
+      icon: Boxes,
+      items: [
+        {
+          title: "Manajemen Inventaris",
+          url: "/inventaris",
         },
       ],
     },

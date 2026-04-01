@@ -23,6 +23,8 @@ func Migrate(db *gorm.DB) error {
 		&models.Setting{},
 		&models.HistoryEntry{},
 		&models.Struktur{},
+		&models.AsetTetap{},
+		&models.BarangTidakTetap{},
 	)
 }
 

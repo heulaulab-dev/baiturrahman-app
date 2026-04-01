@@ -79,7 +79,7 @@ const asetSchema = z.object({
 const barangSchema = z.object({
   kategori: z.enum(kategoriOptions),
   nama_barang: z.string().min(1, 'Nama barang wajib diisi'),
-  jumlah: z.coerce.number().int().nonnegative().optional(),
+  jumlah: z.number().int().nonnegative().optional(),
   satuan: z.string().optional(),
   kondisi_baik: z.enum(['baik', 'rusak']),
   keterangan: z.string().optional(),

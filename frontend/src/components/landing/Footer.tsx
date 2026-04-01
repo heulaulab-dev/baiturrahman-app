@@ -1,9 +1,13 @@
 'use client';
-
-import {CircleFadingPlus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import Logo from '@/public/Logomark.svg';
+import Logo from '@/public/Logo.svg';
+import InstagramIcon from '@/public/icon/instagram.svg';
+import YoutubeIcon from '@/public/icon/youtube.svg';
+import FacebookIcon from '@/public/icon/facebook.svg';
+import TwitterIcon from '@/public/icon/twitter.svg';
+import WhatsappIcon from '@/public/icon/whatsapp.svg';
+
 import {
 	LANDING_PRAYER_PILLS,
 	useMuslimProLandingPrayerTimes,
@@ -34,10 +38,11 @@ const quickLinks: Record<string, QuickLinkItem[]> = {
 };
 
 const socialLinks = [
-	{ icon: CircleFadingPlus, href: 'https://instagram.com/baiturrahman' },
-	{ icon: CircleFadingPlus, href: 'https://youtube.com/baiturrahman' },
-	{ icon: CircleFadingPlus, href: 'https://facebook.com/baiturrahman' },
-	{ icon: CircleFadingPlus, href: 'https://twitter.com/baiturrahman' },
+	{ icon: InstagramIcon, href: 'https://instagram.com/baiturrahim' },
+	{ icon: YoutubeIcon, href: 'https://youtube.com/baiturrahim' },
+	{ icon: FacebookIcon, href: 'https://facebook.com/baiturrahim' },
+	{ icon: TwitterIcon, href: 'https://twitter.com/baiturrahim' },
+	{ icon: WhatsappIcon, href: 'https://wa.me/6281234567890' },
 ];
 
 export function Footer() {
@@ -51,13 +56,13 @@ export function Footer() {
 					{/* Left: Brand */}
 					<div className="md:col-span-1">
 						<div className="flex items-center gap-3 mb-4">
-							<Image src={Logo} alt="Baiturrahman" width={100} height={100} />
+							<Image src={Logo} alt="Baiturrahim" className="w-100" />
 						</div>
 						<p className="text-sm text-sacred-muted mb-4">
 							{mosqueInfo?.description || 'Pusat ibadah dan kegiatan keagamaan Muslim'}
 						</p>
 						<p className="text-xs text-sacred-muted">
-							&copy; {new Date().getFullYear()} {mosqueInfo?.name || 'Masjid Baiturrahman'}. All rights reserved.
+							&copy; {new Date().getFullYear()} {mosqueInfo?.name || 'Masjid Baiturrahim'}. All rights reserved.
 						</p>
 					</div>
 
@@ -120,7 +125,7 @@ export function Footer() {
 										rel="noopener noreferrer"
 										className="p-2 border border-sacred-green text-sacred-green hover:border-sacred-gold hover:text-sacred-gold transition-colors"
 									>
-										<Icon size={18} />
+										<Image src={Icon} alt={social.href} width={18} height={18} />
 									</Link>
 								);
 							})}

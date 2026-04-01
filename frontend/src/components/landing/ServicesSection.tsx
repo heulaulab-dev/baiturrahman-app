@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Book, Users, Heart, Calendar, Map, BookOpen } from 'lucide-react';
+import { Book, Heart, Calendar } from 'lucide-react';
 import { useState } from 'react';
 
 const services = [

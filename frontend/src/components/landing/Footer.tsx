@@ -4,21 +4,17 @@ import {CircleFadingPlus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Logo from '@/public/Logomark.svg';
+import {
+	LANDING_PRAYER_PILLS,
+	useMuslimProLandingPrayerTimes,
+} from '@/components/landing/useMuslimProLandingPrayerTimes';
 import { useMosqueInfo } from '@/services/hooks';
 
 const quickLinks = {
 	Tentang: ['Tentang Kami', 'Sejarah', 'Visi Misi'] ,
 	Jadwal: ['Jadwal Sholat', 'Jadwal Kajian', 'Khutbah Jumat'],
-	Layanan: ['Zakat & Wakaf', 'Muallaf Center', 'Reservasi', 'Perpustakaan'],
+	Layanan: ['Zakat & Wakaf', 'Reservasi', 'Donasi'],
 };
-
-const prayerTimes = [
-	{ name: 'Subuh', time: '04:32' },
-	{ name: 'Dzuhur', time: '12:04' },
-	{ name: 'Ashar', time: '15:21' },
-	{ name: 'Maghrib', time: '18:03' },
-	{ name: 'Isya', time: '19:15' },
-];
 
 const socialLinks = [
 	{ icon: CircleFadingPlus, href: 'https://instagram.com/baiturrahman' },
@@ -29,6 +25,7 @@ const socialLinks = [
 
 export function Footer() {
 	const { data: mosqueInfo } = useMosqueInfo();
+	const { isLoading, pillTimes } = useMuslimProLandingPrayerTimes();
 
 	return (
 		<footer className="bg-white border-t border-sacred-green py-16">
@@ -79,11 +76,18 @@ export function Footer() {
 							Jadwal Sholat
 						</h4>
 						<div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-6">
-							{prayerTimes.map((prayer) => (
+							{LANDING_PRAYER_PILLS.map((prayer) => (
 								<div key={prayer.name} className="flex justify-between gap-2">
 									<span className="text-sm text-sacred-muted">{prayer.name}</span>
 									<span className="font-mono-jetbrains text-sm text-sacred-green">
-										{prayer.time}
+										{isLoading ? (
+											<span
+												className="inline-block w-10 h-3 rounded bg-gray-200 dark:bg-gray-800 animate-pulse"
+												aria-hidden="true"
+											/>
+										) : (
+											pillTimes?.[prayer.index]
+										)}
 									</span>
 								</div>
 							))}

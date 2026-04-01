@@ -1,45 +1,22 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Clock } from 'lucide-react';
-
-const prayerTimes = [
-	{ name: 'Subuh', time: '04:32' },
-	{ name: 'Dzuhur', time: '12:04' },
-	{ name: 'Ashar', time: '15:21' },
-	{ name: 'Maghrib', time: '18:03' },
-	{ name: 'Isya', time: '19:15' },
-];
+import { LANDING_PRAYER_PILLS, useMuslimProLandingPrayerTimes } from './useMuslimProLandingPrayerTimes';
 
 export function PrayerCountdown() {
-	const [nextPrayer, setNextPrayer] = useState(prayerTimes[0]);
+	const { pillTimes, currentPrayerData, isLoading } = useMuslimProLandingPrayerTimes();
+	const [nextPrayer, setNextPrayer] = useState<{ name: string; time: string }>({ name: 'Subuh', time: '--:--' });
 	const [countdown, setCountdown] = useState('');
-	const widgetRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		const findNextPrayer = () => {
-			const now = new Date();
-			const currentTime = now.getHours() * 60 + now.getMinutes();
-
-			for (const prayer of prayerTimes) {
-				const [hours, minutes] = prayer.time.split(':').map(Number);
-				const prayerMinutes = hours * 60 + minutes;
-
-				if (prayerMinutes > currentTime) {
-					return prayer;
-				}
-			}
-
-			// If all prayers passed, next is Subuh tomorrow
-			return prayerTimes[0];
-		};
-
 		const calculateCountdown = () => {
 			const now = new Date();
 			const current = now.getHours() * 60 * 60 + now.getMinutes() * 60 + now.getSeconds();
 
 			const [hours, minutes] = nextPrayer.time.split(':').map(Number);
+			if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return '--:--:--';
 			let target = hours * 60 * 60 + minutes * 60;
 
 			// If target is in the past, add 24 hours
@@ -55,8 +32,6 @@ export function PrayerCountdown() {
 			return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 		};
 
-		setNextPrayer(findNextPrayer());
-
 		const interval = setInterval(() => {
 			setCountdown(calculateCountdown());
 		}, 1000);
@@ -64,35 +39,16 @@ export function PrayerCountdown() {
 		return () => clearInterval(interval);
 	}, [nextPrayer]);
 
-	// Magnetic effect on desktop
-	const handleMouseMove = (e: React.MouseEvent) => {
-		if (!widgetRef.current || window.innerWidth < 768) return;
-
-		const rect = widgetRef.current.getBoundingClientRect();
-		const x = e.clientX - rect.left - rect.width / 2;
-		const y = e.clientY - rect.top - rect.height / 2;
-
-		// Limit the distance
-		const maxDistance = 20;
-		const distance = Math.sqrt(x * x + y * y);
-		const scale = Math.min(distance, maxDistance) / distance;
-
-		widgetRef.current.style.transform = `translate(${x * scale * 0.3}px, ${y * scale * 0.3}px)`;
-	};
-
-	const handleMouseLeave = () => {
-		if (widgetRef.current) {
-			widgetRef.current.style.transform = 'translate(0, 0)';
-		}
-	};
+	useEffect(() => {
+		if (!pillTimes || isLoading) return;
+		const nextIndex = currentPrayerData.nextPrayer;
+		const pill = LANDING_PRAYER_PILLS[nextIndex];
+		const time = pillTimes[nextIndex] ?? '--:--';
+		setNextPrayer({ name: pill?.name ?? 'Subuh', time });
+	}, [currentPrayerData.nextPrayer, isLoading, pillTimes]);
 
 	return (
-		<div
-			ref={widgetRef}
-			onMouseMove={handleMouseMove}
-			onMouseLeave={handleMouseLeave}
-			className="magnetic"
-		>
+		<div className="magnetic">
 			<motion.div
 				animate={{ opacity: [0.8, 1, 0.8] }}
 				transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}

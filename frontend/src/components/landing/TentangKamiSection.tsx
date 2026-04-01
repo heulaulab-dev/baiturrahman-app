@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen } from 'lucide-react';
+import Image from 'next/image';
 import { useTentangKami } from '@/services/hooks';
 
 export function TentangKamiSection() {
@@ -38,11 +38,13 @@ export function TentangKamiSection() {
           )}
 
           {data.image_url && (
-            <div className="w-full h-64 md:h-96 rounded-lg overflow-hidden mb-8">
-              <img
+            <div className="relative mb-8 h-64 w-full overflow-hidden rounded-lg md:h-96">
+              <Image
                 src={data.image_url}
                 alt={data.title || 'Tentang Kami'}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 896px"
               />
             </div>
           )}

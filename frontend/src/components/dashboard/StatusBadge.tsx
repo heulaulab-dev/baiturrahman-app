@@ -1,3 +1,5 @@
+import { Badge } from '@/components/ui/badge';
+
 type StatusType = 'success' | 'warning' | 'danger' | 'default';
 
 interface StatusBadgeProps {
@@ -5,13 +7,17 @@ interface StatusBadgeProps {
 	children: React.ReactNode;
 }
 
-export function StatusBadge({ status, children }: StatusBadgeProps) {
+export function StatusBadge({ status, children }: Readonly<StatusBadgeProps>) {
 	const styles = {
-		success: 'bg-chart-1/10 text-chart-1 border-chart-1/20',
-		warning: 'bg-chart-5/10 text-chart-5 border-chart-5/20',
+		success: 'bg-primary/10 text-primary border-primary/20',
+		warning: 'bg-accent/40 text-accent-foreground border-accent',
 		danger: 'bg-destructive/10 text-destructive border-destructive/20',
-		default: 'bg-muted/10 text-muted-foreground border-border',
+		default: 'bg-muted text-muted-foreground border-border',
 	};
 
-	return <span className={`px-2.5 py-1 rounded-md text-xs font-medium tracking-wider ${styles[status]}`}>{children}</span>;
+	return (
+		<Badge variant="outline" className={`px-2 py-1 text-xs font-medium ${styles[status]}`}>
+			{children}
+		</Badge>
+	);
 }

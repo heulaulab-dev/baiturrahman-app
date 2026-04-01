@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
-import Logomark from '@/public/Logomark.svg';
 import Logo from '@/public/Logo.svg';
 import Image from 'next/image';
+
+import { Button } from '@/components/ui/button';
 
 const navLinks = [
 	{ name: 'Beranda', href: '#hero' },
@@ -42,7 +43,7 @@ export function Navbar() {
 					<div className="flex items-center justify-between h-16 md:h-20">
 						{/* Logo */}
 						<Link href="/" className="flex items-center gap-3">
-							<Image src={Logo} alt="Baiturrahman"/>
+							<Image src={Logo} alt="Baiturrahman" className='w-50' />
 						</Link>
 
 						{/* Desktop Nav */}
@@ -60,13 +61,16 @@ export function Navbar() {
 						</div>
 
 						{/* Mobile Menu Button */}
-						<button
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon"
+							className="md:hidden text-sacred-green"
 							onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-							className="md:hidden p-2 text-sacred-green"
 							aria-label="Toggle menu"
 						>
 							{isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-						</button>
+						</Button>
 					</div>
 				</div>
 			</nav>
@@ -83,18 +87,21 @@ export function Navbar() {
 					>
 						<div className="flex flex-col items-center justify-center h-full gap-8">
 							{navLinks.map((link, index) => (
-								<motion.a
+								<motion.div
 									key={link.name}
-									href={link.href}
 									initial={{ opacity: 0, y: 20 }}
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ delay: index * 0.1 }}
-									onClick={() => setIsMobileMenuOpen(false)}
-									className="font-serif-cormorant text-2xl text-sacred-green relative group"
 								>
-									{link.name}
-									<span className="absolute bottom-0 left-0 w-0 h-px bg-sacred-gold transition-all duration-300 group-hover:w-full" />
-								</motion.a>
+									<Link
+										href={link.href}
+										onClick={() => setIsMobileMenuOpen(false)}
+										className="font-serif-cormorant text-2xl text-sacred-green relative group block text-center"
+									>
+										{link.name}
+										<span className="absolute bottom-0 left-0 w-0 h-px bg-sacred-gold transition-all duration-300 group-hover:w-full" />
+									</Link>
+								</motion.div>
 							))}
 						</div>
 					</motion.div>

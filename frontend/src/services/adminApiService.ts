@@ -4,6 +4,9 @@ import type {
   DonationStats,
   Event,
   User,
+  PaymentMethod,
+  Announcement,
+  Khutbah,
   ApiResponse,
   PaginatedResponse,
   HistoryEntry,
@@ -38,10 +41,57 @@ export const confirmDonation = async (id: string): Promise<DonationFull> => {
   return response.data.data
 }
 
+export const getAdminPaymentMethods = async (): Promise<PaymentMethod[]> => {
+  const response = await api.get<ApiResponse<PaymentMethod[]>>('/v1/admin/payment-methods', {
+    params: { active: 'false' },
+  })
+  return response.data.data
+}
+
+export const createPaymentMethod = async (data: {
+  name: string
+  type: PaymentMethod['type']
+  account_number?: string
+  account_name?: string
+  qr_code_url?: string
+  instructions?: string
+  is_active?: boolean
+  display_order?: number
+}): Promise<PaymentMethod> => {
+  const response = await api.post<ApiResponse<PaymentMethod>>('/v1/admin/payment-methods', data)
+  return response.data.data
+}
+
+export const updatePaymentMethod = async (
+  id: string,
+  data: Partial<PaymentMethod>
+): Promise<PaymentMethod> => {
+  const response = await api.put<ApiResponse<PaymentMethod>>(`/v1/admin/payment-methods/${id}`, data)
+  return response.data.data
+}
+
+export const deletePaymentMethod = async (id: string): Promise<void> => {
+  await api.delete(`/v1/admin/payment-methods/${id}`)
+}
+
 export const getAdminEvents = async (
   params: { page?: number; limit?: number } = {}
 ): Promise<PaginatedResponse<Event>> => {
   const response = await api.get<PaginatedResponse<Event>>('/v1/admin/events', { params })
+  return response.data
+}
+
+export const getAdminAnnouncements = async (
+  params: { page?: number; limit?: number } = {}
+): Promise<PaginatedResponse<Announcement>> => {
+  const response = await api.get<PaginatedResponse<Announcement>>('/v1/admin/announcements', { params })
+  return response.data
+}
+
+export const getAdminKhutbahs = async (
+  params: { page?: number; limit?: number } = {}
+): Promise<PaginatedResponse<Khutbah>> => {
+  const response = await api.get<PaginatedResponse<Khutbah>>('/v1/admin/khutbahs', { params })
   return response.data
 }
 

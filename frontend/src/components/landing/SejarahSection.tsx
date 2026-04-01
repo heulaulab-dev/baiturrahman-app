@@ -1,6 +1,7 @@
 'use client';
 
-import { Calendar, Landmark, Trophy, Sparkles } from 'lucide-react';
+import Image from 'next/image';
+import { Landmark, Trophy, Sparkles } from 'lucide-react';
 import { useHistoryEntries } from '@/services/hooks';
 import { HistoryEntry } from '@/types';
 
@@ -85,11 +86,13 @@ export function SejarahSection() {
                         )}
 
                         {entry.image_url && (
-                          <div className="mt-4">
-                            <img
+                          <div className="relative mt-4 h-64 w-full overflow-hidden rounded-lg">
+                            <Image
                               src={entry.image_url}
-                              alt={entry.title}
-                              className="rounded-lg object-cover max-h-64 w-full"
+                              alt={entry.title || 'Sejarah'}
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 896px) 100vw, 896px"
                             />
                           </div>
                         )}

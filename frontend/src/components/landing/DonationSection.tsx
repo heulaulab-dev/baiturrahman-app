@@ -4,18 +4,18 @@ import { motion } from 'framer-motion';
 import { Shield, FileText, QrCode, Calculator, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 import Image from 'next/image';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { usePaymentMethods, createDonation } from '@/services/hooks';
-import { Input } from '../ui/input';
-import { Button } from '../ui/button';
-import { PaymentMethod } from '@/types';
-
-const stats = [
-	{ value: '50.000+', label: 'Jamaah/Bulan' },
-	{ value: '200+', label: 'Kajian/Tahun' },
-	{ value: '15+', label: 'Tahun Berdiri' },
-	{ value: '1.000+', label: 'Muallaf Dibina' },
-];
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
 
 export function DonationSection() {
 	const [showCalculator, setShowCalculator] = useState(false);
@@ -54,7 +54,7 @@ export function DonationSection() {
 
 		donationMutation.mutate({
 			donor_name: donorName,
-			amount: parseFloat(donationAmount),
+			amount: Number.parseFloat(donationAmount),
 			payment_method_id: selectedPaymentMethod,
 			message: donationMessage,
 		});
@@ -64,6 +64,59 @@ export function DonationSection() {
 	const bankMethods = paymentMethods?.filter((pm) => pm.type === 'bank_transfer') || [];
 	const qrisMethods = paymentMethods?.filter((pm) => pm.type === 'qris') || [];
 	const ewalletMethods = paymentMethods?.filter((pm) => pm.type === 'ewallet') || [];
+	let bankContent: React.ReactNode;
+
+	if (paymentLoading) {
+		bankContent = (
+			<div className="p-4 border border-sacred-green">
+				<div className="h-4 bg-gray-200 rounded w-1/2 mb-2 animate-pulse" />
+				<div className="h-6 bg-gray-200 rounded w-3/4 mb-1 animate-pulse" />
+				<div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse" />
+			</div>
+		);
+	} else if (bankMethods.length > 0) {
+		bankContent = bankMethods.map((bank, index) => (
+			<motion.div
+				key={bank.id}
+				initial={{ opacity: 0, x: 10 }}
+				whileInView={{ opacity: 1, x: 0 }}
+				viewport={{ once: true }}
+				transition={{ delay: index * 0.1 }}
+				className="p-4 border border-sacred-green hover:border-sacred-gold transition-colors"
+			>
+				<div className="flex justify-between items-start">
+					<div>
+						<span className="block text-sm text-sacred-muted mb-1">{bank.name}</span>
+						<span className="block font-mono-jetbrains text-lg text-sacred-green mb-1">
+							{bank.account_number || '--'}
+						</span>
+						<span className="text-xs text-sacred-muted">a.n. {bank.account_name || '--'}</span>
+					</div>
+					{bank.account_number && (
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon"
+							className="h-8 w-8 shrink-0 text-sacred-muted hover:bg-sacred-green/10 hover:text-sacred-muted"
+							onClick={() => handleCopyAccount(bank.account_number!)}
+						>
+							{copiedAccount === bank.account_number ? (
+								<Check size={16} className="text-sacred-gold" />
+							) : (
+								<Copy size={16} />
+							)}
+						</Button>
+					)}
+				</div>
+			</motion.div>
+		));
+	} else {
+		bankContent = (
+			<div className="p-4 border border-sacred-green text-center text-sacred-muted text-sm">
+				Belum ada metode pembayaran
+			</div>
+		);
+	}
 
 	return (
 		<section id="donasi" className="py-20 bg-white">
@@ -97,53 +150,31 @@ export function DonationSection() {
 									<span className="block text-sm font-medium text-sacred-green">
 										Legal & Terdaftar
 									</span>
-									<span className="text-xs text-sacred-muted">Kemenag RI No. 123/2024</span>
 								</div>
 							</div>
 
 							<div className="flex items-center gap-3 p-4 border border-sacred-green">
 								<FileText size={24} className="text-sacred-green shrink-0" />
-								<button
-									type="button"
-									className="text-sm text-sacred-gold relative group cursor-pointer bg-transparent border-none p-0 font-inherit"
-									onClick={() => console.log('Download report')}
-								>
-									Laporan Transparansi
-									<span className="absolute bottom-0 left-0 w-0 h-px bg-sacred-gold transition-all duration-300 group-hover:w-full" />
-								</button>
+								<span className="text-sm text-sacred-muted">Laporan transparansi tersedia via dashboard admin</span>
 							</div>
 
-							<div className="grid grid-cols-2 gap-3 pt-4">
-								{stats.map((stat, index) => (
-									<motion.div
-										key={stat.label}
-										initial={{ opacity: 0, y: 10 }}
-									whileInView={{ opacity: 1, y: 0 }}
-										viewport={{ once: true }}
-										transition={{ delay: index * 0.1 }}
-										className="text-center p-3 bg-white"
-									>
-										<span className="block font-serif-cormorant font-semibold text-lg text-sacred-green">
-											{stat.value}
-										</span>
-										<span className="text-xs text-sacred-muted">{stat.label}</span>
-									</motion.div>
-								))}
-							</div>
-
-							<motion.button
-								type="button"
+							<motion.div
 								initial={{ opacity: 0 }}
 								whileInView={{ opacity: 1 }}
 								viewport={{ once: true }}
-								onClick={() => {
-									setShowDonationForm(!showDonationForm);
-									setShowCalculator(false);
-								}}
-								className="w-full py-3 border border-sacred-green text-sacred-green font-serif-cormorant hover:bg-sacred-green hover:text-white transition-colors"
 							>
-								Isi Form Donasi
-							</motion.button>
+								<Button
+									type="button"
+									variant="outline"
+									className="h-auto w-full rounded-none border-sacred-green py-3 font-serif-cormorant text-sacred-green hover:bg-sacred-green hover:text-white"
+									onClick={() => {
+										setShowDonationForm(!showDonationForm);
+										setShowCalculator(false);
+									}}
+								>
+									Isi Form Donasi
+								</Button>
+							</motion.div>
 						</div>
 					</motion.div>
 
@@ -182,51 +213,7 @@ export function DonationSection() {
 						className="md:col-span-1"
 					>
 						<div className="space-y-4">
-							{paymentLoading ? (
-								<div className="p-4 border border-sacred-green">
-									<div className="h-4 bg-gray-200 rounded w-1/2 mb-2 animate-pulse" />
-									<div className="h-6 bg-gray-200 rounded w-3/4 mb-1 animate-pulse" />
-									<div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse" />
-								</div>
-							) : bankMethods.length > 0 ? (
-								bankMethods.map((bank, index) => (
-									<motion.div
-										key={bank.id}
-										initial={{ opacity: 0, x: 10 }}
-										whileInView={{ opacity: 1, x: 0 }}
-										viewport={{ once: true }}
-										transition={{ delay: index * 0.1 }}
-										className="p-4 border border-sacred-green hover:border-sacred-gold transition-colors"
-									>
-										<div className="flex justify-between items-start">
-											<div>
-												<span className="block text-sm text-sacred-muted mb-1">{bank.name}</span>
-												<span className="block font-mono-jetbrains text-lg text-sacred-green mb-1">
-													{bank.account_number || '--'}
-												</span>
-												<span className="text-xs text-sacred-muted">a.n. {bank.account_name || '--'}</span>
-											</div>
-											{bank.account_number && (
-												<button
-													type="button"
-													onClick={() => handleCopyAccount(bank.account_number!)}
-													className="p-1 hover:bg-sacred-green/10 rounded transition-colors"
-												>
-													{copiedAccount === bank.account_number ? (
-														<Check size={16} className="text-sacred-gold" />
-													) : (
-														<Copy size={16} className="text-sacred-muted" />
-													)}
-												</button>
-											)}
-										</div>
-									</motion.div>
-								))
-							) : (
-								<div className="p-4 border border-sacred-green text-center text-sacred-muted text-sm">
-									Belum ada metode pembayaran
-								</div>
-							)}
+							{bankContent}
 
 							{/* E-Wallets */}
 							{ewalletMethods.length > 0 && (
@@ -250,17 +237,19 @@ export function DonationSection() {
 													<span className="text-xs text-sacred-muted">a.n. {wallet.account_name || '--'}</span>
 												</div>
 												{wallet.account_number && (
-													<button
+													<Button
 														type="button"
+														variant="ghost"
+														size="icon"
+														className="h-8 w-8 shrink-0 text-sacred-muted hover:bg-sacred-green/10 hover:text-sacred-muted"
 														onClick={() => handleCopyAccount(wallet.account_number!)}
-														className="p-1 hover:bg-sacred-green/10 rounded transition-colors"
 													>
 														{copiedAccount === wallet.account_number ? (
 															<Check size={16} className="text-sacred-gold" />
 														) : (
-															<Copy size={16} className="text-sacred-muted" />
+															<Copy size={16} />
 														)}
-													</button>
+													</Button>
 												)}
 											</div>
 										</motion.div>
@@ -291,7 +280,9 @@ export function DonationSection() {
 							) : (
 								<form onSubmit={handleDonationSubmit} className="space-y-4">
 									<div>
-										<label htmlFor="donor-name" className="block text-sm text-sacred-green mb-1">Nama Donatur</label>
+										<Label htmlFor="donor-name" className="block text-sm text-sacred-green mb-1">
+											Nama Donatur
+										</Label>
 										<Input
 											id="donor-name"
 											type="text"
@@ -302,7 +293,9 @@ export function DonationSection() {
 										/>
 									</div>
 									<div>
-										<label htmlFor="donation-amount" className="block text-sm text-sacred-green mb-1">Jumlah Donasi (Rp)</label>
+										<Label htmlFor="donation-amount" className="block text-sm text-sacred-green mb-1">
+											Jumlah Donasi (Rp)
+										</Label>
 										<Input
 											id="donation-amount"
 											type="number"
@@ -314,34 +307,42 @@ export function DonationSection() {
 										/>
 									</div>
 									<div>
-										<label htmlFor="payment-method" className="block text-sm text-sacred-green mb-1">Metode Pembayaran</label>
-										<select
-											id="payment-method"
-											value={selectedPaymentMethod || ''}
-											onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-											className="w-full px-3 py-2 border border-sacred-green bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sacred-green"
-											required
+										<Label htmlFor="payment-method" className="block text-sm text-sacred-green mb-1">
+											Metode Pembayaran
+										</Label>
+										<Select
+											value={selectedPaymentMethod ?? ''}
+											onValueChange={(value) => setSelectedPaymentMethod(value)}
 										>
-											<option value="">Pilih metode pembayaran</option>
-											{bankMethods.map((method) => (
-												<option key={method.id} value={method.id}>
-													{method.name} - {method.account_number}
-												</option>
-											))}
-											{qrisMethods.map((method) => (
-												<option key={method.id} value={method.id}>
-													QRIS
-												</option>
-											))}
-											{ewalletMethods.map((method) => (
-												<option key={method.id} value={method.id}>
-													{method.name} - {method.account_number}
-												</option>
-											))}
-										</select>
+											<SelectTrigger
+												id="payment-method"
+												className="w-full rounded-none border-sacred-green bg-white text-sm focus:ring-sacred-green"
+											>
+												<SelectValue placeholder="Pilih metode pembayaran" />
+											</SelectTrigger>
+											<SelectContent>
+												{bankMethods.map((method) => (
+													<SelectItem key={method.id} value={method.id}>
+														{method.name} - {method.account_number}
+													</SelectItem>
+												))}
+												{qrisMethods.map((method) => (
+													<SelectItem key={method.id} value={method.id}>
+														QRIS
+													</SelectItem>
+												))}
+												{ewalletMethods.map((method) => (
+													<SelectItem key={method.id} value={method.id}>
+														{method.name} - {method.account_number}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
 									</div>
 									<div>
-										<label htmlFor="donation-message" className="block text-sm text-sacred-muted mb-1">Pesan (opsional)</label>
+										<Label htmlFor="donation-message" className="block text-sm text-sacred-muted mb-1">
+											Pesan (opsional)
+										</Label>
 										<Input
 											id="donation-message"
 											type="text"
@@ -373,18 +374,19 @@ export function DonationSection() {
 					viewport={{ once: true }}
 					className="mt-12 text-center"
 				>
-					<button
+					<Button
 						type="button"
+						variant="ghost"
+						className="group relative mx-auto flex h-auto items-center gap-2 rounded-none p-0 font-serif-cormorant text-sacred-green hover:bg-transparent hover:text-sacred-green"
 						onClick={() => {
 							setShowCalculator(!showCalculator);
 							setShowDonationForm(false);
 						}}
-						className="flex items-center gap-2 mx-auto text-sacred-green font-serif-cormorant relative group"
 					>
 						<Calculator size={18} />
 						<span>Kalkulator Zakat</span>
 						<span className="absolute bottom-0 left-0 w-0 h-px bg-sacred-gold transition-all duration-300 group-hover:w-full" />
-					</button>
+					</Button>
 
 					{showCalculator && (
 						<motion.div
@@ -396,7 +398,9 @@ export function DonationSection() {
 							<h4 className="font-serif-cormorant text-lg text-sacred-green mb-4">Kalkulator Zakat Maal</h4>
 							<div className="space-y-4">
 								<div>
-									<label htmlFor="wealth-total" className="block text-sm text-sacred-green mb-1">Total Harta (Rp)</label>
+									<Label htmlFor="wealth-total" className="block text-sm text-sacred-green mb-1">
+										Total Harta (Rp)
+									</Label>
 									<Input
 										id="wealth-total"
 										type="number"
@@ -405,12 +409,14 @@ export function DonationSection() {
 									/>
 								</div>
 								<div>
-									<label htmlFor="nishab-info" className="block text-sm text-sacred-muted mb-1">Nishab (Rp 85.000.000)</label>
+									<Label htmlFor="nishab-info" className="block text-sm text-sacred-muted mb-1">
+										Nishab
+									</Label>
 									<span id="nishab-info" className="text-sm text-sacred-green">Minimal untuk wajib zakat</span>
 								</div>
-								<Button className="w-full" type="button">
-									Hitung Zakat
-								</Button>
+									<Button type="button" className="w-full rounded-none">
+										Hitung Zakat
+									</Button>
 							</div>
 						</motion.div>
 					)}

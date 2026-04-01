@@ -1,74 +1,100 @@
 'use client';
 
-import { useState } from 'react';
-import { UserPlus, Bell, Globe, LayoutDashboard, Calendar, Key } from 'lucide-react';
+import { UserPlus, LayoutDashboard } from 'lucide-react';
 import { MosqueProfile } from '@/components/dashboard/MosqueProfile';
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from '@/components/ui/tabs';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from '@/components/ui/table';
+import { Card, CardContent } from '@/components/ui/card';
+import { useAdminUsers } from '@/services/adminHooks';
 
-const usersData = [
-	{ id: '1', nama: 'Ketua Pengurus', email: 'ketua@baiturrahman.or.id', role: 'super-admin', lastLogin: '2026-03-17 14:30', status: 'aktif' },
-	{ id: '2', nama: 'Bendahara', email: 'bendahara@baiturrahman.or.id', role: 'admin', lastLogin: '2026-03-17 11:45', status: 'aktif' },
-	{ id: '3', nama: 'Ust. Yusuf Al-Amin', email: 'ustadz@baiturrahman.or.id', role: 'admin', lastLogin: '2026-03-17 09:20', status: 'aktif' },
-	{ id: '4', nama: 'Sekretaris', email: 'sekretaris@baiturrahman.or.id', role: 'content-editor', lastLogin: '2026-03-17 08:15', status: 'aktif' },
-];
-
-type TabType = 'profil-masjid' | 'pengguna-role' | 'jadwal-sholat' | 'notifikasi' | 'api';
+type TabType = 'profil-masjid' | 'pengguna-role';
 
 export default function PengaturanPage() {
-	const [activeTab, setActiveTab] = useState<TabType>('profil-masjid');
+	const { data: usersResponse, isLoading: usersLoading } = useAdminUsers();
+	const users = usersResponse?.data ?? [];
+	let usersContent: React.ReactNode;
+
+	if (usersLoading) {
+		usersContent = (
+			<TableRow>
+				<TableCell colSpan={4} className="text-center text-sm text-muted-foreground">
+					Memuat pengguna...
+				</TableCell>
+			</TableRow>
+		);
+	} else if (users.length === 0) {
+		usersContent = (
+			<TableRow>
+				<TableCell colSpan={4} className="text-center text-sm text-muted-foreground">
+					Belum ada data pengguna
+				</TableCell>
+			</TableRow>
+		);
+	} else {
+		usersContent = users.map((user) => (
+			<TableRow key={user.id}>
+				<TableCell className="font-medium">{user.full_name}</TableCell>
+				<TableCell className="text-muted-foreground">{user.email}</TableCell>
+				<TableCell className="uppercase tracking-wide text-muted-foreground">{user.role}</TableCell>
+				<TableCell className="text-muted-foreground">
+					{user.last_login_at ? new Date(user.last_login_at).toLocaleString('id-ID') : '-'}
+				</TableCell>
+			</TableRow>
+		));
+	}
 
 	const tabs: { key: TabType; label: string; icon: React.ElementType }[] = [
 		{ key: 'profil-masjid', label: 'Profil Masjid', icon: LayoutDashboard },
 		{ key: 'pengguna-role', label: 'Pengguna & Role', icon: UserPlus },
-		{ key: 'jadwal-sholat', label: 'Jadwal Sholat', icon: Calendar },
-		{ key: 'notifikasi', label: 'Notifikasi', icon: Bell },
-		{ key: 'api', label: 'API', icon: Key },
 	];
 
 	return (
 		<div className="space-y-6 p-6">
-			{/* Tabs */}
-			<div className="flex flex-wrap items-center gap-1 border border-border rounded-lg bg-muted/30 p-1">
-				{tabs.map((tab) => (
-					<button
-						key={tab.key}
-						onClick={() => setActiveTab(tab.key)}
-						className={`flex items-center gap-2 px-6 py-3 rounded-md font-medium transition-colors text-sm ${activeTab === tab.key ? 'bg-background text-foreground' : 'text-muted hover:bg-muted/50'}`}
-					>
-						<tab.icon className="w-4 h-4" />
-						{tab.label}
-					</button>
-				))}
-			</div>
-
-			{/* Profil Masjid Tab */}
-			{activeTab === 'profil-masjid' && <MosqueProfile />}
-
-			{/* Pengguna & Role Tab */}
-			{activeTab === 'pengguna-role' && (
-				<div className="border border-border bg-background rounded-lg overflow-hidden">
-					<div className="grid grid-cols-[1fr_200px_120px_140px] bg-muted/30 h-10 items-center px-4 text-xs font-medium tracking-wider text-muted uppercase">
-						<div>Nama</div>
-						<div>Email</div>
-						<div>Role</div>
-						<div>Login Terakhir</div>
-					</div>
-					{usersData.map((user) => (
-						<div key={user.id} className="grid grid-cols-[1fr_200px_120px_140px] border-t border-border h-12 items-center px-4 text-sm hover:bg-muted/30 transition-colors">
-							<div className="text-foreground font-medium">{user.nama}</div>
-							<div className="text-muted truncate">{user.email}</div>
-							<div className="text-xs text-muted uppercase tracking-wider">{user.role}</div>
-							<div className="text-xs text-muted">{user.lastLogin}</div>
-						</div>
+			<Tabs defaultValue="profil-masjid" className="space-y-6">
+				<TabsList className="h-auto w-full flex-wrap justify-start gap-2 rounded-lg bg-muted/30 p-2">
+					{tabs.map((tab) => (
+						<TabsTrigger key={tab.key} value={tab.key} className="gap-2 px-4 py-2">
+							<tab.icon className="h-4 w-4" />
+							{tab.label}
+						</TabsTrigger>
 					))}
-				</div>
-			)}
+				</TabsList>
 
-			{/* Placeholder tabs */}
-			{(activeTab === 'jadwal-sholat' || activeTab === 'notifikasi' || activeTab === 'api') && (
-				<div className="flex flex-col items-center justify-center py-20 text-muted">
-					<p className="text-sm">Halaman ini belum tersedia</p>
-				</div>
-			)}
+				<TabsContent value="profil-masjid">
+					<MosqueProfile />
+				</TabsContent>
+
+				<TabsContent value="pengguna-role">
+					<Card>
+						<CardContent className="p-0">
+							<Table>
+								<TableHeader className="bg-muted/30">
+									<TableRow>
+										<TableHead>Nama</TableHead>
+										<TableHead>Email</TableHead>
+										<TableHead>Role</TableHead>
+										<TableHead>Login Terakhir</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>{usersContent}</TableBody>
+							</Table>
+						</CardContent>
+					</Card>
+				</TabsContent>
+
+			</Tabs>
 		</div>
 	);
 }

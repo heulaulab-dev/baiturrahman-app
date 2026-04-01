@@ -6,7 +6,16 @@ import { MapPin, Phone, Mail, Clock, Globe, CircleFadingPlus } from 'lucide-reac
 import { useMosqueInfo } from '@/services/hooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useState } from 'react';
 
 const layananOptions = [
 	'Umum',
@@ -18,6 +27,7 @@ const layananOptions = [
 
 export function ContactSection() {
 	const { data: mosqueInfo, isLoading } = useMosqueInfo();
+	const [selectedService, setSelectedService] = useState<string>('');
 
 	const contactInfo = {
 		address: mosqueInfo?.address || 'Jl. Masjid Baiturrahman No. 1, Jakarta Selatan, Indonesia',
@@ -139,7 +149,9 @@ export function ContactSection() {
 					>
 						<form className="space-y-6">
 							<div>
-								<label htmlFor="contact-name" className="block text-sm text-sacred-green mb-2">Nama</label>
+								<Label htmlFor="contact-name" className="block text-sm text-sacred-green mb-2">
+									Nama
+								</Label>
 								<Input
 									id="contact-name"
 									type="text"
@@ -150,7 +162,9 @@ export function ContactSection() {
 
 							<div className="grid sm:grid-cols-2 gap-4">
 								<div>
-									<label htmlFor="contact-email" className="block text-sm text-sacred-green mb-2">Email</label>
+									<Label htmlFor="contact-email" className="block text-sm text-sacred-green mb-2">
+										Email
+									</Label>
 									<Input
 										id="contact-email"
 										type="email"
@@ -159,7 +173,9 @@ export function ContactSection() {
 									/>
 								</div>
 								<div>
-									<label htmlFor="contact-phone" className="block text-sm text-sacred-green mb-2">WhatsApp</label>
+									<Label htmlFor="contact-phone" className="block text-sm text-sacred-green mb-2">
+										WhatsApp
+									</Label>
 									<Input
 										id="contact-phone"
 										type="tel"
@@ -170,20 +186,30 @@ export function ContactSection() {
 							</div>
 
 							<div>
-								<label htmlFor="contact-service" className="block text-sm text-sacred-green mb-2">Layanan</label>
-								<select
-									id="contact-service"
-									className="w-full px-3 py-2 border border-sacred-green bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sacred-green"
-								>
-									<option value="">Pilih layanan</option>
-									{layananOptions.map((option) => (
-										<option key={option} value={option}>{option}</option>
-									))}
-								</select>
+								<Label htmlFor="contact-service" className="block text-sm text-sacred-green mb-2">
+									Layanan
+								</Label>
+								<Select value={selectedService} onValueChange={setSelectedService}>
+									<SelectTrigger
+										id="contact-service"
+										className="w-full rounded-none border-sacred-green bg-white text-sm focus:ring-sacred-green"
+									>
+										<SelectValue placeholder="Pilih layanan" />
+									</SelectTrigger>
+									<SelectContent>
+										{layananOptions.map((option) => (
+											<SelectItem key={option} value={option}>
+												{option}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 							</div>
 
 							<div>
-								<label htmlFor="contact-message" className="block text-sm text-sacred-green mb-2">Pesan</label>
+								<Label htmlFor="contact-message" className="block text-sm text-sacred-green mb-2">
+									Pesan
+								</Label>
 								<Textarea
 									id="contact-message"
 									rows={5}

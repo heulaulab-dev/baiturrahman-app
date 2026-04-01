@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { ArrowUp, ArrowDown, Search, FileText, ExternalLink, MoreHorizontal, Check, X, Trash2, Filter } from 'lucide-react';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
 import { Button } from '@/components/ui/button';
@@ -14,21 +14,22 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+	useAdminDonations,
 	useAdminPaymentMethods,
 	useCreatePaymentMethod,
 	useUpdatePaymentMethod,
 	useDeletePaymentMethod,
 } from '@/services/adminHooks';
-import type { PaymentMethodType } from '@/types';
-
-const donasiData = [
-	{ id: '1', nama: 'Ahmad Fauzi Rahman', jenis: 'Donasi Umum', nominal: 500000, metode: 'bca', tanggal: '2026-03-15', status: 'success' as const },
-	{ id: '2', nama: 'Siti Nurhaliza Putri', jenis: 'Zakat Maal', nominal: 2500000, metode: 'bca', tanggal: '2026-03-14', status: 'success' as const },
-	{ id: '3', nama: 'Muhammad Irfan Hakim', jenis: 'Wakaf Tunai', nominal: 10000000, metode: 'mandiri', tanggal: '2026-03-13', status: 'warning' as const },
-	{ id: '4', nama: 'Dewi Rahayu Santoso', jenis: 'Infaq Jumat', nominal: 750000, metode: 'tunai', tanggal: '2026-03-12', status: 'danger' as const },
-	{ id: '5', nama: 'Budi Setiawan', jenis: 'Donasi Umum', nominal: 100000, metode: 'bca', tanggal: '2026-03-11', status: 'success' as const },
-	{ id: '6', nama: 'Nurul Hidayah', jenis: 'Zakat Fitrah', nominal: 5000000, metode: 'bni', tanggal: '2026-03-10', status: 'warning' as const },
-];
+import type { PaymentMethodType, DonationFull } from '@/types';
 
 const categories = ['Semua', 'Donasi Umum', 'Zakat', 'Wakaf', 'Infaq Jumat', 'Fidyah', 'Zakat Fitrah'];
 
@@ -39,7 +40,8 @@ export default function DonasiPage() {
 	const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 	const [selectedRows, setSelectedRows] = useState<string[]>([]);
 	const [showDetailDrawer, setShowDetailDrawer] = useState(false);
-	const [selectedDonasi, setSelectedDonasi] = useState<typeof donasiData[0] | null>(null);
+	const [selectedDonasi, setSelectedDonasi] = useState<DonationFull | null>(null);
+	const [page, setPage] = useState(1);
 	const [newMethodName, setNewMethodName] = useState('');
 	const [newMethodType, setNewMethodType] = useState<PaymentMethodType>('bank_transfer');
 	const [newMethodAccountNumber, setNewMethodAccountNumber] = useState('');
@@ -53,35 +55,83 @@ export default function DonasiPage() {
 	const [editMethodQrUrl, setEditMethodQrUrl] = useState('');
 
 	const { data: paymentMethods = [], isLoading: paymentMethodsLoading } = useAdminPaymentMethods();
+	const pageSize = 20;
+	const backendCategoryMap: Record<string, string | undefined> = {
+		Semua: undefined,
+		'Donasi Umum': 'sedekah',
+		Zakat: 'zakat',
+		Wakaf: 'wakaf',
+		'Infaq Jumat': 'infaq',
+		Fidyah: 'operasional',
+		'Zakat Fitrah': 'zakat',
+	};
+	const { data: donationsData, isLoading: donationsLoading } = useAdminDonations({
+		limit: pageSize,
+		page,
+		category: backendCategoryMap[filter],
+	});
+	const currentDate = new Date();
+	const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString();
+	const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59, 999).toISOString();
+	const { data: monthDonationsData } = useAdminDonations({
+		limit: 500,
+		page: 1,
+		from: monthStart,
+		to: monthEnd,
+	});
 	const createPaymentMethod = useCreatePaymentMethod();
 	const updatePaymentMethod = useUpdatePaymentMethod();
 	const deletePaymentMethod = useDeletePaymentMethod();
 
-	// Filter and sort data
-	const filteredData = donasiData.filter((donasi) => {
+	const donations = donationsData?.data ?? [];
+	const totalDonations = donationsData?.total ?? donations.length;
+	const totalPages = donationsData?.total_pages ?? 1;
+	const currentPage = donationsData?.page ?? page;
+
+	const getCategoryLabel = (category: string) => {
+		const map: Record<string, string> = {
+			infaq: 'Infaq Jumat',
+			sedekah: 'Donasi Umum',
+			zakat: 'Zakat',
+			wakaf: 'Wakaf',
+			operasional: 'Operasional',
+		};
+		return map[category] ?? category;
+	};
+
+	const getStatusBadge = (status: DonationFull['status']) => {
+		if (status === 'confirmed') return { tone: 'success' as const, label: 'Terkonfirmasi' };
+		if (status === 'cancelled') return { tone: 'danger' as const, label: 'Ditolak' };
+		return { tone: 'warning' as const, label: 'Pending' };
+	};
+
+	// Filter and sort data from API
+	const filteredData = donations.filter((donasi) => {
 		if (filter !== 'Semua') {
-			return donasi.jenis === filter;
+			return getCategoryLabel(donasi.category).toLowerCase() === filter.toLowerCase();
 		}
 		return true;
 	}).filter((donasi) => {
 		if (searchQuery) {
-			return donasi.nama.toLowerCase().includes(searchQuery.toLowerCase());
+			return donasi.donor_name.toLowerCase().includes(searchQuery.toLowerCase());
 		}
 		return true;
 	}).sort((a, b) => {
 		if (sortField === 'tanggal') {
-			const dateA = new Date(a.tanggal.split('/').reverse().join('/'));
-			const dateB = new Date(b.tanggal.split('/').reverse().join('/'));
+			const dateA = new Date(a.created_at);
+			const dateB = new Date(b.created_at);
 			return sortDirection === 'asc' ? dateA.getTime() - dateB.getTime() : dateB.getTime() - dateA.getTime();
 		}
 		if (sortField === 'nominal') {
-			return sortDirection === 'asc' ? a.nominal - b.nominal : b.nominal - a.nominal;
+			return sortDirection === 'asc' ? a.amount - b.amount : b.amount - a.amount;
 		}
 		return 0;
 	});
 
-	const totalPeriode = filteredData.reduce((sum, donasi) => sum + donasi.nominal, 0);
-	const rataDonasi = Math.floor(totalPeriode / filteredData.length);
+	const totalPeriode = filteredData.reduce((sum, donasi) => sum + donasi.amount, 0);
+	const rataDonasi = filteredData.length > 0 ? Math.floor(totalPeriode / filteredData.length) : 0;
+	const monthlyDonorSet = new Set((monthDonationsData?.data ?? []).map((donation) => donation.donor_name.toLowerCase()));
+	const newDonorsThisMonth = monthlyDonorSet.size;
 
 	const handleSort = (field: typeof sortField) => {
 		if (sortField === field) {
@@ -102,6 +152,11 @@ export default function DonasiPage() {
 		// Export functionality
 		console.log('Exporting:', filteredData);
 	};
+
+	useEffect(() => {
+		setPage(1);
+		setSelectedRows([]);
+	}, [filter, searchQuery]);
 
 	const handleCreatePaymentMethod = async () => {
 		if (!newMethodName.trim()) return;
@@ -267,6 +322,64 @@ export default function DonasiPage() {
 		});
 	}
 
+	let donationRowsContent: ReactNode;
+	if (donationsLoading) {
+		donationRowsContent = (
+			<TableRow>
+				<TableCell colSpan={9} className="py-6 text-center text-sm text-muted-foreground">
+					Memuat data donasi...
+				</TableCell>
+			</TableRow>
+		);
+	} else if (filteredData.length === 0) {
+		donationRowsContent = (
+			<TableRow>
+				<TableCell colSpan={9} className="py-6 text-center text-sm text-muted-foreground">
+					Belum ada data donasi.
+				</TableCell>
+			</TableRow>
+		);
+	} else {
+		donationRowsContent = filteredData.map((donasi, index) => (
+			<TableRow key={donasi.id} className={selectedRows.includes(donasi.id) ? 'bg-muted/40' : ''}>
+				<TableCell>
+					<Checkbox
+						checked={selectedRows.includes(donasi.id)}
+						onCheckedChange={() => toggleRowSelection(donasi.id)}
+						aria-label={`Pilih donasi ${donasi.donor_name}`}
+					/>
+				</TableCell>
+				<TableCell className="text-xs text-muted-foreground">
+					#{(currentPage - 1) * pageSize + index + 1}
+				</TableCell>
+				<TableCell className="font-medium">{donasi.donor_name}</TableCell>
+				<TableCell>{getCategoryLabel(donasi.category)}</TableCell>
+				<TableCell className="text-right font-mono">Rp {donasi.amount.toLocaleString('id-ID')}</TableCell>
+				<TableCell>{paymentMethods.find((pm) => pm.id === donasi.payment_method_id)?.name || '-'}</TableCell>
+				<TableCell>{new Date(donasi.created_at).toLocaleDateString('id-ID')}</TableCell>
+				<TableCell>
+					<StatusBadge status={getStatusBadge(donasi.status).tone}>
+						{getStatusBadge(donasi.status).label}
+					</StatusBadge>
+				</TableCell>
+				<TableCell className="text-right">
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon"
+						onClick={() => {
+							setSelectedDonasi(donasi);
+							setShowDetailDrawer(true);
+						}}
+						aria-label={`Lihat detail donasi ${donasi.donor_name}`}
+					>
+						<MoreHorizontal className="h-4 w-4" />
+					</Button>
+				</TableCell>
+			</TableRow>
+		));
+	}
+
 	return (
 		<div className="space-y-6 p-6">
 			{/* Page Header */}
@@ -401,12 +514,12 @@ export default function DonasiPage() {
 					</CardHeader>
 					<CardContent>
 						<div className="text-2xl font-mono text-foreground mb-1">Rp {totalPeriode.toLocaleString('id-ID')}</div>
-						<div className="text-sm text-muted-foreground">384 transaksi</div>
+						<div className="text-sm text-muted-foreground">{totalDonations} transaksi</div>
 					</CardContent>
 				</Card>
 				<div className="p-6 border-border hover:bg-muted/30 transition-colors">
 					<div className="text-xs font-medium text-muted-foreground uppercase mb-2">Jumlah Transaksi</div>
-					<div className="text-2xl font-mono text-foreground mb-1">{filteredData.length}</div>
+					<div className="text-2xl font-mono text-foreground mb-1">{totalDonations}</div>
 					<div className="text-sm text-muted-foreground">kali ini</div>
 				</div>
 				<div className="p-6 border-border hover:bg-muted/30 transition-colors">
@@ -416,149 +529,87 @@ export default function DonasiPage() {
 				</div>
 				<div className="p-6 border-border hover:bg-muted/30 transition-colors">
 					<div className="text-xs font-medium text-muted-foreground uppercase mb-2">Donatur Baru</div>
-					<div className="text-2xl font-mono text-foreground mb-1">47</div>
+					<div className="text-2xl font-mono text-foreground mb-1">{newDonorsThisMonth}</div>
 					<div className="text-sm text-muted-foreground">bulan ini</div>
 				</div>
 			</div>
 
 			{/* Main Table */}
-			<div className="border-border bg-background rounded-md overflow-hidden">
-				{/* Table Header */}
-				<div className="grid grid-cols-[50px_3rem_5rem_6rem_5rem_5rem_5rem] bg-muted/30 h-12 items-center text-xs font-medium tracking-widest text-muted-foreground">
-					<div className="p-3 flex items-center">
-						<input
-							type="checkbox"
-							onChange={(e) => {
-								if (e.target.checked) {
-									setSelectedRows([...filteredData.map(d => d.id)]);
-								} else {
-									setSelectedRows([]);
-								}
-							}}
-							className="w-4 h-4 border-border rounded focus:ring-1 focus:ring-foreground/20"
-						/>
-					</div>
-					<div className="text-center">#</div>
-					<div>Nama Donatur</div>
-					<div>Jenis</div>
-					<div>Nominal</div>
-					<div>Metode</div>
-					<div>Tanggal</div>
-					<div>Status</div>
-					<div className="text-center">Aksi</div>
-				</div>
-
-				{/* Table Body */}
-				<div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 350px)' }}>
-					{filteredData.map((donasi, index) => (
-						<button
-							key={donasi.id}
-							onClick={() => {
-								setSelectedDonasi(donasi);
-								setShowDetailDrawer(true);
-							}}
-							className={`
-								grid w-full grid-cols-[50px_3rem_5rem_6rem_5rem_5rem_5rem] border-b border-border
-								h-12 items-center text-sm
-								${selectedRows.includes(donasi.id) ? 'bg-muted/50' : ''}
-								hover:bg-muted/30 transition-colors text-left
-							`}
-						>
-							<div className="p-3 flex items-center">
-								<input
-									type="checkbox"
-									checked={selectedRows.includes(donasi.id)}
-									onChange={(e) => toggleRowSelection(donasi.id)}
-									className="w-4 h-4 border-border rounded focus:ring-1 focus:ring-foreground/20"
-								/>
-							</div>
-							<div className="text-center text-xs tracking-widest text-muted-foreground">#{index + 1}</div>
-							<div className="text-foreground font-medium truncate">
-								{donasi.nama}
-							</div>
-							<div className="text-foreground truncate">
-								{donasi.jenis}
-							</div>
-							<div className="text-right font-mono text-foreground">
-								Rp {donasi.nominal.toLocaleString('id-ID')}
-							</div>
-							<div className="text-center">
-								{paymentMethods.find(pm => pm.id === donasi.metode)?.name || '-'}
-							</div>
-							<div className="text-muted-foreground">{donasi.tanggal}</div>
-							<div className="text-center">
-								<StatusBadge status={donasi.status}>
-									{donasi.status === 'success' && 'Terkonfirmasi'}
-									{donasi.status === 'warning' && 'Pending'}
-									{donasi.status === 'danger' && 'Ditolak'}
-								</StatusBadge>
-							</div>
-							<div className="text-center">
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon"
-									onClick={(e) => {
-										e.stopPropagation();
-										setSelectedDonasi(donasi);
-										setShowDetailDrawer(true);
+			<div className="rounded-md border border-border bg-background">
+				<Table>
+					<TableHeader className="bg-muted/30">
+						<TableRow>
+							<TableHead className="w-10">
+								<Checkbox
+									checked={filteredData.length > 0 && selectedRows.length === filteredData.length}
+									onCheckedChange={(checked) => {
+										if (checked) {
+											setSelectedRows(filteredData.map((d) => d.id));
+											return;
+										}
+										setSelectedRows([]);
 									}}
-								>
-									<MoreHorizontal className="w-4 h-4" />
-								</Button>
-							</div>
-						</button>
-					))}
-				</div>
-
-				{/* Table Footer */}
-				<div className="grid grid-cols-[50px_3rem_5rem_6rem_5rem_5rem_5rem] bg-muted/30 h-12 items-center text-xs font-medium text-muted-foreground border-t border-border">
-					<div className="col-span-2 flex items-center gap-2 pl-3">
+									aria-label="Pilih semua donasi"
+								/>
+							</TableHead>
+							<TableHead>#</TableHead>
+							<TableHead>Nama Donatur</TableHead>
+							<TableHead>Jenis</TableHead>
+							<TableHead className="text-right">Nominal</TableHead>
+							<TableHead>Metode</TableHead>
+							<TableHead>Tanggal</TableHead>
+							<TableHead>Status</TableHead>
+							<TableHead className="text-right">Aksi</TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody>{donationRowsContent}</TableBody>
+				</Table>
+				<div className="flex flex-wrap items-center justify-between gap-4 border-t border-border bg-muted/30 px-4 py-3 text-xs text-muted-foreground">
+					<div className="flex items-center gap-2">
 						<Button variant="ghost" className="h-auto p-0 text-muted-foreground hover:text-foreground" disabled={selectedRows.length === 0}>
 							<Check className="w-4 h-4" />
 							<span className="ml-2">Konfirmasi Terpilih ({selectedRows.length})</span>
 						</Button>
-						<Button
-							onClick={handleExport}
-							variant="ghost"
-							className="h-auto p-0 text-muted-foreground hover:text-foreground"
-						>
+						<Button onClick={handleExport} variant="ghost" className="h-auto p-0 text-muted-foreground hover:text-foreground">
 							<ExternalLink className="w-4 h-4" />
 							Export
 						</Button>
 					</div>
-					<div className="flex items-center gap-2 justify-between text-center">
-						<button
-							onClick={() => {
-								setFilter('Semua');
-								setSortField('tanggal');
-								setSortDirection('desc');
-							}}
-							className="text-muted-foreground hover:text-foreground transition-colors"
+					<div className="flex items-center gap-3">
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+							disabled={currentPage <= 1}
 						>
 							Previous
-						</button>
-						<span className="font-mono text-muted-foreground">
-							{Math.min(Math.ceil(filteredData.length / 20), filteredData.length)} of {filteredData.length}
-						</span>
-						<button className="text-muted-foreground hover:text-foreground transition-colors">
-							Next →
-						</button>
-					</div>
-					<div className="col-span-2 flex items-center gap-2 justify-end pr-3">
-						<button
-							onClick={() => {
-								if (confirm('Hapus donasi terpilih?')) {
-									console.log('Delete selected:', selectedRows);
-								}
-							}}
-							className="text-destructive hover:text-destructive/80 transition-colors flex items-center gap-2 disabled:opacity-50"
-							disabled={selectedRows.length === 0}
+						</Button>
+						<span className="font-mono">{currentPage} / {totalPages}</span>
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+							disabled={currentPage >= totalPages}
 						>
-							<Trash2 className="w-4 h-4" />
-							Hapus
-						</button>
+							Next
+						</Button>
 					</div>
+					<Button
+						type="button"
+						variant="destructive"
+						size="sm"
+						onClick={() => {
+							if (confirm('Hapus donasi terpilih?')) {
+								console.log('Delete selected:', selectedRows);
+							}
+						}}
+						disabled={selectedRows.length === 0}
+					>
+						<Trash2 className="w-4 h-4" />
+						Hapus
+					</Button>
 				</div>
 			</div>
 
@@ -595,7 +646,7 @@ export default function DonasiPage() {
 								</div>
 								<div>
 									<div className="text-sm text-muted-foreground">Nama</div>
-									<div className="text-lg font-semibold text-foreground">{selectedDonasi.nama}</div>
+									<div className="text-lg font-semibold text-foreground">{selectedDonasi.donor_name}</div>
 								</div>
 							</div>
 							<div className="grid grid-cols-2 gap-4 text-sm">

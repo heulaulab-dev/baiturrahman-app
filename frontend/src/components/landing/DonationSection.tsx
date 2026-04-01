@@ -17,13 +17,6 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 
-const stats = [
-	{ value: '50.000+', label: 'Jamaah/Bulan' },
-	{ value: '200+', label: 'Kajian/Tahun' },
-	{ value: '15+', label: 'Tahun Berdiri' },
-	{ value: '1.000+', label: 'Muallaf Dibina' },
-];
-
 export function DonationSection() {
 	const [showCalculator, setShowCalculator] = useState(false);
 	const [showDonationForm, setShowDonationForm] = useState(false);
@@ -71,6 +64,59 @@ export function DonationSection() {
 	const bankMethods = paymentMethods?.filter((pm) => pm.type === 'bank_transfer') || [];
 	const qrisMethods = paymentMethods?.filter((pm) => pm.type === 'qris') || [];
 	const ewalletMethods = paymentMethods?.filter((pm) => pm.type === 'ewallet') || [];
+	let bankContent: React.ReactNode;
+
+	if (paymentLoading) {
+		bankContent = (
+			<div className="p-4 border border-sacred-green">
+				<div className="h-4 bg-gray-200 rounded w-1/2 mb-2 animate-pulse" />
+				<div className="h-6 bg-gray-200 rounded w-3/4 mb-1 animate-pulse" />
+				<div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse" />
+			</div>
+		);
+	} else if (bankMethods.length > 0) {
+		bankContent = bankMethods.map((bank, index) => (
+			<motion.div
+				key={bank.id}
+				initial={{ opacity: 0, x: 10 }}
+				whileInView={{ opacity: 1, x: 0 }}
+				viewport={{ once: true }}
+				transition={{ delay: index * 0.1 }}
+				className="p-4 border border-sacred-green hover:border-sacred-gold transition-colors"
+			>
+				<div className="flex justify-between items-start">
+					<div>
+						<span className="block text-sm text-sacred-muted mb-1">{bank.name}</span>
+						<span className="block font-mono-jetbrains text-lg text-sacred-green mb-1">
+							{bank.account_number || '--'}
+						</span>
+						<span className="text-xs text-sacred-muted">a.n. {bank.account_name || '--'}</span>
+					</div>
+					{bank.account_number && (
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon"
+							className="h-8 w-8 shrink-0 text-sacred-muted hover:bg-sacred-green/10 hover:text-sacred-muted"
+							onClick={() => handleCopyAccount(bank.account_number!)}
+						>
+							{copiedAccount === bank.account_number ? (
+								<Check size={16} className="text-sacred-gold" />
+							) : (
+								<Copy size={16} />
+							)}
+						</Button>
+					)}
+				</div>
+			</motion.div>
+		));
+	} else {
+		bankContent = (
+			<div className="p-4 border border-sacred-green text-center text-sacred-muted text-sm">
+				Belum ada metode pembayaran
+			</div>
+		);
+	}
 
 	return (
 		<section id="donasi" className="py-20 bg-white">
@@ -104,39 +150,12 @@ export function DonationSection() {
 									<span className="block text-sm font-medium text-sacred-green">
 										Legal & Terdaftar
 									</span>
-									<span className="text-xs text-sacred-muted">Kemenag RI No. 123/2024</span>
 								</div>
 							</div>
 
 							<div className="flex items-center gap-3 p-4 border border-sacred-green">
 								<FileText size={24} className="text-sacred-green shrink-0" />
-								<Button
-									type="button"
-									variant="ghost"
-									className="relative h-auto p-0 text-sm font-normal text-sacred-gold hover:bg-transparent hover:text-sacred-gold"
-									onClick={() => console.log('Download report')}
-								>
-									Laporan Transparansi
-									<span className="absolute bottom-0 left-0 w-0 h-px bg-sacred-gold transition-all duration-300 group-hover:w-full" />
-								</Button>
-							</div>
-
-							<div className="grid grid-cols-2 gap-3 pt-4">
-								{stats.map((stat, index) => (
-									<motion.div
-										key={stat.label}
-										initial={{ opacity: 0, y: 10 }}
-									whileInView={{ opacity: 1, y: 0 }}
-										viewport={{ once: true }}
-										transition={{ delay: index * 0.1 }}
-										className="text-center p-3 bg-white"
-									>
-										<span className="block font-serif-cormorant font-semibold text-lg text-sacred-green">
-											{stat.value}
-										</span>
-										<span className="text-xs text-sacred-muted">{stat.label}</span>
-									</motion.div>
-								))}
+								<span className="text-sm text-sacred-muted">Laporan transparansi tersedia via dashboard admin</span>
 							</div>
 
 							<motion.div
@@ -194,53 +213,7 @@ export function DonationSection() {
 						className="md:col-span-1"
 					>
 						<div className="space-y-4">
-							{paymentLoading ? (
-								<div className="p-4 border border-sacred-green">
-									<div className="h-4 bg-gray-200 rounded w-1/2 mb-2 animate-pulse" />
-									<div className="h-6 bg-gray-200 rounded w-3/4 mb-1 animate-pulse" />
-									<div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse" />
-								</div>
-							) : bankMethods.length > 0 ? (
-								bankMethods.map((bank, index) => (
-									<motion.div
-										key={bank.id}
-										initial={{ opacity: 0, x: 10 }}
-										whileInView={{ opacity: 1, x: 0 }}
-										viewport={{ once: true }}
-										transition={{ delay: index * 0.1 }}
-										className="p-4 border border-sacred-green hover:border-sacred-gold transition-colors"
-									>
-										<div className="flex justify-between items-start">
-											<div>
-												<span className="block text-sm text-sacred-muted mb-1">{bank.name}</span>
-												<span className="block font-mono-jetbrains text-lg text-sacred-green mb-1">
-													{bank.account_number || '--'}
-												</span>
-												<span className="text-xs text-sacred-muted">a.n. {bank.account_name || '--'}</span>
-											</div>
-											{bank.account_number && (
-												<Button
-													type="button"
-													variant="ghost"
-													size="icon"
-													className="h-8 w-8 shrink-0 text-sacred-muted hover:bg-sacred-green/10 hover:text-sacred-muted"
-													onClick={() => handleCopyAccount(bank.account_number!)}
-												>
-													{copiedAccount === bank.account_number ? (
-														<Check size={16} className="text-sacred-gold" />
-													) : (
-														<Copy size={16} />
-													)}
-												</Button>
-											)}
-										</div>
-									</motion.div>
-								))
-							) : (
-								<div className="p-4 border border-sacred-green text-center text-sacred-muted text-sm">
-									Belum ada metode pembayaran
-								</div>
-							)}
+							{bankContent}
 
 							{/* E-Wallets */}
 							{ewalletMethods.length > 0 && (
@@ -437,7 +410,7 @@ export function DonationSection() {
 								</div>
 								<div>
 									<Label htmlFor="nishab-info" className="block text-sm text-sacred-muted mb-1">
-										Nishab (Rp 85.000.000)
+										Nishab
 									</Label>
 									<span id="nishab-info" className="text-sm text-sacred-green">Minimal untuk wajib zakat</span>
 								</div>

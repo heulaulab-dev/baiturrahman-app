@@ -1,6 +1,6 @@
 'use client';
 
-import { UserPlus, Bell, LayoutDashboard, Calendar, Key } from 'lucide-react';
+import { UserPlus, LayoutDashboard } from 'lucide-react';
 import { MosqueProfile } from '@/components/dashboard/MosqueProfile';
 import {
 	Tabs,
@@ -17,23 +17,47 @@ import {
 	TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent } from '@/components/ui/card';
+import { useAdminUsers } from '@/services/adminHooks';
 
-const usersData = [
-	{ id: '1', nama: 'Ketua Pengurus', email: 'ketua@baiturrahman.or.id', role: 'super-admin', lastLogin: '2026-03-17 14:30', status: 'aktif' },
-	{ id: '2', nama: 'Bendahara', email: 'bendahara@baiturrahman.or.id', role: 'admin', lastLogin: '2026-03-17 11:45', status: 'aktif' },
-	{ id: '3', nama: 'Ust. Yusuf Al-Amin', email: 'ustadz@baiturrahman.or.id', role: 'admin', lastLogin: '2026-03-17 09:20', status: 'aktif' },
-	{ id: '4', nama: 'Sekretaris', email: 'sekretaris@baiturrahman.or.id', role: 'content-editor', lastLogin: '2026-03-17 08:15', status: 'aktif' },
-];
-
-type TabType = 'profil-masjid' | 'pengguna-role' | 'jadwal-sholat' | 'notifikasi' | 'api';
+type TabType = 'profil-masjid' | 'pengguna-role';
 
 export default function PengaturanPage() {
+	const { data: usersResponse, isLoading: usersLoading } = useAdminUsers();
+	const users = usersResponse?.data ?? [];
+	let usersContent: React.ReactNode;
+
+	if (usersLoading) {
+		usersContent = (
+			<TableRow>
+				<TableCell colSpan={4} className="text-center text-sm text-muted-foreground">
+					Memuat pengguna...
+				</TableCell>
+			</TableRow>
+		);
+	} else if (users.length === 0) {
+		usersContent = (
+			<TableRow>
+				<TableCell colSpan={4} className="text-center text-sm text-muted-foreground">
+					Belum ada data pengguna
+				</TableCell>
+			</TableRow>
+		);
+	} else {
+		usersContent = users.map((user) => (
+			<TableRow key={user.id}>
+				<TableCell className="font-medium">{user.full_name}</TableCell>
+				<TableCell className="text-muted-foreground">{user.email}</TableCell>
+				<TableCell className="uppercase tracking-wide text-muted-foreground">{user.role}</TableCell>
+				<TableCell className="text-muted-foreground">
+					{user.last_login_at ? new Date(user.last_login_at).toLocaleString('id-ID') : '-'}
+				</TableCell>
+			</TableRow>
+		));
+	}
+
 	const tabs: { key: TabType; label: string; icon: React.ElementType }[] = [
 		{ key: 'profil-masjid', label: 'Profil Masjid', icon: LayoutDashboard },
 		{ key: 'pengguna-role', label: 'Pengguna & Role', icon: UserPlus },
-		{ key: 'jadwal-sholat', label: 'Jadwal Sholat', icon: Calendar },
-		{ key: 'notifikasi', label: 'Notifikasi', icon: Bell },
-		{ key: 'api', label: 'API', icon: Key },
 	];
 
 	return (
@@ -64,42 +88,12 @@ export default function PengaturanPage() {
 										<TableHead>Login Terakhir</TableHead>
 									</TableRow>
 								</TableHeader>
-								<TableBody>
-									{usersData.map((user) => (
-										<TableRow key={user.id}>
-											<TableCell className="font-medium">{user.nama}</TableCell>
-											<TableCell className="text-muted-foreground">{user.email}</TableCell>
-											<TableCell className="uppercase tracking-wide text-muted-foreground">{user.role}</TableCell>
-											<TableCell className="text-muted-foreground">{user.lastLogin}</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
+								<TableBody>{usersContent}</TableBody>
 							</Table>
 						</CardContent>
 					</Card>
 				</TabsContent>
 
-				<TabsContent value="jadwal-sholat">
-					<Card className="py-20">
-						<CardContent className="text-center text-sm text-muted-foreground">
-							Halaman ini belum tersedia
-						</CardContent>
-					</Card>
-				</TabsContent>
-				<TabsContent value="notifikasi">
-					<Card className="py-20">
-						<CardContent className="text-center text-sm text-muted-foreground">
-							Halaman ini belum tersedia
-						</CardContent>
-					</Card>
-				</TabsContent>
-				<TabsContent value="api">
-					<Card className="py-20">
-						<CardContent className="text-center text-sm text-muted-foreground">
-							Halaman ini belum tersedia
-						</CardContent>
-					</Card>
-				</TabsContent>
 			</Tabs>
 		</div>
 	);

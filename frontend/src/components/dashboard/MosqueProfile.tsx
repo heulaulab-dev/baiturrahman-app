@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TrendingUp, Save, Loader2, Eye } from 'lucide-react';
+import { Save, Loader2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,11 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useMosqueInfo } from '@/services/hooks';
-import { useUpdateMosqueInfo } from '@/services/adminHooks';
+import { useUpdateMosqueInfo, useDonationStats, useAdminUsers, useAdminEvents } from '@/services/adminHooks';
 
 export function MosqueProfile() {
   const { data: mosqueInfo, isLoading } = useMosqueInfo();
   const updateMutation = useUpdateMosqueInfo();
+  const { data: donationStats } = useDonationStats();
+  const { data: usersResponse } = useAdminUsers();
+  const { data: eventsResponse } = useAdminEvents(1);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -383,28 +386,24 @@ export function MosqueProfile() {
       {/* Right Column - Stats */}
       <Card>
         <CardHeader>
-          <CardTitle>Statistik Website</CardTitle>
-          <CardDescription>Overview statistik website</CardDescription>
+          <CardTitle>Statistik Sistem</CardTitle>
+          <CardDescription>Ringkasan data dari API dashboard</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 border border-border bg-background rounded-md">
-            <div className="text-xs font-medium text-muted-foreground uppercase mb-2">Pengunjung</div>
-            <div className="text-2xl font-mono text-foreground mb-1">12,456</div>
-            <div className="text-sm text-muted-foreground">bulan ini</div>
-            <div className="flex items-center gap-1 text-primary text-xs mt-1">
-              <TrendingUp className="w-3 h-3" />
-              <span>+34%</span>
-            </div>
-          </div>
-          <div className="p-4 border border-border bg-background rounded-md">
-            <div className="text-xs font-medium text-muted-foreground uppercase mb-2">Artikel Dilihat</div>
-            <div className="text-2xl font-mono text-foreground mb-1">3,456</div>
-            <div className="text-sm text-muted-foreground">total</div>
-          </div>
-          <div className="p-4 border border-border bg-background rounded-md">
-            <div className="text-xs font-medium text-muted-foreground uppercase mb-2">Donasi</div>
-            <div className="text-2xl font-mono text-foreground mb-1">472</div>
+            <div className="text-xs font-medium text-muted-foreground uppercase mb-2">Total Donasi</div>
+            <div className="text-2xl font-mono text-foreground mb-1">{(donationStats?.total_count ?? 0).toLocaleString('id-ID')}</div>
             <div className="text-sm text-muted-foreground">transaksi</div>
+          </div>
+          <div className="p-4 border border-border bg-background rounded-md">
+            <div className="text-xs font-medium text-muted-foreground uppercase mb-2">Pengguna Admin</div>
+            <div className="text-2xl font-mono text-foreground mb-1">{(usersResponse?.total ?? 0).toLocaleString('id-ID')}</div>
+            <div className="text-sm text-muted-foreground">akun</div>
+          </div>
+          <div className="p-4 border border-border bg-background rounded-md">
+            <div className="text-xs font-medium text-muted-foreground uppercase mb-2">Event</div>
+            <div className="text-2xl font-mono text-foreground mb-1">{(eventsResponse?.total ?? 0).toLocaleString('id-ID')}</div>
+            <div className="text-sm text-muted-foreground">total</div>
           </div>
         </CardContent>
       </Card>

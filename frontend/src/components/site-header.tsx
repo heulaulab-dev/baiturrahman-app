@@ -38,8 +38,6 @@ function getBreadcrumbTitle(pathname: string): { title: string; href: string } {
   const pathMap: Record<string, string> = {
     "dashboard": "Dashboard",
     "profil": "Profil Masjid",
-    "jadwal": "Jadwal Sholat",
-    "bulanan": "Jadwal Bulanan",
     "jamaah": "Jamaah",
     "kategori": "Kategori",
     "reservasi": "Reservasi",
@@ -54,7 +52,6 @@ function getBreadcrumbTitle(pathname: string): { title: string; href: string } {
     "pengaturan": "Pengaturan",
     "struktur": "Struktur Organisasi",
     "pengguna": "Pengguna",
-    "notifikasi": "Notifikasi",
     "bantuan": "Bantuan",
   }
 

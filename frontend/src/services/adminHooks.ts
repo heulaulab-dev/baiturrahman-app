@@ -8,6 +8,8 @@ import {
   updatePaymentMethod,
   deletePaymentMethod,
   getAdminEvents,
+  getAdminAnnouncements,
+  getAdminKhutbahs,
   getAdminUsers,
   getTentangKami,
   updateTentangKami,
@@ -51,6 +53,22 @@ export const useRecentDonations = (limit = 5) => {
     queryKey: ['admin', 'donations', 'recent', limit],
     queryFn: () => getAdminDonations({ limit, page: 1 }),
     staleTime: 1000 * 60,
+  })
+}
+
+export const useAdminDonations = (params?: {
+  page?: number
+  limit?: number
+  status?: 'pending' | 'confirmed' | 'cancelled'
+  category?: string
+  from?: string
+  to?: string
+}) => {
+  return useQuery({
+    queryKey: ['admin', 'donations', 'list', params],
+    queryFn: () => getAdminDonations(params),
+    staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -111,6 +129,22 @@ export const useAdminEvents = (limit = 10) => {
   return useQuery({
     queryKey: ['admin', 'events', limit],
     queryFn: () => getAdminEvents({ limit, page: 1 }),
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
+export const useAdminAnnouncements = (limit = 10) => {
+  return useQuery({
+    queryKey: ['admin', 'announcements', limit],
+    queryFn: () => getAdminAnnouncements({ limit, page: 1 }),
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
+export const useAdminKhutbahs = (limit = 10) => {
+  return useQuery({
+    queryKey: ['admin', 'khutbahs', limit],
+    queryFn: () => getAdminKhutbahs({ limit, page: 1 }),
     staleTime: 1000 * 60 * 5,
   })
 }

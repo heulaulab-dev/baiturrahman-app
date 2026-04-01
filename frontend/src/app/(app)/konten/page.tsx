@@ -1,43 +1,97 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { FileText, Image, Calendar } from 'lucide-react';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
 import { TentangKami } from '@/components/dashboard/TentangKami';
 import { HistoryManagement } from '@/components/dashboard/HistoryManagement';
 import { StrukturManagement } from '@/components/dashboard/StrukturManagement';
+import { useAdminAnnouncements, useAdminEvents, useAdminKhutbahs } from '@/services/adminHooks';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-
-const eventsData = [
-	{ id: '1', title: 'Kajian Rutin: Kitab Al-Quran', category: 'Kajian', date: '2026-03-20', status: 'published' as const, excerpt: 'Kajian rutin mingguan membahas kitab Al-Quran.' },
-	{ id: '2', title: 'Kajian Tasawuf: Rahayu', category: 'Kajian', date: '2026-03-18', status: 'published' as const, excerpt: 'Kajian tasawuf mingguan.' },
-	{ id: '3', title: 'Buka Puasa Bersama', category: 'Kegiatan', date: '2026-03-17', status: 'scheduled' as const, excerpt: 'Buka puasa bersama untuk jamaah.' },
-	{ id: '4', title: 'Ramadhan 1446', category: 'Kegiatan', date: '2026-03-01', status: 'draft' as const, excerpt: 'Program kegiatan Ramadhan 1446 H.' },
-];
-
-const beritaData = [
-	{ id: '1', title: 'Pembukaan Program Ramadhan 1446', category: 'Berita', date: '2026-03-12', excerpt: 'Masjid Baiturrahman membuka serangkaian kegiatan Ramadhan.', author: 'Admin' },
-	{ id: '2', title: 'Wisuda Tahfidz Angkatan ke-15', category: 'Kejadian', date: '2026-03-10', excerpt: '25 santri berhasil menyelesaikan hafalan 30 juz Al-Quran.', author: 'Admin' },
-	{ id: '3', title: 'Kunjungan Pondok Pesantren', category: 'Kegiatan', date: '2026-03-08', excerpt: 'Menerima kunjungan dari pondok pesantren.', author: 'Admin' },
-];
-
-const mimbarJumatData = [
-	{ id: '1', tanggal: '2026-03-14', khatib: 'Ust. Dr. Abdullah Hakim', tema: 'Membangun Keluarga Sakinah di Era Digital' },
-	{ id: '2', tanggal: '2026-03-07', khatib: 'Ust. Dr. Abdullah Hakim', tema: 'Keadilan Hati dalam Beramal' },
-	{ id: '3', tanggal: '2026-02-28', khatib: 'Ust. Dr. Abdullah Hakim', tema: 'Adab Sopan Santun' },
-];
 
 type TabType = 'tentang-kami' | 'events' | 'berita' | 'mimbar-jumat' | 'sejarah' | 'struktur' | 'banner' | 'gallery';
 
 export default function KontenPage() {
 	const [activeTab, setActiveTab] = useState<TabType>('events');
-	const getEventStatus = (status: 'published' | 'scheduled' | 'draft') => {
-		if (status === 'published') return { badge: 'success' as const, label: 'Published' };
-		if (status === 'draft') return { badge: 'default' as const, label: 'Draft' };
-		return { badge: 'warning' as const, label: 'Scheduled' };
+	const { data: eventsResponse, isLoading: eventsLoading } = useAdminEvents(12);
+	const { data: announcementsResponse, isLoading: announcementsLoading } = useAdminAnnouncements(12);
+	const { data: khutbahsResponse, isLoading: khutbahsLoading } = useAdminKhutbahs(12);
+	const events = eventsResponse?.data ?? [];
+	const announcements = announcementsResponse?.data ?? [];
+	const khutbahs = khutbahsResponse?.data ?? [];
+	let eventsContent: ReactNode;
+	let announcementsContent: ReactNode;
+	let khutbahsContent: ReactNode;
+
+	const getEventStatus = (isPublished: boolean) => {
+		if (isPublished) return { badge: 'success' as const, label: 'Published' };
+		return { badge: 'default' as const, label: 'Draft' };
 	};
+
+	if (eventsLoading) {
+		eventsContent = <p className="text-sm text-muted-foreground">Memuat events...</p>;
+	} else if (events.length === 0) {
+		eventsContent = <p className="text-sm text-muted-foreground">Belum ada data events</p>;
+	} else {
+		eventsContent = events.map((item) => (
+			<div key={item.id} className="border border-border bg-background hover:bg-muted/30 transition-colors rounded-lg p-4 cursor-pointer">
+				<div className="flex items-center justify-between mb-2">
+					<span className="px-2 py-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">Event</span>
+					<StatusBadge status={getEventStatus(item.is_published).badge}>
+						{getEventStatus(item.is_published).label}
+					</StatusBadge>
+				</div>
+				<h3 className="text-foreground font-semibold mb-1">{item.title}</h3>
+				<p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
+				<div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
+					<Calendar className="w-3 h-3" />
+					<span>{new Date(item.date).toLocaleDateString('id-ID')}</span>
+				</div>
+			</div>
+		));
+	}
+
+	if (announcementsLoading) {
+		announcementsContent = <p className="text-sm text-muted-foreground">Memuat berita...</p>;
+	} else if (announcements.length === 0) {
+		announcementsContent = <p className="text-sm text-muted-foreground">Belum ada data berita</p>;
+	} else {
+		announcementsContent = announcements.map((item) => (
+			<div key={item.id} className="border border-border bg-background hover:bg-muted/30 transition-colors rounded-lg p-4 cursor-pointer">
+				<div className="flex items-center justify-between mb-2">
+					<span className="px-2 py-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">Berita</span>
+					<span className="text-xs text-muted-foreground">{new Date(item.created_at).toLocaleDateString('id-ID')}</span>
+				</div>
+				<h3 className="text-foreground font-semibold mb-1">{item.title}</h3>
+				<p className="text-sm text-muted-foreground line-clamp-2">{item.content}</p>
+			</div>
+		));
+	}
+
+	if (khutbahsLoading) {
+		khutbahsContent = <p className="text-sm text-muted-foreground">Memuat mimbar...</p>;
+	} else if (khutbahs.length === 0) {
+		khutbahsContent = <p className="text-sm text-muted-foreground">Belum ada data mimbar jumat</p>;
+	} else {
+		khutbahsContent = khutbahs.map((khutbah) => (
+			<div key={khutbah.id} className="border border-border bg-background hover:bg-muted/30 transition-colors rounded-lg p-6">
+				<div className="flex items-center justify-between mb-3">
+					<div className="text-xs text-muted-foreground">{new Date(khutbah.date).toLocaleDateString('id-ID')}</div>
+					<StatusBadge status={khutbah.status === 'published' ? 'success' : 'default'}>
+						{khutbah.status === 'published' ? 'Published' : 'Draft'}
+					</StatusBadge>
+				</div>
+				<h3 className="text-lg font-semibold text-foreground mb-2">{khutbah.tema}</h3>
+				<div className="text-sm text-muted-foreground">Khatib: {khutbah.khatib}</div>
+				<Button variant="ghost" size="sm" className="mt-3">
+					<FileText className="w-4 h-4" />
+					Unduh PDF
+				</Button>
+			</div>
+		));
+	}
 
 	const tabs: { key: TabType; label: string }[] = [
 		{ key: 'tentang-kami', label: 'Tentang Kami' },
@@ -74,22 +128,7 @@ export default function KontenPage() {
 						</Button>
 					</div>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						{eventsData.map((item) => (
-							<div key={item.id} className="border border-border bg-background hover:bg-muted/30 transition-colors rounded-lg p-4 cursor-pointer">
-								<div className="flex items-center justify-between mb-2">
-									<span className="px-2 py-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">{item.category}</span>
-									<StatusBadge status={getEventStatus(item.status).badge}>
-										{getEventStatus(item.status).label}
-									</StatusBadge>
-								</div>
-								<h3 className="text-foreground font-semibold mb-1">{item.title}</h3>
-								<p className="text-sm text-muted-foreground line-clamp-2">{item.excerpt}</p>
-								<div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-									<Calendar className="w-3 h-3" />
-									<span>{item.date}</span>
-								</div>
-							</div>
-						))}
+						{eventsContent}
 					</div>
 				</div>
 			</TabsContent>
@@ -104,16 +143,7 @@ export default function KontenPage() {
 						</Button>
 					</div>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						{beritaData.map((item) => (
-							<div key={item.id} className="border border-border bg-background hover:bg-muted/30 transition-colors rounded-lg p-4 cursor-pointer">
-								<div className="flex items-center justify-between mb-2">
-									<span className="px-2 py-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">{item.category}</span>
-									<span className="text-xs text-muted-foreground">{item.date}</span>
-								</div>
-								<h3 className="text-foreground font-semibold mb-1">{item.title}</h3>
-								<p className="text-sm text-muted-foreground line-clamp-2">{item.excerpt}</p>
-							</div>
-						))}
+						{announcementsContent}
 					</div>
 				</div>
 			</TabsContent>
@@ -128,20 +158,7 @@ export default function KontenPage() {
 						</Button>
 					</div>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						{mimbarJumatData.map((khutbah) => (
-							<div key={khutbah.id} className="border border-border bg-background hover:bg-muted/30 transition-colors rounded-lg p-6">
-								<div className="flex items-center justify-between mb-3">
-									<div className="text-xs text-muted-foreground">{khutbah.tanggal}</div>
-									<StatusBadge status="success">Published</StatusBadge>
-								</div>
-								<h3 className="text-lg font-semibold text-foreground mb-2">{khutbah.tema}</h3>
-								<div className="text-sm text-muted-foreground">Khatib: {khutbah.khatib}</div>
-								<Button variant="ghost" size="sm" className="mt-3">
-									<FileText className="w-4 h-4" />
-									Unduh PDF
-								</Button>
-							</div>
-						))}
+						{khutbahsContent}
 					</div>
 				</div>
 			</TabsContent>

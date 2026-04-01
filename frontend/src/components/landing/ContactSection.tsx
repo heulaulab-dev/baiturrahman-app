@@ -37,10 +37,10 @@ export function ContactSection() {
 	const [message, setMessage] = useState('');
 
 	const contactInfo = {
-		address: mosqueInfo?.address || 'Jl. Masjid Baiturrahman No. 1, Jakarta Selatan, Indonesia',
-		phone: mosqueInfo?.phone || '+62 21 1234 5678',
-		email: mosqueInfo?.email || 'info@baiturrahman.or.id',
-		website: mosqueInfo?.website || 'https://baiturrahman.or.id',
+		address: mosqueInfo?.address || '',
+		phone: mosqueInfo?.phone || '',
+		email: mosqueInfo?.email || '',
+		website: mosqueInfo?.website || '',
 	};
 
 	const socialLinks = [
@@ -72,15 +72,21 @@ export function ContactSection() {
 					>
 						{/* Embedded Map */}
 						<div className="mb-6 aspect-4/3 overflow-hidden border border-sacred-green bg-sacred-green/5">
-							<iframe
-								title="Peta Lokasi Masjid Baiturrahim"
-								src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31736.622320367333!2d106.84360707431638!3d-6.120231599999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6a1fc6ece53a27%3A0xf612c5f69bfcbdb3!2sMasjid%20Baiturrahim!5e0!3m2!1sen!2sid!4v1775024737305!5m2!1sen!2sid"
-								className="h-full w-full"
-								style={{ border: 0 }}
-								allowFullScreen
-								loading="lazy"
-								referrerPolicy="no-referrer-when-downgrade"
-							/>
+							{mosqueInfo?.maps_embed_url ? (
+								<iframe
+									title="Peta Lokasi Masjid Baiturrahim"
+									src={mosqueInfo.maps_embed_url}
+									className="h-full w-full"
+									style={{ border: 0 }}
+									allowFullScreen
+									loading="lazy"
+									referrerPolicy="no-referrer-when-downgrade"
+								/>
+							) : (
+								<div className="flex h-full w-full items-center justify-center text-sm text-sacred-muted">
+									Peta belum dikonfigurasi
+								</div>
+							)}
 						</div>
 
 						{/* Contact Info */}

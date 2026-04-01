@@ -5,6 +5,8 @@ import type {
   Event,
   User,
   PaymentMethod,
+  Announcement,
+  Khutbah,
   ApiResponse,
   PaginatedResponse,
   HistoryEntry,
@@ -76,6 +78,20 @@ export const getAdminEvents = async (
   params: { page?: number; limit?: number } = {}
 ): Promise<PaginatedResponse<Event>> => {
   const response = await api.get<PaginatedResponse<Event>>('/v1/admin/events', { params })
+  return response.data
+}
+
+export const getAdminAnnouncements = async (
+  params: { page?: number; limit?: number } = {}
+): Promise<PaginatedResponse<Announcement>> => {
+  const response = await api.get<PaginatedResponse<Announcement>>('/v1/admin/announcements', { params })
+  return response.data
+}
+
+export const getAdminKhutbahs = async (
+  params: { page?: number; limit?: number } = {}
+): Promise<PaginatedResponse<Khutbah>> => {
+  const response = await api.get<PaginatedResponse<Khutbah>>('/v1/admin/khutbahs', { params })
   return response.data
 }
 

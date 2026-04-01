@@ -23,17 +23,7 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from '@/components/ui/sheet';
-
-const membersData = [
-	{ id: '1', nama: 'H. Ahmad Hamidin, M.Q.', nik: '3201xxxxxxxxxxxx', status: 'aktif', bergabung: '2020-01-15', foto: null, muallaf: false },
-	{ id: '2', nama: 'Ust. Ahmad Faishal, Lc.', nik: '3201xxxxxxxxxxxx', status: 'aktif', bergabung: '2019-05-22', foto: null, muallaf: false },
-	{ id: '3', nama: 'Ust. Zainuddin Al-Hafidz', nik: '3201xxxxxxxxxxxx', status: 'aktif', bergabung: '2021-03-10', foto: null, muallaf: true },
-	{ id: '4', nama: 'Ust. Yusuf Al-Amin', nik: '3201xxxxxxxxxxxx', status: 'aktif', bergabung: '2018-08-05', foto: null, muallaf: false },
-	{ id: '5', nama: 'Fatimah Az-Zahra', nik: '3201xxxxxxxxxxxx', status: 'aktif', bergabung: '2017-11-12', foto: null, muallaf: false },
-	{ id: '6', nama: 'Hendra Gunawan', nik: '3201xxxxxxxxxxxx', status: 'muallaf', bergabung: '2019-09-18', foto: null, muallaf: true },
-	{ id: '7', nama: 'Yusuf Al-Amin', nik: '3201xxxxxxxxxxxx', status: 'muallaf', bergabung: '2020-03-01', foto: null, muallaf: true },
-	{ id: '8', nama: 'Budi Santoso', nik: '3201xxxxxxxxxxxx', status: 'tidak-aktif', bergabung: '2018-06-25', foto: null, muallaf: false },
-];
+import { useAdminUsers } from '@/services/adminHooks';
 
 const filterOptions = ['Semua', 'Aktif', 'Tidak Aktif', 'Muallaf'];
 
@@ -42,6 +32,17 @@ function getInitials(nama: string) {
 }
 
 export default function JamaahPage() {
+	const { data: usersResponse } = useAdminUsers();
+	const membersData = (usersResponse?.data ?? []).map((user) => ({
+		id: user.id,
+		nama: user.full_name,
+		nik: user.username,
+		status: user.is_active ? 'aktif' : 'tidak-aktif',
+		bergabung: new Date(user.created_at).toLocaleDateString('id-ID'),
+		foto: user.avatar_url ?? null,
+		muallaf: false,
+	}));
+
 	const [filter, setFilter] = useState('Semua');
 	const [searchQuery, setSearchQuery] = useState('');
 	const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');

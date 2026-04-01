@@ -42,7 +42,7 @@ export default function DashboardPage() {
           <>
             <StatCard
               label="Total Donasi"
-              value={stats ? formatCurrency(stats.total_amount) : 'Rp 0'}
+              value={formatCurrency(stats?.total_amount ?? 0)}
               trend={stats && stats.total_amount > 0 ? 'up' : null}
               badge={`${stats?.confirmed_count ?? 0} terkonfirmasi`}
             />

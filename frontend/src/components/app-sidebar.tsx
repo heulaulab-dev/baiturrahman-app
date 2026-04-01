@@ -6,12 +6,10 @@ import {
   Settings,
   User,
   Building2,
-  Calendar,
   Users,
   CalendarDays,
   FileText,
   LayoutDashboard,
-  Bell,
 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { NavMain } from "@/components/nav-main"
@@ -54,21 +52,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       ],
     },
     {
-      title: "Jadwal Sholat",
-      url: "/jadwal",
-      icon: Calendar,
-      items: [
-        {
-          title: "Jadwal Harian",
-          url: "/jadwal",
-        },
-        {
-          title: "Jadwal Bulanan",
-          url: "/jadwal/bulanan",
-        },
-      ],
-    },
-    {
       title: "Jamaah",
       url: "/jamaah",
       icon: Users,
@@ -76,10 +59,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {
           title: "Daftar Jamaah",
           url: "/jamaah",
-        },
-        {
-          title: "Kategori",
-          url: "/jamaah/kategori",
         },
       ],
     },
@@ -89,12 +68,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: CalendarDays,
       items: [
         {
-          title: "Ruang Rapat",
-          url: "/reservasi/ruang-rapat",
-        },
-        {
-          title: "Acara Khusus",
-          url: "/reservasi/acara-khusus",
+          title: "Manajemen Reservasi",
+          url: "/reservasi",
         },
       ],
     },
@@ -104,12 +79,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: User,
       items: [
         {
-          title: "Riwayat Donasi",
+          title: "Manajemen Donasi",
           url: "/donasi",
-        },
-        {
-          title: "Laporan Donasi",
-          url: "/donasi/laporan",
         },
       ],
     },
@@ -119,12 +90,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: FileText,
       items: [
         {
-          title: "Laporan Bulanan",
-          url: "/laporan/bulanan",
-        },
-        {
-          title: "Laporan Tahunan",
-          url: "/laporan/tahunan",
+          title: "Ringkasan Laporan",
+          url: "/laporan",
         },
       ],
     },
@@ -134,16 +101,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: Building2,
       items: [
         {
-          title: "Berita & Artikel",
-          url: "/konten/berita",
-        },
-        {
-          title: "Pengumuman",
-          url: "/konten/pengumuman",
-        },
-        {
-          title: "Kegiatan",
-          url: "/konten/kegiatan",
+          title: "Manajemen Konten",
+          url: "/konten",
         },
       ],
     },
@@ -156,24 +115,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           title: "Pengaturan Umum",
           url: "/pengaturan",
         },
-        {
-          title: "Struktur Organisasi",
-          url: "/pengaturan/struktur",
-        },
-        {
-          title: "Pengguna",
-          url: "/pengaturan/pengguna",
-        },
       ],
     },
   ]
 
   const navSecondary = [
-    {
-      title: "Notifikasi",
-      url: "/notifikasi",
-      icon: Bell,
-    },
     {
       title: "Bantuan",
       url: "/bantuan",

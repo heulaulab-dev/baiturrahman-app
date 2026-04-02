@@ -1,3 +1,4 @@
+import axios from 'axios'
 import api from '@/lib/axios'
 import type {
   DonationFull,
@@ -31,13 +32,79 @@ export interface GetDonationsParams {
   category?: string
   from?: string
   to?: string
+  /** Partial match on donor name (server-side, case-insensitive). */
+  donor_name?: string
 }
+
+/** Same filter fields as list; exports all matching rows as CSV. */
+export type ExportDonationsParams = Pick<
+  GetDonationsParams,
+  'status' | 'category' | 'from' | 'to' | 'donor_name'
+>
 
 export const getAdminDonations = async (
   params: GetDonationsParams = {}
 ): Promise<PaginatedResponse<DonationFull>> => {
   const response = await api.get<PaginatedResponse<DonationFull>>('/v1/admin/donations', { params })
   return response.data
+}
+
+function filenameFromContentDisposition(cd: string | undefined, fallback: string): string {
+  if (typeof cd !== 'string') return fallback
+  const quoted = /filename="([^"]+)"/.exec(cd)
+  const plain = /filename=([^;\s]+)/.exec(cd)
+  if (quoted) return quoted[1]
+  if (plain) return plain[1].trim()
+  return fallback
+}
+
+function triggerCsvDownload(blob: Blob, contentDisposition: string | undefined): void {
+  const filename = filenameFromContentDisposition(contentDisposition, 'donasi.csv')
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.rel = 'noopener'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+
+async function assertCsvBlobOrThrowJsonError(blob: Blob): Promise<void> {
+  if (!blob.type.includes('json')) return
+  const text = await blob.text()
+  const j = JSON.parse(text) as { error?: string }
+  throw new Error(j.error || 'Export gagal')
+}
+
+async function axiosBlobErrorMessage(err: unknown): Promise<string> {
+  if (!axios.isAxiosError(err) || !(err.response?.data instanceof Blob)) {
+    return ''
+  }
+  const text = await err.response.data.text()
+  try {
+    const j = JSON.parse(text) as { error?: string }
+    return j.error || 'Export gagal'
+  } catch {
+    return text ? text.slice(0, 200) : 'Export gagal'
+  }
+}
+
+export const exportAdminDonationsCsv = async (params: ExportDonationsParams = {}): Promise<void> => {
+  try {
+    const response = await api.get<Blob>('/v1/admin/donations/export', {
+      params,
+      responseType: 'blob',
+    })
+    const blob = response.data as unknown as Blob
+    await assertCsvBlobOrThrowJsonError(blob)
+    triggerCsvDownload(blob, response.headers['content-disposition'])
+  } catch (err) {
+    const fromAxios = await axiosBlobErrorMessage(err)
+    if (fromAxios) throw new Error(fromAxios)
+    throw err
+  }
 }
 
 export const confirmDonation = async (id: string): Promise<DonationFull> => {

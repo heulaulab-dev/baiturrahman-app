@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, useImperativeHandle, forwardRef, type ReactNode } from 'react';
+import { toast } from 'sonner';
 import { ArrowUp, ArrowDown, Search, ExternalLink, MoreHorizontal, Check, Trash2, Filter } from 'lucide-react';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -39,12 +40,17 @@ import {
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
 import { useAdminDonations, useAdminPaymentMethods } from '@/services/adminHooks';
+import { exportAdminDonationsCsv } from '@/services/adminApiService';
 import type { DonationFull } from '@/types';
 
 export interface DonasiDonationsTabProps {
 	/** Parent increments when user leaves the Donasi tab (Task 3). Until then pass 0 from page. */
 	selectionResetKey: number;
 }
+
+export type DonasiDonationsTabHandle = {
+	exportCsv: () => Promise<void>;
+};
 
 const categories = ['Semua', 'Donasi Umum', 'Zakat', 'Wakaf', 'Infaq Jumat', 'Fidyah', 'Zakat Fitrah'];
 const pageSize = 20;
@@ -85,7 +91,10 @@ function getInitials(nama: string) {
 		.join('');
 }
 
-export default function DonasiDonationsTab({ selectionResetKey }: DonasiDonationsTabProps) {
+const DonasiDonationsTab = forwardRef<DonasiDonationsTabHandle, DonasiDonationsTabProps>(function DonasiDonationsTab(
+	{ selectionResetKey },
+	ref
+) {
 	const [filter, setFilter] = useState('Semua');
 	const [searchQuery, setSearchQuery] = useState('');
 	const [sortField, setSortField] = useState<'tanggal' | 'nominal'>('tanggal');
@@ -101,6 +110,7 @@ export default function DonasiDonationsTab({ selectionResetKey }: DonasiDonation
 		limit: pageSize,
 		page,
 		category: backendCategoryMap[filter],
+		donor_name: searchQuery.trim() || undefined,
 	});
 
 	const currentDate = new Date();
@@ -171,6 +181,25 @@ export default function DonasiDonationsTab({ selectionResetKey }: DonasiDonation
 		setDetailOpen(false);
 		setSelectedDonasi(null);
 	}, [selectionResetKey]);
+
+	useImperativeHandle(
+		ref,
+		() => ({
+			exportCsv: async () => {
+				try {
+					await exportAdminDonationsCsv({
+						category: backendCategoryMap[filter],
+						donor_name: searchQuery.trim() || undefined,
+					});
+					toast.success('Berkas CSV berhasil diunduh');
+				} catch (e) {
+					toast.error(e instanceof Error ? e.message : 'Gagal mengekspor CSV');
+					throw e;
+				}
+			},
+		}),
+		[filter, searchQuery]
+	);
 
 	function paymentMethodLabel(d: DonationFull) {
 		return paymentMethods.find((pm) => pm.id === d.payment_method_id)?.name ?? d.payment_method?.name ?? '—';
@@ -514,4 +543,8 @@ export default function DonasiDonationsTab({ selectionResetKey }: DonasiDonation
 			</Sheet>
 		</div>
 	);
-}
+});
+
+DonasiDonationsTab.displayName = 'DonasiDonationsTab';
+
+export default DonasiDonationsTab;

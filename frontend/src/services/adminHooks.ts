@@ -69,6 +69,7 @@ export const useAdminDonations = (params?: {
   category?: string
   from?: string
   to?: string
+  donor_name?: string
 }) => {
   return useQuery({
     queryKey: ['admin', 'donations', 'list', params],

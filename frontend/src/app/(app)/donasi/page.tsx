@@ -1,15 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DonasiPaymentMethodsTab from './_components/donasi-payment-methods-tab';
-import DonasiDonationsTab from './_components/donasi-donations-tab';
+import DonasiDonationsTab, { type DonasiDonationsTabHandle } from './_components/donasi-donations-tab';
 
 export default function DonasiPage() {
 	const [tab, setTab] = useState('donasi');
 	const [selectionResetKey, setSelectionResetKey] = useState(0);
+	const [exporting, setExporting] = useState(false);
+	const donationsRef = useRef<DonasiDonationsTabHandle>(null);
 
 	const onTabChange = (value: string) => {
 		setTab(value);
@@ -23,11 +26,28 @@ export default function DonasiPage() {
 			<div className="flex items-center justify-between">
 				<h2 className="text-3xl font-semibold text-foreground">Manajemen Donasi</h2>
 				<Button
+					type="button"
 					variant="outline"
-					title="Segera hadir"
-					onClick={() => console.log('Export CSV — segera hadir')}
+					disabled={tab !== 'donasi' || exporting}
+					onClick={async () => {
+						setExporting(true);
+						try {
+							await donationsRef.current?.exportCsv();
+						} catch {
+							// toast from tab / adminApiService
+						} finally {
+							setExporting(false);
+						}
+					}}
 				>
-					Export CSV
+					{exporting ? (
+						<>
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+							Mengekspor…
+						</>
+					) : (
+						'Export CSV'
+					)}
 				</Button>
 			</div>
 
@@ -38,7 +58,7 @@ export default function DonasiPage() {
 				</TabsList>
 
 				<TabsContent value="donasi" className="mt-0">
-					<DonasiDonationsTab selectionResetKey={selectionResetKey} />
+					<DonasiDonationsTab ref={donationsRef} selectionResetKey={selectionResetKey} />
 				</TabsContent>
 
 				<TabsContent value="payment" className="mt-0">

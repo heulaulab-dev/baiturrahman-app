@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
 import { format } from 'date-fns';
 import {
 	CalendarRange,
@@ -13,7 +12,6 @@ import {
 	Ban,
 	Loader2,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -60,7 +58,8 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAdminReservations, useUpdateReservation, useDeleteReservation } from '@/services/adminHooks';
+import { useAdminReservations } from '@/services/adminHooks';
+import { useReservationAdminActions } from '@/services/reservationHooks';
 import type { Reservation, ReservationStatus } from '@/types';
 
 const statusFilterOptions: { value: string; label: string }[] = [
@@ -125,8 +124,8 @@ export default function ReservasiPage() {
 	}, [page, pageSize, statusFilter, fromDate, toDate]);
 
 	const { data: listResponse, isLoading } = useAdminReservations(queryParams);
-	const updateReservation = useUpdateReservation();
-	const deleteReservation = useDeleteReservation();
+	const { patchStatus, saveAdminNotes, removeReservation, isPending: busy } =
+		useReservationAdminActions();
 
 	const rows = listResponse?.data ?? [];
 	const totalPages = listResponse?.total_pages ?? 1;
@@ -160,59 +159,38 @@ export default function ReservasiPage() {
 		setSheetOpen(true);
 	}
 
-	async function patchStatus(id: string, status: ReservationStatus) {
-		try {
-			await updateReservation.mutateAsync({ id, data: { status } });
-			toast.success('Status reservasi diperbarui');
+	async function handlePatchStatus(id: string, status: ReservationStatus) {
+		const ok = await patchStatus(id, status);
+		if (ok) {
 			setSheetOpen(false);
 			setSelected(null);
-		} catch (err) {
-			if (axios.isAxiosError(err)) {
-				const msg = (err.response?.data as { error?: string })?.error;
-				toast.error(msg ?? 'Gagal memperbarui status');
-			} else {
-				toast.error('Gagal memperbarui status');
-			}
 		}
 	}
 
-	async function saveAdminNotes() {
+	async function handleSaveAdminNotes() {
 		if (!selected) return;
-		try {
-			await updateReservation.mutateAsync({
-				id: selected.id,
-				data: { admin_notes: adminNotesDraft.trim() || null },
-			});
-			toast.success('Catatan admin disimpan');
+		const ok = await saveAdminNotes(selected.id, adminNotesDraft);
+		if (ok) {
 			setSelected((prev) =>
-				prev && prev.id === selected.id ? { ...prev, admin_notes: adminNotesDraft.trim() || undefined } : prev
+				prev && prev.id === selected.id
+					? { ...prev, admin_notes: adminNotesDraft.trim() || undefined }
+					: prev
 			);
-		} catch (err) {
-			if (axios.isAxiosError(err)) {
-				const msg = (err.response?.data as { error?: string })?.error;
-				toast.error(msg ?? 'Gagal menyimpan catatan');
-			} else {
-				toast.error('Gagal menyimpan catatan');
-			}
 		}
 	}
 
-	async function confirmDelete() {
+	async function handleConfirmDelete() {
 		if (!deleteTarget) return;
-		try {
-			await deleteReservation.mutateAsync(deleteTarget.id);
-			toast.success('Reservasi dihapus');
+		const id = deleteTarget.id;
+		const ok = await removeReservation(id);
+		if (ok) {
 			setDeleteTarget(null);
-			if (selected?.id === deleteTarget.id) {
+			if (selected?.id === id) {
 				setSheetOpen(false);
 				setSelected(null);
 			}
-		} catch {
-			toast.error('Gagal menghapus reservasi');
 		}
 	}
-
-	const busy = updateReservation.isPending || deleteReservation.isPending;
 
 	const emptyTableMessage =
 		rows.length > 0 && searchQuery.trim()
@@ -482,7 +460,7 @@ export default function ReservasiPage() {
 												type="button"
 												className="flex-1"
 												disabled={busy}
-												onClick={() => patchStatus(selected.id, 'approved')}
+												onClick={() => void handlePatchStatus(selected.id, 'approved')}
 											>
 												<Check className="mr-2 h-4 w-4" />
 												Setujui
@@ -492,7 +470,7 @@ export default function ReservasiPage() {
 												variant="destructive"
 												className="flex-1"
 												disabled={busy}
-												onClick={() => patchStatus(selected.id, 'rejected')}
+												onClick={() => void handlePatchStatus(selected.id, 'rejected')}
 											>
 												<XCircle className="mr-2 h-4 w-4" />
 												Tolak
@@ -502,7 +480,7 @@ export default function ReservasiPage() {
 												variant="secondary"
 												className="flex-1"
 												disabled={busy}
-												onClick={() => patchStatus(selected.id, 'cancelled')}
+												onClick={() => void handlePatchStatus(selected.id, 'cancelled')}
 											>
 												<Ban className="mr-2 h-4 w-4" />
 												Batalkan
@@ -515,14 +493,14 @@ export default function ReservasiPage() {
 											variant="secondary"
 											className="w-full"
 											disabled={busy}
-											onClick={() => patchStatus(selected.id, 'cancelled')}
+											onClick={() => void handlePatchStatus(selected.id, 'cancelled')}
 										>
 											<Ban className="mr-2 h-4 w-4" />
 											Batalkan reservasi
 										</Button>
 									)}
 								</div>
-								<Button type="button" variant="outline" className="w-full" disabled={busy} onClick={saveAdminNotes}>
+								<Button type="button" variant="outline" className="w-full" disabled={busy} onClick={() => void handleSaveAdminNotes()}>
 									Simpan catatan admin
 								</Button>
 								<Button type="button" variant="ghost" className="w-full" onClick={() => setSheetOpen(false)}>
@@ -548,7 +526,7 @@ export default function ReservasiPage() {
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 							onClick={(e) => {
 								e.preventDefault();
-								void confirmDelete();
+								void handleConfirmDelete();
 							}}
 							disabled={busy}
 						>

@@ -35,6 +35,9 @@ func main() {
 	if err := database.SeedDefaultAdmin(db); err != nil {
 		log.Printf("Warning: Failed to seed default admin: %v", err)
 	}
+	if err := database.SeedDefaultMosqueInfo(db); err != nil {
+		log.Printf("Warning: Failed to seed default mosque info: %v", err)
+	}
 
 	// Initialize Gin router
 	r := gin.Default()
@@ -88,6 +91,7 @@ func main() {
 			public.GET("/prayer-times", h.GetPrayerTimesByDate)
 			public.GET("/prayer-times/month", h.GetPrayerTimesByMonth)
 			public.GET("/content", h.GetContentSections)
+			public.GET("/content/tentang-kami", h.GetTentangKami)
 			public.GET("/events", h.GetEvents)
 			public.GET("/events/:slug", h.GetEventBySlug)
 			public.GET("/announcements", h.GetAnnouncements)

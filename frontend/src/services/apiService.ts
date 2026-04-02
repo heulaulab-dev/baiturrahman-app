@@ -13,31 +13,30 @@ import type {
   Struktur,
   ApiResponse,
   PaginatedResponse,
-  PaymentMethodsResponse,
   Reservation,
   CreateReservationRequest,
 } from '@/types'
 
 // Mosque Info
 export const getMosqueInfo = async (): Promise<MosqueInfo> => {
-  const response = await api.get<MosqueInfo>('/v1/mosque')
-  return response.data
+  const response = await api.get<ApiResponse<MosqueInfo>>('/v1/mosque')
+  return response.data.data
 }
 
 // Prayer Times
 export const getPrayerTimesByDate = async (date: string): Promise<PrayerTime> => {
-  const response = await api.get<PrayerTime>('/v1/prayer-times', { params: { date } })
-  return response.data
+  const response = await api.get<ApiResponse<PrayerTime>>('/v1/prayer-times', { params: { date } })
+  return response.data.data
 }
 
 export const getPrayerTimesByMonth = async (
   year: number,
   month: number
 ): Promise<PrayerTime[]> => {
-  const response = await api.get<PrayerTime[]>('/v1/prayer-times/month', {
+  const response = await api.get<ApiResponse<PrayerTime[]>>('/v1/prayer-times/month', {
     params: { year, month },
   })
-  return response.data
+  return response.data.data
 }
 
 // Events
@@ -66,8 +65,8 @@ export const createDonation = async (data: {
   payment_method_id: string
   message?: string
 }): Promise<Donation> => {
-  const response = await api.post<Donation>('/v1/donations', data)
-  return response.data
+  const response = await api.post<ApiResponse<Donation>>('/v1/donations', data)
+  return response.data.data
 }
 
 /** Buat reservasi dari dashboard (JWT). Backend: POST /v1/admin/reservations/create */
@@ -89,14 +88,14 @@ export const getPaymentMethods = async (): Promise<PaymentMethod[]> => {
 
 // Content
 export const getContentSections = async (): Promise<ContentSection[]> => {
-  const response = await api.get<ContentSection[]>('/v1/content')
-  return response.data
+  const response = await api.get<ApiResponse<ContentSection[]>>('/v1/content')
+  return response.data.data
 }
 
 // Structure
 export const getStructures = async (): Promise<StructureMember[]> => {
-  const response = await api.get<StructureMember[]>('/v1/structure')
-  return response.data
+  const response = await api.get<ApiResponse<StructureMember[]>>('/v1/structure')
+  return response.data.data
 }
 
 // Khutbah
@@ -113,8 +112,8 @@ export const getKhutbahArchive = async (): Promise<Khutbah[]> => {
 // History Entries (Public)
 export const getHistoryEntries = async (
   params?: { status?: string; category?: string; page?: number; limit?: number }
-): Promise<{ data: HistoryEntry[]; page: number; limit: number; total: number }> => {
-  const response = await api.get('/v1/history-entries', { params })
+): Promise<PaginatedResponse<HistoryEntry>> => {
+  const response = await api.get<PaginatedResponse<HistoryEntry>>('/v1/history-entries', { params })
   return response.data
 }
 
@@ -122,8 +121,10 @@ export const getHistoryEntriesByDateRange = async (
   from: string,
   to: string
 ): Promise<HistoryEntry[]> => {
-  const response = await api.get('/v1/history-entries/date-range', { params: { from, to } })
-  return response.data
+  const response = await api.get<ApiResponse<HistoryEntry[]>>('/v1/history-entries/date-range', {
+    params: { from, to },
+  })
+  return response.data.data
 }
 
 // Strukturs (Public) — backend returns ApiResponse<Struktur[]>
@@ -134,6 +135,6 @@ export const getPublicStrukturs = async (): Promise<Struktur[]> => {
 
 // Tentang Kami (Public)
 export const getTentangKami = async (): Promise<ContentSection> => {
-  const response = await api.get<ContentSection>('/v1/content/tentang-kami')
-  return response.data
+  const response = await api.get<ApiResponse<ContentSection>>('/v1/content/tentang-kami')
+  return response.data.data
 }

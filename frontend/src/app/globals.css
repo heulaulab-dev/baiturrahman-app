@@ -452,3 +452,13 @@ html.lenis {
 .gold-underline:hover::after {
 	width: 100%;
 }
+
+/* Horizontal carousel: hide overflow scrollbar (Embla still scrolls) */
+.hide-scrollbar {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+	display: none;
+}

@@ -23,6 +23,10 @@
     {
       "name": "Admin",
       "description": "JWT required; admin role for /admin/*"
+    },
+    {
+      "name": "Gallery",
+      "description": "Foto kurasi untuk karusel beranda dan halaman /galeri (Konten → Galeri di dashboard)"
     }
   ],
   "components": {
@@ -423,6 +427,29 @@
         "responses": {
           "200": {
             "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gallery/items": {
+      "get": {
+        "summary": "Published gallery items",
+        "description": "Hanya item `is_published`; urut `sort_order`. Dipakai landing (karusel) dan GET publik /galeri.",
+        "tags": [
+          "Public",
+          "Gallery"
+        ],
+        "responses": {
+          "200": {
+            "description": "`{ success, data: GalleryItem[] }`",
             "content": {
               "application/json": {
                 "schema": {
@@ -1487,6 +1514,191 @@
         "summary": "Toggle history entry",
         "tags": [
           "Admin"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/gallery/items": {
+      "get": {
+        "summary": "List all gallery items",
+        "description": "Semua item (termasuk draf), urut `sort_order`.",
+        "tags": [
+          "Admin",
+          "Gallery"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`{ success, data: GalleryItem[] }`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create gallery item",
+        "description": "JSON: `title` (wajib), `image_url` (wajib), `summary`, `link_url`, `sort_order`, `is_published`. Tanpa `sort_order`, backend menambahkan di akhir.",
+        "tags": [
+          "Admin",
+          "Gallery"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/gallery/items/reorder": {
+      "put": {
+        "summary": "Reorder gallery items",
+        "description": "Body JSON: `{ \"items\": [ { \"id\": \"<uuid>\", \"sort_order\": 0 } ] }`.",
+        "tags": [
+          "Admin",
+          "Gallery"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/gallery/items/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "put": {
+        "summary": "Update gallery item",
+        "description": "JSON parsial: `title`, `summary`, `image_url`, `link_url`, `sort_order`, `is_published`.",
+        "tags": [
+          "Admin",
+          "Gallery"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete gallery item",
+        "tags": [
+          "Admin",
+          "Gallery"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/gallery/items/{id}/toggle": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "put": {
+        "summary": "Toggle gallery item published",
+        "description": "Membalik `is_published` (setara tombol Terbitkan/Sembunyikan di dashboard).",
+        "tags": [
+          "Admin",
+          "Gallery"
         ],
         "security": [
           {

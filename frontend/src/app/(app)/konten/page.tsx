@@ -8,6 +8,7 @@ import { EventsManagement } from '@/components/dashboard/EventsManagement'
 import { HistoryManagement } from '@/components/dashboard/HistoryManagement'
 import { KhutbahManagement } from '@/components/dashboard/KhutbahManagement'
 import { StrukturManagement } from '@/components/dashboard/StrukturManagement'
+import { GalleryManagement } from '@/components/dashboard/GalleryManagement'
 import { TentangKami } from '@/components/dashboard/TentangKami'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -155,11 +156,12 @@ export default function KontenPage() {
           <Card>
             <CardHeader>
               <CardTitle>Galeri</CardTitle>
-              <CardDescription>Album foto masjid akan ditambahkan pada pembaruan berikutnya.</CardDescription>
+              <CardDescription>
+                Kelola foto yang tampil di beranda (karusel) dan halaman publik /galeri.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-              <Image className="mb-3 size-12 text-primary/35" aria-hidden />
-              <p className="text-sm">Belum tersedia</p>
+            <CardContent>
+              <GalleryManagement />
             </CardContent>
           </Card>
         </TabsContent>

@@ -16,6 +16,7 @@ import type {
   ApiResponse,
   PaginatedResponse,
   HistoryEntry,
+  GalleryItem,
   Struktur,
   ContentSection,
   MosqueInfo,
@@ -462,4 +463,52 @@ export const updateAdminReservation = async (
 
 export const deleteAdminReservation = async (id: string): Promise<void> => {
   await api.delete(`/v1/admin/reservations/${id}`)
+}
+
+// Gallery — admin
+export const getAdminGalleryItems = async (): Promise<GalleryItem[]> => {
+  const response = await api.get<ApiResponse<GalleryItem[]>>('/v1/admin/gallery/items')
+  return response.data.data ?? []
+}
+
+export const createGalleryItem = async (data: {
+  title: string
+  summary?: string
+  image_url: string
+  link_url?: string
+  sort_order?: number
+  is_published?: boolean
+}): Promise<GalleryItem> => {
+  const response = await api.post<ApiResponse<GalleryItem>>('/v1/admin/gallery/items', data)
+  return response.data.data
+}
+
+export const updateGalleryItem = async (
+  id: string,
+  data: Partial<{
+    title: string
+    summary: string
+    image_url: string
+    link_url: string
+    sort_order: number
+    is_published: boolean
+  }>
+): Promise<GalleryItem> => {
+  const response = await api.put<ApiResponse<GalleryItem>>(`/v1/admin/gallery/items/${id}`, data)
+  return response.data.data
+}
+
+export const deleteGalleryItem = async (id: string): Promise<void> => {
+  await api.delete(`/v1/admin/gallery/items/${id}`)
+}
+
+export const reorderGalleryItems = async (
+  items: { id: string; sort_order: number }[]
+): Promise<void> => {
+  await api.put('/v1/admin/gallery/items/reorder', { items })
+}
+
+export const toggleGalleryItemPublished = async (id: string): Promise<GalleryItem> => {
+  const response = await api.put<ApiResponse<GalleryItem>>(`/v1/admin/gallery/items/${id}/toggle`)
+  return response.data.data
 }

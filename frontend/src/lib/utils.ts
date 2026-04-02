@@ -20,3 +20,15 @@ export function resolveBackendAssetUrl(urlOrPath: string | undefined | null): st
 	const origin = getBackendOrigin()
 	return `${origin}${u.startsWith("/") ? u : `/${u}`}`
 }
+
+/** URL-safe slug for event paths (ASCII). */
+export function slugifyForUrl(text: string): string {
+	const s = text
+		.trim()
+		.toLowerCase()
+		.replace(/\s+/g, "-")
+		.replace(/[^a-z0-9-]/g, "")
+		.replace(/-+/g, "-")
+		.replace(/^-|-$/g, "")
+	return s.slice(0, 200) || "kegiatan"
+}

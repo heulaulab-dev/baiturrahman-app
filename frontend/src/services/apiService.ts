@@ -3,7 +3,6 @@ import type {
   MosqueInfo,
   Event,
   Announcement,
-  AnnouncementsResponse,
   PrayerTime,
   Donation,
   PaymentMethod,
@@ -13,6 +12,7 @@ import type {
   HistoryEntry,
   Struktur,
   ApiResponse,
+  PaginatedResponse,
   PaymentMethodsResponse,
   Reservation,
   CreateReservationRequest,
@@ -42,7 +42,7 @@ export const getPrayerTimesByMonth = async (
 
 // Events
 export const getEvents = async (): Promise<Event[]> => {
-  const response = await api.get<ApiResponse<Event[]>>('/v1/events')
+  const response = await api.get<PaginatedResponse<Event>>('/v1/events')
   return response.data.data
 }
 
@@ -51,11 +51,13 @@ export const getEventBySlug = async (slug: string): Promise<Event> => {
   return response.data.data
 }
 
-// Announcements
+// Announcements — `active=true` matches backend filter for currently visible items.
 export const getAnnouncements = async (): Promise<Announcement[]> => {
-  const response = await api.get<ApiResponse<Announcement[]>>('/v1/announcements');
+  const response = await api.get<PaginatedResponse<Announcement>>('/v1/announcements', {
+    params: { active: 'true' },
+  })
   return response.data.data
-} 
+}
 
 // Donations
 export const createDonation = async (data: {
@@ -99,13 +101,13 @@ export const getStructures = async (): Promise<StructureMember[]> => {
 
 // Khutbah
 export const getLatestKhutbah = async (): Promise<Khutbah> => {
-  const response = await api.get<Khutbah>('/v1/khutbahs/latest')
-  return response.data
+  const response = await api.get<ApiResponse<Khutbah>>('/v1/khutbahs/latest')
+  return response.data.data
 }
 
 export const getKhutbahArchive = async (): Promise<Khutbah[]> => {
-  const response = await api.get<Khutbah[]>('/v1/khutbahs/archive')
-  return response.data
+  const response = await api.get<PaginatedResponse<Khutbah>>('/v1/khutbahs/archive')
+  return response.data.data
 }
 
 // History Entries (Public)

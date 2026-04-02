@@ -29,20 +29,22 @@ export function downloadKontenRingkasanCsv(payload: KontenCsvPayload): void {
   lines.push('')
 
   lines.push('EVENT')
-  lines.push(['id', 'judul', 'tanggal', 'terbit', 'deskripsi_ringkas'].map(csvCell).join(','))
+  lines.push(['id', 'judul', 'tanggal', 'status', 'deskripsi_ringkas'].map(csvCell).join(','))
   events.forEach((e) => {
     lines.push(
-      [e.id, e.title, e.date, e.is_published ? 'ya' : 'tidak', clip(e.description ?? '')]
-        .map(csvCell)
-        .join(',')
+      [e.id, e.title, e.event_date, e.status, clip(e.description ?? '')].map(csvCell).join(',')
     )
   })
 
   lines.push('')
   lines.push('BERITA')
-  lines.push(['id', 'judul', 'dibuat', 'ringkas'].map(csvCell).join(','))
+  lines.push(['id', 'judul', 'terbit', 'kategori', 'ringkas'].map(csvCell).join(','))
   announcements.forEach((a) => {
-    lines.push([a.id, a.title, a.created_at, clip(a.content ?? '')].map(csvCell).join(','))
+    lines.push(
+      [a.id, a.title, a.published_at ?? a.created_at, a.category, clip(a.content ?? '')]
+        .map(csvCell)
+        .join(',')
+    )
   })
 
   lines.push('')

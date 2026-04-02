@@ -4,10 +4,14 @@ import type {
   DonationFull,
   DonationStats,
   Event,
+  EventCategory,
+  EventStatus,
   User,
   UserRole,
   PaymentMethod,
   Announcement,
+  AnnouncementPriority,
+  AnnouncementCategoryType,
   Khutbah,
   ApiResponse,
   PaginatedResponse,
@@ -160,10 +164,106 @@ export const getAdminAnnouncements = async (
 }
 
 export const getAdminKhutbahs = async (
-  params: { page?: number; limit?: number } = {}
+  params: { page?: number; limit?: number; status?: 'draft' | 'published' } = {}
 ): Promise<PaginatedResponse<Khutbah>> => {
   const response = await api.get<PaginatedResponse<Khutbah>>('/v1/admin/khutbahs', { params })
   return response.data
+}
+
+export const getAdminKhutbahById = async (id: string): Promise<Khutbah> => {
+  const response = await api.get<ApiResponse<Khutbah>>(`/v1/admin/khutbahs/${id}`)
+  return response.data.data
+}
+
+export type CreateEventPayload = {
+  title: string
+  slug: string
+  description?: string
+  content?: string
+  category: EventCategory
+  event_date: string
+  event_time?: string | null
+  location?: string | null
+  is_online?: boolean
+  meeting_url?: string | null
+  image_url?: string | null
+  gallery?: string[] | null
+  max_participants?: number | null
+  registration_required?: boolean
+  status: EventStatus
+}
+
+export const createAdminEvent = async (data: CreateEventPayload): Promise<Event> => {
+  const response = await api.post<ApiResponse<Event>>('/v1/admin/events', data)
+  return response.data.data
+}
+
+export const updateAdminEvent = async (id: string, data: CreateEventPayload): Promise<Event> => {
+  // Include `id` so JSON binding does not zero the UUID on the server.
+  const response = await api.put<ApiResponse<Event>>(`/v1/admin/events/${id}`, { ...data, id })
+  return response.data.data
+}
+
+export const deleteAdminEvent = async (id: string): Promise<void> => {
+  await api.delete(`/v1/admin/events/${id}`)
+}
+
+export type CreateAnnouncementPayload = {
+  title: string
+  content: string
+  priority?: AnnouncementPriority
+  category: AnnouncementCategoryType
+  published_at?: string | null
+  expires_at?: string | null
+  is_pinned?: boolean
+  image_url?: string | null
+}
+
+export const createAdminAnnouncement = async (data: CreateAnnouncementPayload): Promise<Announcement> => {
+  const response = await api.post<ApiResponse<Announcement>>('/v1/admin/announcements', data)
+  return response.data.data
+}
+
+export const updateAdminAnnouncement = async (
+  id: string,
+  data: CreateAnnouncementPayload
+): Promise<Announcement> => {
+  const response = await api.put<ApiResponse<Announcement>>(`/v1/admin/announcements/${id}`, { ...data, id })
+  return response.data.data
+}
+
+export const deleteAdminAnnouncement = async (id: string): Promise<void> => {
+  await api.delete(`/v1/admin/announcements/${id}`)
+}
+
+export type CreateKhutbahPayload = {
+  khatib: string
+  tema: string
+  imam?: string | null
+  muadzin?: string | null
+  date: string
+  content?: string | null
+  file_url?: string | null
+  status: 'draft' | 'published'
+}
+
+export const createAdminKhutbah = async (data: CreateKhutbahPayload): Promise<Khutbah> => {
+  const response = await api.post<ApiResponse<Khutbah>>('/v1/admin/khutbahs', data)
+  return response.data.data
+}
+
+export const updateAdminKhutbah = async (id: string, data: CreateKhutbahPayload): Promise<Khutbah> => {
+  const response = await api.put<ApiResponse<Khutbah>>(`/v1/admin/khutbahs/${id}`, { ...data, id })
+  return response.data.data
+}
+
+export const deleteAdminKhutbah = async (id: string): Promise<void> => {
+  await api.delete(`/v1/admin/khutbahs/${id}`)
+}
+
+export const toggleAdminKhutbahStatus = async (id: string): Promise<Khutbah> => {
+  const response = await api.put<ApiResponse<Khutbah>>(`/v1/admin/khutbahs/${id}/toggle`)
+  return response.data.data
 }
 
 export const getAdminUsers = async (): Promise<PaginatedResponse<User>> => {

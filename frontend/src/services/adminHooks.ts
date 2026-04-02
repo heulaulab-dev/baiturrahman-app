@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import {
   getDonationStats,
   getAdminDonations,
@@ -10,6 +10,16 @@ import {
   getAdminEvents,
   getAdminAnnouncements,
   getAdminKhutbahs,
+  createAdminEvent,
+  updateAdminEvent,
+  deleteAdminEvent,
+  createAdminAnnouncement,
+  updateAdminAnnouncement,
+  deleteAdminAnnouncement,
+  createAdminKhutbah,
+  updateAdminKhutbah,
+  deleteAdminKhutbah,
+  toggleAdminKhutbahStatus,
   getAdminUsers,
   createUser,
   getTentangKami,
@@ -34,7 +44,18 @@ import {
   deleteAdminReservation,
   type GetReservationsParams,
   type UpdateReservationRequest,
+  type CreateEventPayload,
+  type CreateAnnouncementPayload,
+  type CreateKhutbahPayload,
 } from './adminApiService'
+
+function invalidateKontenLandingQueries(queryClient: QueryClient) {
+  queryClient.invalidateQueries({ queryKey: ['events'] })
+  queryClient.invalidateQueries({ queryKey: ['event'] })
+  queryClient.invalidateQueries({ queryKey: ['announcements'] })
+  queryClient.invalidateQueries({ queryKey: ['khutbah', 'latest'] })
+  queryClient.invalidateQueries({ queryKey: ['khutbah', 'archive'] })
+}
 
 export const useDonationStats = () => {
   return useQuery({
@@ -156,6 +177,117 @@ export const useAdminKhutbahs = (limit = 10) => {
   })
 }
 
+export const useCreateAdminEvent = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: CreateEventPayload) => createAdminEvent(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'events'] })
+      invalidateKontenLandingQueries(queryClient)
+    },
+  })
+}
+
+export const useUpdateAdminEvent = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: CreateEventPayload }) => updateAdminEvent(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'events'] })
+      invalidateKontenLandingQueries(queryClient)
+    },
+  })
+}
+
+export const useDeleteAdminEvent = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => deleteAdminEvent(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'events'] })
+      invalidateKontenLandingQueries(queryClient)
+    },
+  })
+}
+
+export const useCreateAdminAnnouncement = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: CreateAnnouncementPayload) => createAdminAnnouncement(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] })
+      invalidateKontenLandingQueries(queryClient)
+    },
+  })
+}
+
+export const useUpdateAdminAnnouncement = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: CreateAnnouncementPayload }) =>
+      updateAdminAnnouncement(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] })
+      invalidateKontenLandingQueries(queryClient)
+    },
+  })
+}
+
+export const useDeleteAdminAnnouncement = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => deleteAdminAnnouncement(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] })
+      invalidateKontenLandingQueries(queryClient)
+    },
+  })
+}
+
+export const useCreateAdminKhutbah = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: CreateKhutbahPayload) => createAdminKhutbah(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'khutbahs'] })
+      invalidateKontenLandingQueries(queryClient)
+    },
+  })
+}
+
+export const useUpdateAdminKhutbah = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: CreateKhutbahPayload }) => updateAdminKhutbah(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'khutbahs'] })
+      invalidateKontenLandingQueries(queryClient)
+    },
+  })
+}
+
+export const useDeleteAdminKhutbah = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => deleteAdminKhutbah(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'khutbahs'] })
+      invalidateKontenLandingQueries(queryClient)
+    },
+  })
+}
+
+export const useToggleAdminKhutbahStatus = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => toggleAdminKhutbahStatus(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'khutbahs'] })
+      invalidateKontenLandingQueries(queryClient)
+    },
+  })
+}
+
 export const useAdminUsers = () => {
   return useQuery({
     queryKey: ['admin', 'users'],
@@ -189,7 +321,7 @@ export const useUpdateTentangKami = () => {
     mutationFn: updateTentangKami,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'tentang-kami'] })
-      queryClient.invalidateQueries({ queryKey: ['public', 'content'] })
+      queryClient.invalidateQueries({ queryKey: ['tentang-kami'] })
     },
   })
 }
@@ -217,6 +349,7 @@ export const useCreateHistoryEntry = () => {
     mutationFn: createHistoryEntry,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'history-entries'] })
+      queryClient.invalidateQueries({ queryKey: ['history-entries'] })
     },
   })
 }
@@ -227,6 +360,7 @@ export const useUpdateHistoryEntry = () => {
     mutationFn: ({ id, data }: { id: string; data: any }) => updateHistoryEntry(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'history-entries'] })
+      queryClient.invalidateQueries({ queryKey: ['history-entries'] })
     },
   })
 }
@@ -237,6 +371,7 @@ export const useDeleteHistoryEntry = () => {
     mutationFn: deleteHistoryEntry,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'history-entries'] })
+      queryClient.invalidateQueries({ queryKey: ['history-entries'] })
     },
   })
 }
@@ -247,6 +382,7 @@ export const useToggleHistoryEntryStatus = () => {
     mutationFn: toggleHistoryEntryStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'history-entries'] })
+      queryClient.invalidateQueries({ queryKey: ['history-entries'] })
     },
   })
 }
@@ -274,6 +410,7 @@ export const useCreateStruktur = () => {
     mutationFn: createStruktur,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'strukturs'] })
+      queryClient.invalidateQueries({ queryKey: ['strukturs', 'public'] })
     },
   })
 }
@@ -284,6 +421,7 @@ export const useUpdateStruktur = () => {
     mutationFn: ({ id, data }: { id: string; data: any }) => updateStruktur(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'strukturs'] })
+      queryClient.invalidateQueries({ queryKey: ['strukturs', 'public'] })
     },
   })
 }
@@ -294,6 +432,7 @@ export const useDeleteStruktur = () => {
     mutationFn: deleteStruktur,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'strukturs'] })
+      queryClient.invalidateQueries({ queryKey: ['strukturs', 'public'] })
     },
   })
 }
@@ -304,6 +443,7 @@ export const useReorderStrukturs = () => {
     mutationFn: reorderStrukturs,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'strukturs'] })
+      queryClient.invalidateQueries({ queryKey: ['strukturs', 'public'] })
     },
   })
 }
@@ -314,6 +454,7 @@ export const useToggleStrukturStatus = () => {
     mutationFn: toggleStrukturStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'strukturs'] })
+      queryClient.invalidateQueries({ queryKey: ['strukturs', 'public'] })
     },
   })
 }

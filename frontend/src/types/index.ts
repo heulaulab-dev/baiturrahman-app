@@ -69,64 +69,61 @@ export interface PrayerTime {
   created_at: string
 }
 
+export type EventCategory = 'kajian' | 'sosial' | 'pendidikan' | 'other'
+export type EventStatus = 'upcoming' | 'ongoing' | 'completed' | 'cancelled'
+
+/** Backend `events` row — JSON uses snake_case from Go. */
 export interface Event {
   id: string
   title: string
   slug: string
   description: string
-  date: string
-  time: string
-  location: string
-  image_url?: string
-  is_published: boolean
+  content?: string
+  category: EventCategory
+  event_date: string
+  event_time?: string | null
+  location?: string | null
+  is_online: boolean
+  meeting_url?: string | null
+  image_url?: string | null
+  gallery?: string[] | null
+  max_participants?: number | null
+  registration_required: boolean
+  status: EventStatus
+  created_by: string
   created_at: string
   updated_at: string
 }
 
-interface EventsResponse {
-	success: boolean;
-	data: Event[];
-	page: number;
-	limit: number;
-	total: number;
-	total_pages: number;
-}
-
-interface EventResponse {
-	success: boolean;
-	data: Event;
-}
+export type AnnouncementPriority = 'low' | 'normal' | 'high' | 'urgent'
+export type AnnouncementCategoryType = 'info' | 'warning' | 'event' | 'donation'
 
 export interface Announcement {
   id: string
   title: string
   content: string
-  is_published: boolean
+  priority: AnnouncementPriority
+  category: AnnouncementCategoryType
+  published_at?: string | null
+  expires_at?: string | null
+  is_pinned: boolean
+  image_url?: string | null
+  created_by: string
   created_at: string
   updated_at: string
 }
-
-export interface AnnouncementsResponse {
-	success: boolean;
-	data: Announcement[];
-	page: number;
-	limit: number;
-	total: number;
-	total_pages: number;
-}
-
-
 
 export interface Khutbah {
   id: string
   khatib: string
   tema: string
-  imam?: string
-  muadzin?: string
+  imam?: string | null
+  muadzin?: string | null
   date: string
-  content?: string
-  file_url?: string
+  content?: string | null
+  file_url?: string | null
   status: 'draft' | 'published'
+  created_by?: string
   created_at: string
   updated_at: string
 }
@@ -267,20 +264,6 @@ export interface PaginatedResponse<T> {
   limit: number
   total: number
   total_pages: number
-}
-
-export interface Khutbah {
-  id: string
-  khatib: string
-  tema: string
-  imam?: string
-  muadzin?: string
-  date: string
-  content?: string
-  file_url?: string
-  status: 'draft' | 'published'
-  created_at: string
-  updated_at: string
 }
 
 export interface HistoryEntry {

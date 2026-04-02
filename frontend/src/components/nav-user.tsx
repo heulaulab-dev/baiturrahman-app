@@ -129,7 +129,7 @@ function UserAccountMenuBody({
 
 /** Menu akun di sidebar footer */
 export function NavUser() {
-  const { isMobile } = useSidebar()
+  const { isMobile, state } = useSidebar()
   const { user, logout } = useAuth()
 
   if (!user) {
@@ -157,19 +157,20 @@ export function NavUser() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
+              title={!isMobile && state === "collapsed" ? displayName : undefined}
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="size-8 rounded-lg">
+              <Avatar className="size-8 shrink-0 rounded-lg">
                 <AvatarImage src={avatarSrc} alt={displayName} />
                 <AvatarFallback className="rounded-lg bg-sidebar-primary/15 text-xs font-semibold text-sidebar-primary">
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              <div className="grid min-w-0 flex-1 text-left text-sm leading-tight">
+              <div className="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-semibold">{displayName}</span>
                 <span className="truncate text-xs text-sidebar-foreground/70">{email}</span>
               </div>
-              <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-60" />
+              <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-60 group-data-[collapsible=icon]:hidden" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent

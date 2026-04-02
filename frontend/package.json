@@ -40,6 +40,7 @@
 		"@studio-freight/lenis": "^1.0.42",
 		"@svgr/webpack": "^8.1.0",
 		"@tanstack/react-query": "^5.62.11",
+		"@vercel/analytics": "^2.0.1",
 		"axios": "^1.7.9",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",

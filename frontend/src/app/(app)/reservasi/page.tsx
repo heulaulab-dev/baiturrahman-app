@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { format } from 'date-fns';
 import {
 	CalendarRange,
@@ -11,6 +11,7 @@ import {
 	XCircle,
 	Ban,
 	Loader2,
+	Plus,
 } from 'lucide-react';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,14 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { DatePicker } from '@/components/ui/date-picker';
 import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog';
+import {
 	AlertDialog,
 	AlertDialogAction,
 	AlertDialogCancel,
@@ -59,8 +68,20 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAdminReservations } from '@/services/adminHooks';
-import { useReservationAdminActions } from '@/services/reservationHooks';
+import { useCreateReservationSubmit, useReservationAdminActions } from '@/services/reservationHooks';
 import type { Reservation, ReservationStatus } from '@/types';
+
+const emptyAddForm = {
+	requester_name: '',
+	requester_phone: '',
+	requester_email: '',
+	facility: '',
+	event_title: '',
+	start_local: '',
+	end_local: '',
+	participant_count: '',
+	notes: '',
+};
 
 const statusFilterOptions: { value: string; label: string }[] = [
 	{ value: 'all', label: 'Semua status' },
@@ -110,6 +131,8 @@ export default function ReservasiPage() {
 	const [selected, setSelected] = useState<Reservation | null>(null);
 	const [adminNotesDraft, setAdminNotesDraft] = useState('');
 	const [deleteTarget, setDeleteTarget] = useState<Reservation | null>(null);
+	const [addOpen, setAddOpen] = useState(false);
+	const [addForm, setAddForm] = useState(emptyAddForm);
 
 	const queryParams = useMemo(() => {
 		const fromStr = fromDate ? format(fromDate, 'yyyy-MM-dd') : '';
@@ -124,8 +147,10 @@ export default function ReservasiPage() {
 	}, [page, pageSize, statusFilter, fromDate, toDate]);
 
 	const { data: listResponse, isLoading } = useAdminReservations(queryParams);
-	const { patchStatus, saveAdminNotes, removeReservation, isPending: busy } =
+	const { patchStatus, saveAdminNotes, removeReservation, isPending: busyMutations } =
 		useReservationAdminActions();
+	const { submit: submitNewReservation, isPending: createPending } = useCreateReservationSubmit();
+	const busy = busyMutations || createPending;
 
 	const rows = listResponse?.data ?? [];
 	const totalPages = listResponse?.total_pages ?? 1;
@@ -192,6 +217,38 @@ export default function ReservasiPage() {
 		}
 	}
 
+	function onAddDialogOpenChange(open: boolean) {
+		setAddOpen(open);
+		if (!open) {
+			setAddForm({ ...emptyAddForm });
+		}
+	}
+
+	async function handleSubmitNewReservation(e: FormEvent) {
+		e.preventDefault();
+		if (!addForm.requester_name.trim() || !addForm.facility.trim()) return;
+		if (!addForm.start_local || !addForm.end_local) return;
+		const start_at = new Date(addForm.start_local).toISOString();
+		const end_at = new Date(addForm.end_local).toISOString();
+		const participant_count = addForm.participant_count.trim()
+			? Number.parseInt(addForm.participant_count, 10)
+			: undefined;
+		const ok = await submitNewReservation({
+			requester_name: addForm.requester_name.trim(),
+			requester_phone: addForm.requester_phone.trim() || undefined,
+			requester_email: addForm.requester_email.trim() || undefined,
+			facility: addForm.facility.trim(),
+			event_title: addForm.event_title.trim() || undefined,
+			start_at,
+			end_at,
+			notes: addForm.notes.trim() || undefined,
+			...(Number.isFinite(participant_count) ? { participant_count } : {}),
+		});
+		if (ok) {
+			onAddDialogOpenChange(false);
+		}
+	}
+
 	const emptyTableMessage =
 		rows.length > 0 && searchQuery.trim()
 			? 'Tidak ada baris yang cocok dengan pencarian di halaman ini.'
@@ -206,7 +263,131 @@ export default function ReservasiPage() {
 						Kelola pengajuan pemakaian fasilitas masjid dari jamaah.
 					</p>
 				</div>
+				<Button type="button" className="gap-2" onClick={() => setAddOpen(true)}>
+					<Plus className="h-4 w-4" />
+					Tambah reservasi
+				</Button>
 			</div>
+
+			<Dialog open={addOpen} onOpenChange={onAddDialogOpenChange}>
+				<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+					<DialogHeader>
+						<DialogTitle>Tambah reservasi</DialogTitle>
+						<DialogDescription>
+							Catat pengajuan baru (masuk sebagai menunggu review). Waktu memakai zona waktu perangkat Anda.
+						</DialogDescription>
+					</DialogHeader>
+					<form onSubmit={handleSubmitNewReservation} className="space-y-4">
+						<div className="grid gap-2">
+							<Label htmlFor="res-name">Nama pemohon</Label>
+							<Input
+								id="res-name"
+								value={addForm.requester_name}
+								onChange={(e) => setAddForm((f) => ({ ...f, requester_name: e.target.value }))}
+								required
+								autoComplete="name"
+							/>
+						</div>
+						<div className="grid gap-2 sm:grid-cols-2">
+							<div className="grid gap-2">
+								<Label htmlFor="res-phone">Telepon</Label>
+								<Input
+									id="res-phone"
+									type="tel"
+									value={addForm.requester_phone}
+									onChange={(e) => setAddForm((f) => ({ ...f, requester_phone: e.target.value }))}
+									autoComplete="tel"
+								/>
+							</div>
+							<div className="grid gap-2">
+								<Label htmlFor="res-email">Email</Label>
+								<Input
+									id="res-email"
+									type="email"
+									value={addForm.requester_email}
+									onChange={(e) => setAddForm((f) => ({ ...f, requester_email: e.target.value }))}
+									autoComplete="email"
+								/>
+							</div>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="res-facility">Fasilitas</Label>
+							<Input
+								id="res-facility"
+								placeholder="Mis. aula, musholla"
+								value={addForm.facility}
+								onChange={(e) => setAddForm((f) => ({ ...f, facility: e.target.value }))}
+								required
+								maxLength={100}
+							/>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="res-title">Judul acara (opsional)</Label>
+							<Input
+								id="res-title"
+								value={addForm.event_title}
+								onChange={(e) => setAddForm((f) => ({ ...f, event_title: e.target.value }))}
+								maxLength={255}
+							/>
+						</div>
+						<div className="grid gap-2 sm:grid-cols-2">
+							<div className="grid gap-2">
+								<Label htmlFor="res-start">Mulai</Label>
+								<Input
+									id="res-start"
+									type="datetime-local"
+									value={addForm.start_local}
+									onChange={(e) => setAddForm((f) => ({ ...f, start_local: e.target.value }))}
+									required
+								/>
+							</div>
+							<div className="grid gap-2">
+								<Label htmlFor="res-end">Selesai</Label>
+								<Input
+									id="res-end"
+									type="datetime-local"
+									value={addForm.end_local}
+									onChange={(e) => setAddForm((f) => ({ ...f, end_local: e.target.value }))}
+									required
+								/>
+							</div>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="res-count">Perkiraan peserta (opsional)</Label>
+							<Input
+								id="res-count"
+								inputMode="numeric"
+								value={addForm.participant_count}
+								onChange={(e) => setAddForm((f) => ({ ...f, participant_count: e.target.value }))}
+							/>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="res-notes">Catatan pemohon</Label>
+							<Textarea
+								id="res-notes"
+								rows={3}
+								value={addForm.notes}
+								onChange={(e) => setAddForm((f) => ({ ...f, notes: e.target.value }))}
+							/>
+						</div>
+						<DialogFooter className="gap-2 sm:gap-0">
+							<Button type="button" variant="secondary" onClick={() => onAddDialogOpenChange(false)} disabled={busy}>
+								Batal
+							</Button>
+							<Button type="submit" disabled={busy}>
+								{createPending ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										Menyimpan…
+									</>
+								) : (
+									'Simpan'
+								)}
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
 
 			<div className="flex flex-wrap items-end gap-3">
 				<div className="w-full sm:w-56">

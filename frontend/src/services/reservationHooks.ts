@@ -2,10 +2,12 @@
 
 import { useCallback } from 'react';
 import axios from 'axios';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { useDeleteReservation, useUpdateReservation } from '@/services/adminHooks';
-import type { ReservationStatus } from '@/types';
+import { createReservation } from '@/services/apiService';
+import type { CreateReservationRequest, ReservationStatus } from '@/types';
 
 function toastApiError(err: unknown, fallback: string) {
 	if (axios.isAxiosError(err)) {
@@ -76,4 +78,30 @@ export function useReservationAdminActions() {
 		removeReservation,
 		isPending,
 	};
+}
+
+export function useCreateReservationSubmit() {
+	const queryClient = useQueryClient();
+	const mutation = useMutation({
+		mutationFn: (data: CreateReservationRequest) => createReservation(data),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['admin', 'reservations'] });
+		},
+	});
+
+	const submit = useCallback(
+		async (data: CreateReservationRequest): Promise<boolean> => {
+			try {
+				await mutation.mutateAsync(data);
+				toast.success('Reservasi berhasil ditambahkan');
+				return true;
+			} catch (err) {
+				toastApiError(err, 'Gagal menambah reservasi');
+				return false;
+			}
+		},
+		[mutation]
+	);
+
+	return { submit, isPending: mutation.isPending };
 }

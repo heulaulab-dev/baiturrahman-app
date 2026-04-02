@@ -19,8 +19,10 @@ func (h *Handler) GetKhutbahs(c *gin.Context) {
 
 	query := h.DB.Model(&models.Khutbah{})
 
-	// Only show published khutbahs on public endpoint
-	query = query.Where("status = ?", models.KhutbahStatusPublished)
+	// Admin list: all statuses unless filtered
+	if status := c.Query("status"); status != "" {
+		query = query.Where("status = ?", status)
+	}
 
 	query.Count(&total)
 	query.Preload("Creator").

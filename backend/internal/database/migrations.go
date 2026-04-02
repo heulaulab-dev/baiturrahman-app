@@ -25,6 +25,7 @@ func Migrate(db *gorm.DB) error {
 		&models.Struktur{},
 		&models.AsetTetap{},
 		&models.BarangTidakTetap{},
+		&models.Reservation{},
 	)
 }
 
@@ -59,4 +60,22 @@ func SeedDefaultAdmin(db *gorm.DB) error {
 	}
 
 	return nil
+}
+
+// SeedDefaultMosqueInfo inserts a placeholder row so GET /mosque returns 200 on a fresh database.
+func SeedDefaultMosqueInfo(db *gorm.DB) error {
+	var count int64
+	db.Model(&models.MosqueInfo{}).Count(&count)
+	if count > 0 {
+		return nil
+	}
+
+	placeholder := models.MosqueInfo{
+		Name:        "Masjid Baiturrahim",
+		Address:     "—",
+		City:        "—",
+		Province:    "—",
+		Description: "Silakan lengkapi informasi masjid melalui panel admin.",
+	}
+	return db.Create(&placeholder).Error
 }

@@ -2,16 +2,23 @@
 
 import { motion } from 'framer-motion';
 import { Calendar, CalendarDays } from 'lucide-react';
+import Image from 'next/image';
 import { useAnnouncements } from '@/services/hooks';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { resolveBackendAssetUrl } from '@/lib/utils';
 
 export function BeritaSection() {
 	const { data: announcements, isLoading } = useAnnouncements();
 
-	// Get featured announcement (first published one) and remaining
-	const featuredAnnouncement = announcements?.find((a) => a.is_published);
-	const otherAnnouncements = announcements?.filter((a) => a.is_published && a.id !== featuredAnnouncement?.id) || [];
+	const sorted = [...(announcements ?? [])].sort((a, b) => {
+		if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
+		const ta = a.published_at ? parseISO(a.published_at).getTime() : 0;
+		const tb = b.published_at ? parseISO(b.published_at).getTime() : 0;
+		return tb - ta;
+	});
+	const featuredAnnouncement = sorted[0];
+	const otherAnnouncements = sorted.slice(1);
 
 	return (
 		<section id="berita" className="py-20 bg-white">
@@ -39,8 +46,19 @@ export function BeritaSection() {
 						viewport={{ once: true }}
 						className="mb-8 relative aspect-[16/9] md:aspect-[21/9] overflow-hidden group cursor-pointer"
 					>
-						{/* Background gradient overlay */}
-						<div className="absolute inset-0 bg-gradient-to-br from-sacred-green to-sacred-gold group-hover:scale-[1.02] transition-transform duration-500" />
+						{resolveBackendAssetUrl(featuredAnnouncement.image_url ?? undefined) ? (
+							<div className="absolute inset-0">
+								<Image
+									src={resolveBackendAssetUrl(featuredAnnouncement.image_url ?? undefined)!}
+									alt=""
+									fill
+									className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+									sizes="(max-width: 768px) 100vw, 896px"
+								/>
+							</div>
+						) : (
+							<div className="absolute inset-0 bg-gradient-to-br from-sacred-green to-sacred-gold group-hover:scale-[1.02] transition-transform duration-500" />
+						)}
 
 						{/* Content Overlay */}
 						<div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12 bg-gradient-to-t from-black/70 via-black/20 to-transparent">
@@ -48,9 +66,13 @@ export function BeritaSection() {
 								<span className="px-3 py-1 bg-sacred-gold text-white text-xs uppercase tracking-wider">
 									Pengumuman
 								</span>
-								{featuredAnnouncement.created_at && (
+								{(featuredAnnouncement.published_at ?? featuredAnnouncement.created_at) && (
 									<span className="font-mono-jetbrains text-xs text-white/80">
-										{format(new Date(featuredAnnouncement.created_at), 'd MMMM yyyy', { locale: id })}
+										{format(
+											parseISO(featuredAnnouncement.published_at ?? featuredAnnouncement.created_at),
+											'd MMMM yyyy',
+											{ locale: id }
+										)}
 									</span>
 								)}
 							</div>
@@ -94,8 +116,18 @@ export function BeritaSection() {
 								transition={{ delay: index * 0.1 }}
 								className="bg-white border border-sacred-green overflow-hidden group cursor-pointer hover:border-sacred-gold transition-colors"
 							>
-								<div className="aspect-[4/3] bg-gradient-to-br from-sacred-green/10 to-sacred-gold/10 group-hover:scale-[1.02] transition-transform duration-500 flex items-center justify-center">
-									<CalendarDays size={48} className="text-sacred-green/20 group-hover:text-sacred-gold/30 transition-colors" />
+								<div className="relative aspect-[4/3] bg-gradient-to-br from-sacred-green/10 to-sacred-gold/10 group-hover:scale-[1.02] transition-transform duration-500 flex items-center justify-center">
+									{resolveBackendAssetUrl(announcement.image_url ?? undefined) ? (
+										<Image
+											src={resolveBackendAssetUrl(announcement.image_url ?? undefined)!}
+											alt=""
+											fill
+											className="object-cover"
+											sizes="(max-width: 768px) 100vw, 400px"
+										/>
+									) : (
+										<CalendarDays size={48} className="text-sacred-green/20 group-hover:text-sacred-gold/30 transition-colors" />
+									)}
 								</div>
 
 								<div className="p-6">
@@ -103,9 +135,13 @@ export function BeritaSection() {
 										<span className="text-xs uppercase tracking-wider text-sacred-gold">
 											Pengumuman
 										</span>
-										{announcement.created_at && (
+										{(announcement.published_at ?? announcement.created_at) && (
 											<span className="font-mono-jetbrains text-xs text-sacred-muted">
-												{format(new Date(announcement.created_at), 'd MMM yyyy', { locale: id })}
+												{format(
+													parseISO(announcement.published_at ?? announcement.created_at),
+													'd MMM yyyy',
+													{ locale: id }
+												)}
 											</span>
 										)}
 									</div>

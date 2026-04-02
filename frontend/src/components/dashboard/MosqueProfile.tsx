@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Save, Loader2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import { useMosqueInfo } from '@/services/hooks';
 import { useUpdateMosqueInfo, useDonationStats, useAdminUsers, useAdminEvents } from '@/services/adminHooks';
+import type { MosqueInfo } from '@/types';
+
+function normalizeSocialMedia(sm: MosqueInfo['social_media'] | undefined) {
+  return {
+    facebook: sm?.facebook?.trim() ?? '',
+    instagram: sm?.instagram?.trim() ?? '',
+    youtube: sm?.youtube?.trim() ?? '',
+    twitter: sm?.twitter?.trim() ?? '',
+  }
+}
 
 export function MosqueProfile() {
   const { data: mosqueInfo, isLoading } = useMosqueInfo();
@@ -45,43 +55,43 @@ export function MosqueProfile() {
   });
 
   const [previewMode, setPreviewMode] = useState(false);
+  const lastSyncedVersion = useRef<string | null>(null);
 
-  // Update form data when mosque info is loaded
   useEffect(() => {
-    if (mosqueInfo && formData.name === '' && !previewMode) {
-      setFormData({
-        name: mosqueInfo.name || '',
-        description: mosqueInfo.description || '',
-        address: mosqueInfo.address || '',
-        city: mosqueInfo.city || '',
-        province: mosqueInfo.province || '',
-        postal_code: mosqueInfo.postal_code || '',
-        phone: mosqueInfo.phone || '',
-        email: mosqueInfo.email || '',
-        website: mosqueInfo.website || '',
-        logo_url: mosqueInfo.logo_url || '',
-        banner_url: mosqueInfo.banner_url || '',
-        latitude: mosqueInfo.latitude,
-        longitude: mosqueInfo.longitude,
-        maps_embed_url: mosqueInfo.maps_embed_url || '',
-        social_media: (mosqueInfo.social_media as any) || {
-          facebook: '',
-          instagram: '',
-          youtube: '',
-          twitter: '',
-        },
-        established_year: mosqueInfo.established_year,
-        vision: mosqueInfo.vision || '',
-        mission: mosqueInfo.mission || '',
-      });
-    }
-  }, [mosqueInfo, previewMode]);
+    if (!mosqueInfo) return;
+    const version = `${mosqueInfo.id}-${mosqueInfo.updated_at}`;
+    if (lastSyncedVersion.current === version) return;
+    lastSyncedVersion.current = version;
+    setFormData({
+      name: mosqueInfo.name || '',
+      description: mosqueInfo.description || '',
+      address: mosqueInfo.address || '',
+      city: mosqueInfo.city || '',
+      province: mosqueInfo.province || '',
+      postal_code: mosqueInfo.postal_code || '',
+      phone: mosqueInfo.phone || '',
+      email: mosqueInfo.email || '',
+      website: mosqueInfo.website?.trim() ?? '',
+      logo_url: mosqueInfo.logo_url?.trim() ?? '',
+      banner_url: mosqueInfo.banner_url?.trim() ?? '',
+      latitude: mosqueInfo.latitude,
+      longitude: mosqueInfo.longitude,
+      maps_embed_url: mosqueInfo.maps_embed_url?.trim() ?? '',
+      social_media: normalizeSocialMedia(mosqueInfo.social_media),
+      established_year: mosqueInfo.established_year,
+      vision: mosqueInfo.vision || '',
+      mission: mosqueInfo.mission || '',
+    });
+  }, [mosqueInfo]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      await updateMutation.mutateAsync(formData);
+      await updateMutation.mutateAsync({
+        ...formData,
+        ...(mosqueInfo?.id ? { id: mosqueInfo.id } : {}),
+      })
       toast.success('Profil masjid berhasil diperbarui');
     } catch {
       toast.error('Gagal memperbarui profil masjid');
@@ -91,7 +101,7 @@ export function MosqueProfile() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        <Loader2 className="size-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -141,11 +151,53 @@ export function MosqueProfile() {
                 )}
               </div>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <p><strong>Alamat:</strong> {formData.address}, {formData.city}, {formData.province}</p>
+                <p>
+                  <strong>Alamat:</strong> {formData.address}, {formData.city}, {formData.province}
+                  {formData.postal_code ? ` ${formData.postal_code}` : ''}
+                </p>
+                {(formData.latitude != null || formData.longitude != null) && (
+                  <p>
+                    <strong>Koordinat:</strong>{' '}
+                    {formData.latitude ?? '—'}, {formData.longitude ?? '—'}
+                  </p>
+                )}
                 <p><strong>Telepon:</strong> {formData.phone}</p>
                 <p><strong>Email:</strong> {formData.email}</p>
-                {formData.website && <p><strong>Website:</strong> {formData.website}</p>}
+                {formData.website ? (
+                  <p>
+                    <strong>Website:</strong>{' '}
+                    <a href={formData.website.startsWith('http') ? formData.website : `https://${formData.website}`} className="text-primary underline" target="_blank" rel="noopener noreferrer">
+                      {formData.website}
+                    </a>
+                  </p>
+                ) : null}
+                {(formData.social_media.facebook ||
+                  formData.social_media.instagram ||
+                  formData.social_media.youtube ||
+                  formData.social_media.twitter) && (
+                  <div className="pt-2 border-t border-border">
+                    <strong className="text-foreground">Media sosial</strong>
+                    <ul className="mt-1 list-disc pl-5 space-y-0.5">
+                      {formData.social_media.facebook ? <li>Facebook: {formData.social_media.facebook}</li> : null}
+                      {formData.social_media.instagram ? <li>Instagram: {formData.social_media.instagram}</li> : null}
+                      {formData.social_media.youtube ? <li>YouTube: {formData.social_media.youtube}</li> : null}
+                      {formData.social_media.twitter ? <li>Twitter/X: {formData.social_media.twitter}</li> : null}
+                    </ul>
+                  </div>
+                )}
               </div>
+              {formData.maps_embed_url ? (
+                <div className="rounded-lg border border-border overflow-hidden aspect-video bg-muted">
+                  <iframe
+                    title="Peta lokasi masjid"
+                    src={formData.maps_embed_url}
+                    className="size-full border-0"
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         ) : (
@@ -256,6 +308,72 @@ export function MosqueProfile() {
                       type="url"
                       value={formData.website}
                       onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                      placeholder="https://"
+                    />
+                  </div>
+                </div>
+
+                {/* Lokasi & peta */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-medium tracking-wider text-muted-foreground uppercase">
+                    Lokasi &amp; peta
+                  </h4>
+                  <p className="text-xs text-muted-foreground -mt-2">
+                    URL embed: di Google Maps → Bagikan → Peta embed → salin nilai <code className="rounded bg-muted px-1">src=&quot;…&quot;</code> saja (bukan seluruh kode HTML).
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="latitude">Lintang (latitude)</Label>
+                      <Input
+                        id="latitude"
+                        type="number"
+                        step="any"
+                        value={formData.latitude ?? ''}
+                        onChange={(e) => {
+                          if (e.target.value === '') {
+                            setFormData({ ...formData, latitude: undefined })
+                            return
+                          }
+                          const n = Number.parseFloat(e.target.value)
+                          setFormData({
+                            ...formData,
+                            latitude: Number.isFinite(n) ? n : undefined,
+                          })
+                        }}
+                        placeholder="-6.113568"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="longitude">Bujur (longitude)</Label>
+                      <Input
+                        id="longitude"
+                        type="number"
+                        step="any"
+                        value={formData.longitude ?? ''}
+                        onChange={(e) => {
+                          if (e.target.value === '') {
+                            setFormData({ ...formData, longitude: undefined })
+                            return
+                          }
+                          const n = Number.parseFloat(e.target.value)
+                          setFormData({
+                            ...formData,
+                            longitude: Number.isFinite(n) ? n : undefined,
+                          })
+                        }}
+                        placeholder="106.888195"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="maps_embed_url">URL embed Google Maps</Label>
+                    <Textarea
+                      id="maps_embed_url"
+                      value={formData.maps_embed_url}
+                      onChange={(e) => setFormData({ ...formData, maps_embed_url: e.target.value })}
+                      rows={2}
+                      placeholder="https://www.google.com/maps/embed?pb=..."
+                      className="font-mono text-xs sm:text-sm"
                     />
                   </div>
                 </div>

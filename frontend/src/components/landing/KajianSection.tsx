@@ -8,15 +8,22 @@ import { id } from 'date-fns/locale';
 import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
+import { eventVisibleOnPublicPages, formatEventClockLabel, formatEventDateIso } from '@/lib/event-display';
+import { resolveBackendAssetUrl } from '@/lib/utils';
 
 const categories = ['Tafsir', 'Fiqh', 'Tasawuf', 'Khutbah', 'Keislaman'];
 
 export function KajianSection() {
 	const { data: events, isLoading } = useEvents();
 
-	// Get featured event (first published event) and remaining events
-	const featuredEvent = events?.find((e) => e.is_published); 
-	const otherEvents = events?.filter((e) => e.is_published && e.id !== featuredEvent?.id) || [];
+	const visible =
+		events
+			?.filter(eventVisibleOnPublicPages)
+			.sort(
+				(a, b) => formatEventDateIso(a.event_date).getTime() - formatEventDateIso(b.event_date).getTime()
+			) ?? [];
+	const featuredEvent = visible[0];
+	const otherEvents = visible.slice(1);
 	let featuredContent: React.ReactNode;
 	let listContent: React.ReactNode;
 
@@ -43,10 +50,10 @@ export function KajianSection() {
 				className="mb-12 bg-white p-8 border border-sacred-green cursor-pointer group hover:border-sacred-gold transition-colors duration-300"
 			>
 				<div className="grid md:grid-cols-2 gap-8 items-center">
-					{featuredEvent.image_url ? (
+					{resolveBackendAssetUrl(featuredEvent.image_url ?? undefined) ? (
 						<div className="relative aspect-4/3 w-full overflow-hidden">
 							<Image
-								src={featuredEvent.image_url}
+								src={resolveBackendAssetUrl(featuredEvent.image_url ?? undefined)!}
 								alt={featuredEvent.title}
 								fill
 								className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
@@ -71,15 +78,19 @@ export function KajianSection() {
 							{featuredEvent.description}
 						</p>
 						<div className="space-y-2 text-sm text-sacred-muted">
-							{featuredEvent.date ? (
+							{featuredEvent.event_date ? (
 								<div className="flex items-center gap-2">
 									<Calendar size={14} />
 									<span>
-										{format(new Date(featuredEvent.date), 'EEEE, d MMMM yyyy', { locale: id })}
+										{format(formatEventDateIso(featuredEvent.event_date), 'EEEE, d MMMM yyyy', {
+											locale: id,
+										})}
 									</span>
 								</div>
 							) : null}
-							{featuredEvent.time ? <div className="font-mono-jetbrains">{featuredEvent.time}</div> : null}
+							{formatEventClockLabel(featuredEvent.event_time) ? (
+								<div className="font-mono-jetbrains">{formatEventClockLabel(featuredEvent.event_time)}</div>
+							) : null}
 							{featuredEvent.location ? (
 								<div className="flex items-center gap-2">
 									<MapPin size={14} />
@@ -124,10 +135,10 @@ export function KajianSection() {
 						transition={{ delay: index * 0.1 }}
 						className="bg-white p-6 border border-sacred-green hover:border-sacred-gold transition-colors duration-300 group cursor-pointer"
 					>
-						{event.image_url ? (
+						{resolveBackendAssetUrl(event.image_url ?? undefined) ? (
 							<div className="relative mb-4 aspect-[1/1.2] w-full overflow-hidden">
 								<Image
-									src={event.image_url}
+									src={resolveBackendAssetUrl(event.image_url ?? undefined)!}
 									alt={event.title}
 									fill
 									className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
@@ -139,9 +150,9 @@ export function KajianSection() {
 								<Calendar size={32} className="text-sacred-green/20 group-hover:text-sacred-gold/30 transition-colors" />
 							</div>
 						)}
-						{event.date ? (
+						{event.event_date ? (
 							<span className="font-mono-jetbrains text-xs uppercase tracking-wider text-sacred-gold mb-2 block">
-								{format(new Date(event.date), 'd MMM yyyy', { locale: id })}
+								{format(formatEventDateIso(event.event_date), 'd MMM yyyy', { locale: id })}
 							</span>
 						) : null}
 						<h4 className="font-serif-cormorant font-semibold text-lg text-sacred-green mb-2 group-hover:text-sacred-gold transition-colors">
@@ -150,9 +161,9 @@ export function KajianSection() {
 						<p className="text-sacred-muted text-sm mb-3 line-clamp-2">
 							{event.description}
 						</p>
-						{event.time ? (
+						{formatEventClockLabel(event.event_time) ? (
 							<span className="font-mono-jetbrains text-xs text-sacred-muted">
-								{event.time}
+								{formatEventClockLabel(event.event_time)}
 							</span>
 						) : null}
 					</motion.div>

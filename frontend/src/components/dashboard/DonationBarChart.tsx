@@ -53,9 +53,9 @@ export function DonationBarChart({ data, isLoading }: DonationBarChartProps) {
         return (
           <div key={key} className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground w-8 text-right shrink-0">{label}</span>
-            <div className="flex-1 h-6 bg-foreground/5 rounded-sm overflow-hidden">
+            <div className="flex-1 h-6 bg-primary/10 rounded-sm overflow-hidden">
               <div
-                className="h-full bg-foreground/80 rounded-sm transition-all duration-500"
+                className="h-full rounded-sm bg-primary transition-all duration-500"
                 style={{ width: `${Math.max(pct, 2)}%` }}
               />
             </div>

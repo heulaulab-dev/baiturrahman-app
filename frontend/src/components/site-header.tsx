@@ -106,11 +106,8 @@ export function SiteHeader() {
       )}
     >
       <div className="flex h-full w-full min-w-0 items-center gap-2 px-3 sm:px-4">
-        <SidebarTrigger className="size-8 shrink-0" aria-label="Buka atau tutup sidebar" />
 
         {isMobile === false ? (
-          <>
-            <Separator orientation="vertical" className="h-6" />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -138,7 +135,6 @@ export function SiteHeader() {
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
-          </>
         ) : null}
 
         <Separator orientation="vertical" className="hidden h-6 sm:block" />

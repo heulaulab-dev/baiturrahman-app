@@ -10,6 +10,7 @@ import type {
   StructureMember,
   Khutbah,
   HistoryEntry,
+  GalleryItem,
   Struktur,
   ApiResponse,
   PaginatedResponse,
@@ -137,4 +138,10 @@ export const getPublicStrukturs = async (): Promise<Struktur[]> => {
 export const getTentangKami = async (): Promise<ContentSection> => {
   const response = await api.get<ApiResponse<ContentSection>>('/v1/content/tentang-kami')
   return response.data.data
+}
+
+// Gallery (public, published only)
+export const getGalleryItems = async (): Promise<GalleryItem[]> => {
+  const response = await api.get<ApiResponse<GalleryItem[]>>('/v1/gallery/items')
+  return response.data.data ?? []
 }

@@ -109,6 +109,8 @@ func main() {
 			// Khutbah (public)
 			public.GET("/khutbahs/latest", h.GetLatestKhutbah)
 			public.GET("/khutbahs/archive", h.GetKhutbahArchive)
+
+			public.GET("/gallery/items", h.GetPublicGalleryItems)
 		}
 
 		// Protected routes (require authentication)
@@ -232,6 +234,13 @@ func main() {
 			admin.POST("/inventaris/barang", h.CreateBarangTidakTetap)
 			admin.PUT("/inventaris/barang/:id", h.UpdateBarangTidakTetap)
 			admin.DELETE("/inventaris/barang/:id", h.DeleteBarangTidakTetap)
+
+			admin.GET("/gallery/items", h.GetAdminGalleryItems)
+			admin.POST("/gallery/items", h.CreateGalleryItem)
+			admin.PUT("/gallery/items/reorder", h.ReorderGalleryItems)
+			admin.PUT("/gallery/items/:id", h.UpdateGalleryItem)
+			admin.PUT("/gallery/items/:id/toggle", h.ToggleGalleryItemPublished)
+			admin.DELETE("/gallery/items/:id", h.DeleteGalleryItem)
 		}
 	}
 

@@ -26,6 +26,7 @@ func Migrate(db *gorm.DB) error {
 		&models.AsetTetap{},
 		&models.BarangTidakTetap{},
 		&models.Reservation{},
+		&models.GalleryItem{},
 	)
 }
 

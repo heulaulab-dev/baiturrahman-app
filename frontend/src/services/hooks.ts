@@ -17,6 +17,7 @@ import {
 	getHistoryEntriesByDateRange,
 	getPublicStrukturs,
 	getTentangKami,
+	getGalleryItems,
 } from './apiService';
 
 // Mosque Info
@@ -168,5 +169,13 @@ export const useTentangKami = () => {
 		queryKey: ['tentang-kami'],
 		queryFn: getTentangKami,
 		staleTime: 1000 * 60 * 30, // 30 minutes
+	});
+};
+
+export const useGalleryItems = () => {
+	return useQuery({
+		queryKey: ['gallery', 'items'],
+		queryFn: getGalleryItems,
+		staleTime: 1000 * 60 * 5,
 	});
 };

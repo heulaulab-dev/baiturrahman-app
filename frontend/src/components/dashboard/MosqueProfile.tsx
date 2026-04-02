@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Save, Loader2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,37 +45,37 @@ export function MosqueProfile() {
   });
 
   const [previewMode, setPreviewMode] = useState(false);
+  const hasHydratedFromServer = useRef(false);
 
-  // Update form data when mosque info is loaded
   useEffect(() => {
-    if (mosqueInfo && formData.name === '' && !previewMode) {
-      setFormData({
-        name: mosqueInfo.name || '',
-        description: mosqueInfo.description || '',
-        address: mosqueInfo.address || '',
-        city: mosqueInfo.city || '',
-        province: mosqueInfo.province || '',
-        postal_code: mosqueInfo.postal_code || '',
-        phone: mosqueInfo.phone || '',
-        email: mosqueInfo.email || '',
-        website: mosqueInfo.website || '',
-        logo_url: mosqueInfo.logo_url || '',
-        banner_url: mosqueInfo.banner_url || '',
-        latitude: mosqueInfo.latitude,
-        longitude: mosqueInfo.longitude,
-        maps_embed_url: mosqueInfo.maps_embed_url || '',
-        social_media: (mosqueInfo.social_media as any) || {
-          facebook: '',
-          instagram: '',
-          youtube: '',
-          twitter: '',
-        },
-        established_year: mosqueInfo.established_year,
-        vision: mosqueInfo.vision || '',
-        mission: mosqueInfo.mission || '',
-      });
-    }
-  }, [mosqueInfo, previewMode]);
+    if (!mosqueInfo || hasHydratedFromServer.current) return;
+    hasHydratedFromServer.current = true;
+    setFormData({
+      name: mosqueInfo.name || '',
+      description: mosqueInfo.description || '',
+      address: mosqueInfo.address || '',
+      city: mosqueInfo.city || '',
+      province: mosqueInfo.province || '',
+      postal_code: mosqueInfo.postal_code || '',
+      phone: mosqueInfo.phone || '',
+      email: mosqueInfo.email || '',
+      website: mosqueInfo.website || '',
+      logo_url: mosqueInfo.logo_url || '',
+      banner_url: mosqueInfo.banner_url || '',
+      latitude: mosqueInfo.latitude,
+      longitude: mosqueInfo.longitude,
+      maps_embed_url: mosqueInfo.maps_embed_url || '',
+      social_media: (mosqueInfo.social_media as any) || {
+        facebook: '',
+        instagram: '',
+        youtube: '',
+        twitter: '',
+      },
+      established_year: mosqueInfo.established_year,
+      vision: mosqueInfo.vision || '',
+      mission: mosqueInfo.mission || '',
+    });
+  }, [mosqueInfo]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +91,7 @@ export function MosqueProfile() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        <Loader2 className="size-8 animate-spin text-primary" />
       </div>
     );
   }

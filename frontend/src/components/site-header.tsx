@@ -44,6 +44,7 @@ function getBreadcrumbTitle(pathname: string): { title: string; href: string } {
     "ruang-rapat": "Ruang Rapat",
     "acara-khusus": "Acara Khusus",
     "donasi": "Donasi",
+    "inventaris": "Inventaris",
     "laporan": "Laporan",
     "konten": "Konten",
     "berita": "Berita & Artikel",

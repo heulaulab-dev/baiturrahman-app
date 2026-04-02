@@ -11,6 +11,7 @@ import {
   FileText,
   LayoutDashboard,
   Boxes,
+  HelpCircle,
 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { NavMain } from "@/components/nav-main"
@@ -135,7 +136,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     {
       title: "Bantuan",
       url: "/bantuan",
-      icon: User,
+      icon: HelpCircle,
     },
   ]
 

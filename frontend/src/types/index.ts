@@ -285,6 +285,19 @@ export interface HistoryEntry {
   }
 }
 
+/** Curated landing gallery (admin-managed). */
+export interface GalleryItem {
+  id: string
+  title: string
+  summary: string
+  image_url: string
+  link_url: string
+  sort_order: number
+  is_published: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface Struktur {
   id: string
   name: string

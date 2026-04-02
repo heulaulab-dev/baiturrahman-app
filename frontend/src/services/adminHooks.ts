@@ -42,6 +42,12 @@ import {
   getAdminReservations,
   updateAdminReservation,
   deleteAdminReservation,
+  getAdminGalleryItems,
+  createGalleryItem,
+  updateGalleryItem,
+  deleteGalleryItem,
+  reorderGalleryItems,
+  toggleGalleryItemPublished,
   type GetReservationsParams,
   type UpdateReservationRequest,
   type CreateEventPayload,
@@ -504,6 +510,71 @@ export const useDeleteReservation = () => {
     mutationFn: deleteAdminReservation,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'reservations'] })
+    },
+  })
+}
+
+// Gallery
+export const useAdminGalleryItems = () => {
+  return useQuery({
+    queryKey: ['admin', 'gallery', 'items'],
+    queryFn: getAdminGalleryItems,
+    staleTime: 1000 * 30,
+  })
+}
+
+export const useCreateGalleryItem = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createGalleryItem,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'gallery', 'items'] })
+      queryClient.invalidateQueries({ queryKey: ['gallery', 'items'] })
+    },
+  })
+}
+
+export const useUpdateGalleryItem = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof updateGalleryItem>[1] }) =>
+      updateGalleryItem(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'gallery', 'items'] })
+      queryClient.invalidateQueries({ queryKey: ['gallery', 'items'] })
+    },
+  })
+}
+
+export const useDeleteGalleryItem = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteGalleryItem,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'gallery', 'items'] })
+      queryClient.invalidateQueries({ queryKey: ['gallery', 'items'] })
+    },
+  })
+}
+
+export const useReorderGalleryItems = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: reorderGalleryItems,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'gallery', 'items'] })
+      queryClient.invalidateQueries({ queryKey: ['gallery', 'items'] })
+    },
+  })
+}
+
+export const useToggleGalleryItemPublished = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: toggleGalleryItemPublished,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'gallery', 'items'] })
+      queryClient.invalidateQueries({ queryKey: ['gallery', 'items'] })
     },
   })
 }

@@ -3,8 +3,24 @@
 import { useState } from 'react';
 import { Search, Filter, UserPlus, MoreHorizontal } from 'lucide-react';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+	InputGroupText,
+} from '@/components/ui/input-group';
+import { Label } from '@/components/ui/label';
 import {
 	Select,
 	SelectContent,
@@ -12,17 +28,27 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import {
+	Sheet,
+	SheetContent,
+	SheetFooter,
+	SheetHeader,
+	SheetTitle,
+} from '@/components/ui/sheet';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from '@/components/ui/table';
 import {
 	Tabs,
 	TabsList,
 	TabsTrigger,
 } from '@/components/ui/tabs';
-import {
-	Sheet,
-	SheetContent,
-	SheetHeader,
-	SheetTitle,
-} from '@/components/ui/sheet';
 import { useAdminUsers } from '@/services/adminHooks';
 
 const filterOptions = ['Semua', 'Aktif', 'Tidak Aktif', 'Muallaf'];
@@ -71,9 +97,13 @@ export default function JamaahPage() {
 		return <StatusBadge status="warning">Muallaf</StatusBadge>;
 	}
 
+	function openMemberDetail(member: typeof membersData[0]) {
+		setSelectedMember(member);
+		setShowDetailDrawer(true);
+	}
+
 	return (
 		<div className="space-y-6 p-6">
-			{/* Page Header */}
 			<div className="flex flex-wrap items-center justify-between gap-4 mb-6">
 				<h2 className="text-3xl font-semibold text-foreground">Struktur Anggota Jamaah</h2>
 				<Button className="gap-2">
@@ -82,22 +112,25 @@ export default function JamaahPage() {
 				</Button>
 			</div>
 
-			{/* Filters */}
 			<div className="flex flex-wrap items-center gap-3">
-				<div className="relative">
-					<Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-					<Input
-						type="text"
+				<InputGroup className="w-full sm:w-64">
+					<InputGroupAddon>
+						<InputGroupText>
+							<Search aria-hidden className="text-muted-foreground" />
+						</InputGroupText>
+					</InputGroupAddon>
+					<InputGroupInput
+						type="search"
 						placeholder="Cari anggota..."
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
-						className="w-64 pl-10"
+						aria-label="Cari anggota"
 					/>
-				</div>
+				</InputGroup>
 				<div className="flex items-center gap-2">
-					<Filter className="w-4 h-4 text-muted-foreground" />
+					<Filter className="w-4 h-4 shrink-0 text-muted-foreground" aria-hidden />
 					<Select value={filter} onValueChange={setFilter}>
-						<SelectTrigger className="w-44">
+						<SelectTrigger className="w-44" aria-label="Filter status">
 							<SelectValue placeholder="Filter status" />
 						</SelectTrigger>
 						<SelectContent>
@@ -109,14 +142,18 @@ export default function JamaahPage() {
 						</SelectContent>
 					</Select>
 				</div>
-				<div className="flex items-center gap-2 p-2 border border-border bg-muted/30 rounded-md">
-					<div className="text-xs text-muted-foreground">Aktif:</div>
-					<div className="text-xl font-semibold text-foreground">{aktifCount}</div>
-				</div>
-				<div className="flex items-center gap-2 p-2 border border-border bg-muted/30 rounded-md">
-					<div className="text-xs text-muted-foreground">Muallaf:</div>
-					<div className="text-xl font-semibold text-foreground">{muallafCount}</div>
-				</div>
+				<Card className="py-2 shadow-sm">
+					<CardContent className="flex items-center gap-2 px-3 py-0">
+						<span className="text-xs text-muted-foreground">Aktif:</span>
+						<span className="text-xs font-semibold text-foreground tabular-nums">{aktifCount}</span>
+					</CardContent>
+				</Card>
+				<Card className="py-2 shadow-sm">
+					<CardContent className="flex items-center gap-2 px-3 py-0">
+						<span className="text-xs text-muted-foreground">Muallaf:</span>
+						<span className="text-xs font-semibold text-foreground tabular-nums">{muallafCount} </span>
+					</CardContent>
+				</Card>
 				<Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'table' | 'grid')} className="ml-auto">
 					<TabsList>
 						<TabsTrigger value="table">Table</TabsTrigger>
@@ -125,101 +162,165 @@ export default function JamaahPage() {
 				</Tabs>
 			</div>
 
-			{/* Table View */}
 			{viewMode === 'table' && (
-				<div className="border border-border bg-background rounded-md overflow-hidden">
-					<div className="grid grid-cols-[40px_48px_1fr_120px_100px_80px] bg-muted/30 h-10 items-center px-4 text-xs font-medium tracking-wider text-muted-foreground uppercase">
-						<div><input type="checkbox" className="w-4 h-4 border-border rounded" /></div>
-						<div>Foto</div>
-						<div>Nama Lengkap</div>
-						<div>Status</div>
-						<div>Bergabung</div>
-						<div className="text-center">Aksi</div>
-					</div>
-					{filteredData.map((member) => (
-						<button
-							key={member.id}
-							onClick={() => { setSelectedMember(member); setShowDetailDrawer(true); }}
-							className="grid w-full grid-cols-[40px_48px_1fr_120px_100px_80px] border-t border-border h-14 items-center px-4 text-left text-sm hover:bg-muted/30 transition-colors"
-						>
-							<div><input type="checkbox" className="w-4 h-4 border-border rounded" onClick={(e) => e.stopPropagation()} /></div>
-							<div className="w-9 h-9 rounded-full bg-muted/50 flex items-center justify-center text-xs font-semibold text-muted-foreground">
-								{getInitials(member.nama)}
-							</div>
-							<div className="min-w-0">
-								<div className="text-foreground font-medium truncate">{member.nama}</div>
-							</div>
-							<div>{getStatusBadge(member.status)}</div>
-							<div className="text-muted-foreground text-xs">{member.bergabung}</div>
-							<div className="text-center">
-								<button onClick={(e) => e.stopPropagation()} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
-									<MoreHorizontal className="w-4 h-4" />
-								</button>
-							</div>
-						</button>
-					))}
-				</div>
+				<Card className="overflow-hidden p-0 shadow-sm">
+					<Table>
+						<TableHeader>
+							<TableRow className="bg-muted/30 hover:bg-muted/30">
+								<TableHead className="w-10 pl-4">
+									<Checkbox aria-label="Pilih semua baris" />
+								</TableHead>
+								<TableHead className="w-14">Foto</TableHead>
+								<TableHead>Nama Lengkap</TableHead>
+								<TableHead className="w-[120px]">Status</TableHead>
+								<TableHead className="w-[100px]">Bergabung</TableHead>
+								<TableHead className="w-[80px] text-center">Aksi</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{filteredData.map((member) => (
+								<TableRow
+									key={member.id}
+									tabIndex={0}
+									className="cursor-pointer"
+									onClick={() => openMemberDetail(member)}
+									onKeyDown={(e) => {
+										if (e.key === 'Enter' || e.key === ' ') {
+											e.preventDefault();
+											openMemberDetail(member);
+										}
+									}}
+								>
+									<TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
+										<Checkbox aria-label={`Pilih ${member.nama}`} />
+									</TableCell>
+									<TableCell>
+										<Avatar className="h-9 w-9">
+											{member.foto ? (
+												<AvatarImage src={member.foto} alt="" />
+											) : null}
+											<AvatarFallback className="text-xs font-semibold">
+												{getInitials(member.nama)}
+											</AvatarFallback>
+										</Avatar>
+									</TableCell>
+									<TableCell className="font-medium">
+										<span className="line-clamp-1">{member.nama}</span>
+									</TableCell>
+									<TableCell>{getStatusBadge(member.status)}</TableCell>
+									<TableCell className="text-muted-foreground text-xs">{member.bergabung}</TableCell>
+									<TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+										<DropdownMenu>
+											<DropdownMenuTrigger asChild>
+												<Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label={`Aksi untuk ${member.nama}`}>
+													<MoreHorizontal className="h-4 w-4" />
+												</Button>
+											</DropdownMenuTrigger>
+											<DropdownMenuContent align="end">
+												<DropdownMenuItem
+													onSelect={() => {
+														openMemberDetail(member);
+													}}
+												>
+													Lihat detail
+												</DropdownMenuItem>
+												<DropdownMenuSeparator />
+												<DropdownMenuItem disabled>
+													Edit anggota
+												</DropdownMenuItem>
+											</DropdownMenuContent>
+										</DropdownMenu>
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</Card>
 			)}
 
-			{/* Grid View */}
 			{viewMode === 'grid' && (
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+				<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 					{filteredData.map((member) => (
-						<button
+						<Card
 							key={member.id}
-							onClick={() => { setSelectedMember(member); setShowDetailDrawer(true); }}
-							className="border border-border bg-background hover:bg-muted/30 transition-colors rounded-lg overflow-hidden text-left"
+							role="button"
+							tabIndex={0}
+							className="cursor-pointer shadow-sm transition-colors hover:bg-muted/30"
+							onClick={() => openMemberDetail(member)}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									openMemberDetail(member);
+								}
+							}}
 						>
-							<div className="p-4 flex items-start gap-3">
-								<div className="w-14 h-14 rounded-full bg-muted/50 flex items-center justify-center shrink-0 text-lg font-semibold text-muted-foreground">
-									{getInitials(member.nama)}
-								</div>
+							<CardContent className="flex items-start gap-3 p-4">
+								<Avatar className="h-14 w-14 shrink-0">
+									{member.foto ? (
+										<AvatarImage src={member.foto} alt="" />
+									) : null}
+									<AvatarFallback className="text-lg font-semibold">
+										{getInitials(member.nama)}
+									</AvatarFallback>
+								</Avatar>
 								<div className="min-w-0 flex-1">
-									<div className="text-foreground font-semibold truncate">{member.nama}</div>
-									<div className="text-xs text-muted-foreground mt-1">{member.bergabung}</div>
+									<div className="truncate font-semibold text-foreground">{member.nama}</div>
+									<div className="mt-1 text-xs text-muted-foreground">{member.bergabung}</div>
 									<div className="mt-2">{getStatusBadge(member.status)}</div>
 								</div>
-							</div>
-						</button>
+							</CardContent>
+						</Card>
 					))}
 				</div>
 			)}
 
-			{/* Detail Drawer */}
 			<Sheet open={showDetailDrawer && !!selectedMember} onOpenChange={setShowDetailDrawer}>
-				<SheetContent side="right" className="w-[480px] sm:max-w-[480px] overflow-y-auto">
+				<SheetContent side="right" className="flex w-[480px] flex-col overflow-y-auto sm:max-w-[480px]">
 					<SheetHeader>
 						<SheetTitle>Detail Anggota</SheetTitle>
 					</SheetHeader>
 					{selectedMember && (
 						<>
-						<div className="p-6 space-y-6">
-							<div className="flex items-start gap-4">
-								<div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center shrink-0 text-3xl font-semibold text-muted-foreground">
-									{getInitials(selectedMember.nama)}
+							<div className="flex flex-1 flex-col gap-6 px-6 pb-6 pt-2">
+								<div className="flex items-start gap-4">
+									<Avatar className="h-20 w-20 shrink-0">
+										{selectedMember.foto ? (
+											<AvatarImage src={selectedMember.foto} alt="" />
+										) : null}
+										<AvatarFallback className="text-3xl font-semibold">
+											{getInitials(selectedMember.nama)}
+										</AvatarFallback>
+									</Avatar>
+									<div className="min-w-0">
+										<div className="text-xl font-semibold text-foreground">{selectedMember.nama}</div>
+										<div className="mt-2">{getStatusBadge(selectedMember.status)}</div>
+									</div>
 								</div>
-								<div>
-									<div className="text-xl font-semibold text-foreground">{selectedMember.nama}</div>
-									<div className="mt-2">{getStatusBadge(selectedMember.status)}</div>
+								<Separator />
+								<div className="grid grid-cols-2 gap-4 text-sm">
+									<div className="space-y-1.5">
+										<Label className="text-muted-foreground">Bergabung</Label>
+										<p className="text-foreground">{selectedMember.bergabung}</p>
+									</div>
+									<div className="space-y-1.5">
+										<Label className="text-muted-foreground">Muallaf</Label>
+										<p className="text-foreground">{selectedMember.muallaf ? 'Ya' : 'Tidak'}</p>
+									</div>
 								</div>
 							</div>
-							<div className="grid grid-cols-2 gap-4 text-sm">
-								<div>
-									<div className="text-muted-foreground">Bergabung</div>
-									<div className="text-foreground">{selectedMember.bergabung}</div>
-								</div>
-								<div>
-									<div className="text-muted-foreground">Muallaf</div>
-									<div className="text-foreground">{selectedMember.muallaf ? 'Ya' : 'Tidak'}</div>
-								</div>
-							</div>
-						</div>
-						<div className="flex gap-3 border-t border-border p-6">
-							<Button className="flex-1">Simpan</Button>
-							<Button variant="secondary" className="flex-1" onClick={() => setShowDetailDrawer(false)}>
-								Tutup
-							</Button>
-						</div>
+							<SheetFooter className="mt-auto flex flex-row gap-3 border-t border-border p-6">
+								<Button type="button" className="flex-1">
+									Simpan
+								</Button>
+								<Button
+									type="button"
+									variant="secondary"
+									className="flex-1"
+									onClick={() => setShowDetailDrawer(false)}
+								>
+									Tutup
+								</Button>
+							</SheetFooter>
 						</>
 					)}
 				</SheetContent>

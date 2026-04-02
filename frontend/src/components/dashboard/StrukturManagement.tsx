@@ -200,8 +200,8 @@ export function StrukturManagement() {
           ))}
         </div>
       ) : filteredStrukturs.length === 0 ? (
-        <div className="text-center py-12 text-muted">
-          <Users className="w-12 h-12 mx-auto mb-4 text-muted/30" />
+        <div className="py-12 text-center text-muted-foreground">
+          <Users className="mx-auto mb-4 h-12 w-12 text-primary/25" />
           <p>Tidak ada anggota struktur yang ditemukan</p>
         </div>
       ) : (
@@ -209,10 +209,10 @@ export function StrukturManagement() {
           {filteredStrukturs.map((struktur) => (
             <div
               key={struktur.id}
-              className={`border border-border bg-background rounded-lg p-4 transition-all ${!struktur.is_active ? 'opacity-60' : ''}`}
+              className={`rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:border-primary/20 ${!struktur.is_active ? 'opacity-60' : ''}`}
             >
               <div className="flex items-start justify-between mb-3">
-                <GripVertical className="w-4 h-4 text-muted cursor-move" />
+                <GripVertical className="h-4 w-4 cursor-move text-muted-foreground" />
                 <div className="flex items-center gap-1">
                   <span className={`px-2 py-1 text-xs font-medium rounded ${getRoleColor(struktur.role)}`}>
                     {getRoleLabel(struktur.role)}
@@ -228,17 +228,17 @@ export function StrukturManagement() {
                     className="w-20 h-20 rounded-full object-cover mb-3"
                   />
                 ) : (
-                  <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-3">
-                    <Users className="w-10 h-10 text-muted/40" />
+                  <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-muted">
+                    <Users className="h-10 w-10 text-muted-foreground/45" />
                   </div>
                 )}
-                <h3 className="font-semibold text-center">{struktur.name}</h3>
+                <h3 className="text-center font-semibold text-foreground">{struktur.name}</h3>
                 {struktur.department && (
-                  <p className="text-sm text-muted text-center">{struktur.department}</p>
+                  <p className="text-center text-sm text-muted-foreground">{struktur.department}</p>
                 )}
               </div>
 
-              <div className="space-y-1 text-xs text-muted mb-4">
+              <div className="mb-4 space-y-1 text-xs text-muted-foreground">
                 {struktur.email && (
                   <div className="flex items-center gap-2">
                     <Mail className="w-3 h-3" />
@@ -254,7 +254,7 @@ export function StrukturManagement() {
               </div>
 
               {struktur.bio && (
-                <p className="text-xs text-muted line-clamp-2 mb-4">{struktur.bio}</p>
+                <p className="mb-4 line-clamp-2 text-xs text-muted-foreground">{struktur.bio}</p>
               )}
 
               <div className="flex items-center gap-2">

@@ -3,10 +3,11 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import { Download, Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -50,6 +51,9 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { downloadInventarisCsv } from '@/lib/inventaris-csv'
+import { cn } from '@/lib/utils'
 import {
   type AsetTetap,
   type BarangTidakTetap,
@@ -259,6 +263,38 @@ export default function InventarisPage() {
     }
   }
 
+  const onAsetDialogOpenChange = (open: boolean) => {
+    setOpenAsetDialog(open)
+    if (!open) {
+      setEditingAset(null)
+      asetForm.reset({ nama_aset: 'Tanah', luas: '' })
+    }
+  }
+
+  const onBarangDialogOpenChange = (open: boolean) => {
+    setOpenBarangDialog(open)
+    if (!open) {
+      setEditingBarang(null)
+      barangForm.reset({
+        kategori: 'Sound System',
+        nama_barang: '',
+        jumlah: undefined,
+        satuan: '',
+        kondisi_baik: 'baik',
+        keterangan: '',
+      })
+    }
+  }
+
+  const handleExportCsv = () => {
+    try {
+      downloadInventarisCsv(asetTetap, barangTidakTetap)
+      toast.success('CSV berhasil diunduh')
+    } catch {
+      toast.error('Gagal mengekspor CSV')
+    }
+  }
+
   const asetRows = (() => {
     if (loading) {
       return asetSkeletonIds.map((id) => (
@@ -285,17 +321,23 @@ export default function InventarisPage() {
         <TableCell>{index + 1}</TableCell>
         <TableCell>{item.nama_aset}</TableCell>
         <TableCell>{item.luas || '-'}</TableCell>
-        <TableCell className="space-x-2 text-right">
-          <Button size="sm" variant="outline" onClick={() => openEditAset(item)}>
-            Edit
-          </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => setDeleteTarget({ type: 'aset', id: item.id })}
-          >
-            Hapus
-          </Button>
+        <TableCell className="text-right">
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button type="button" size="sm" variant="outline" className="gap-1.5" onClick={() => openEditAset(item)}>
+              <Pencil className="size-3.5 shrink-0" aria-hidden />
+              Edit
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              className="gap-1.5"
+              onClick={() => setDeleteTarget({ type: 'aset', id: item.id })}
+            >
+              <Trash2 className="size-3.5 shrink-0" aria-hidden />
+              Hapus
+            </Button>
+          </div>
         </TableCell>
       </TableRow>
     ))
@@ -328,17 +370,29 @@ export default function InventarisPage() {
                   <TableCell>{item.satuan ?? '-'}</TableCell>
                   <TableCell>{item.kondisi_baik ? 'Baik' : 'Rusak'}</TableCell>
                   <TableCell>{item.keterangan ?? '-'}</TableCell>
-                  <TableCell className="space-x-2 text-right">
-                    <Button size="sm" variant="outline" onClick={() => openEditBarang(item)}>
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => setDeleteTarget({ type: 'barang', id: item.id })}
-                    >
-                      Hapus
-                    </Button>
+                  <TableCell className="text-right">
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5"
+                        onClick={() => openEditBarang(item)}
+                      >
+                        <Pencil className="size-3.5 shrink-0" aria-hidden />
+                        Edit
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="destructive"
+                        className="gap-1.5"
+                        onClick={() => setDeleteTarget({ type: 'barang', id: item.id })}
+                      >
+                        <Trash2 className="size-3.5 shrink-0" aria-hidden />
+                        Hapus
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -357,85 +411,112 @@ export default function InventarisPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-3xl font-semibold text-foreground">Inventaris</h2>
+        <Button type="button" variant="outline" onClick={handleExportCsv} disabled={loading}>
+          <Download className="mr-2 size-4 shrink-0" aria-hidden />
+          Export CSV
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground">Total Aset Tetap</CardTitle>
+            <CardDescription>Tanah dan bangunan</CardDescription>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{asetTetap.length}</CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground">Total Barang</CardTitle>
+            <CardDescription>Semua kategori</CardDescription>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{barangTidakTetap.length}</CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground">Kondisi Baik</CardTitle>
+            <CardDescription>Bagian dari total barang</CardDescription>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{barangBaikPercent}%</CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground">Kondisi Rusak</CardTitle>
+            <CardDescription>Bagian dari total barang</CardDescription>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{barangRusakPercent}%</CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Aset Tetap</CardTitle>
-          <Button onClick={openCreateAset}>Tambah Aset</Button>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>No</TableHead>
-                <TableHead>Nama</TableHead>
-                <TableHead>Luas</TableHead>
-                <TableHead className="text-right">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {asetRows}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="aset" className="w-full space-y-6">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="aset">Aset tetap</TabsTrigger>
+          <TabsTrigger value="barang">Barang tidak tetap</TabsTrigger>
+        </TabsList>
+        <TabsContent value="aset" className="mt-0 space-y-0">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between gap-4">
+              <div>
+                <CardTitle>Aset Tetap</CardTitle>
+                <CardDescription>Daftar tanah dan bangunan milik masjid</CardDescription>
+              </div>
+              <Button type="button" onClick={openCreateAset}>
+                Tambah Aset
+              </Button>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>No</TableHead>
+                    <TableHead>Nama</TableHead>
+                    <TableHead>Luas</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {asetRows}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="barang" className="mt-0 space-y-0">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between gap-4">
+              <div>
+                <CardTitle>Barang Tidak Tetap</CardTitle>
+                <CardDescription>Perlengkapan dan inventaris bergerak</CardDescription>
+              </div>
+              <Button type="button" onClick={openCreateBarang}>
+                Tambah Barang
+              </Button>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>No</TableHead>
+                    <TableHead>Nama</TableHead>
+                    <TableHead>Jumlah</TableHead>
+                    <TableHead>Satuan</TableHead>
+                    <TableHead>Kondisi</TableHead>
+                    <TableHead>Keterangan</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {barangRows}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Barang Tidak Tetap</CardTitle>
-          <Button onClick={openCreateBarang}>Tambah Barang</Button>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>No</TableHead>
-                <TableHead>Nama</TableHead>
-                <TableHead>Jumlah</TableHead>
-                <TableHead>Satuan</TableHead>
-                <TableHead>Kondisi</TableHead>
-                <TableHead>Keterangan</TableHead>
-                <TableHead className="text-right">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {barangRows}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <Dialog open={openAsetDialog} onOpenChange={setOpenAsetDialog}>
+      <Dialog open={openAsetDialog} onOpenChange={onAsetDialogOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{editingAset ? 'Edit Aset Tetap' : 'Tambah Aset Tetap'}</DialogTitle>
@@ -477,7 +558,10 @@ export default function InventarisPage() {
                   </FormItem>
                 )}
               />
-              <DialogFooter>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button type="button" variant="outline" onClick={() => onAsetDialogOpenChange(false)}>
+                  Batal
+                </Button>
                 <Button type="submit">{editingAset ? 'Simpan Perubahan' : 'Simpan'}</Button>
               </DialogFooter>
             </form>
@@ -485,7 +569,7 @@ export default function InventarisPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={openBarangDialog} onOpenChange={setOpenBarangDialog}>
+      <Dialog open={openBarangDialog} onOpenChange={onBarangDialogOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{editingBarang ? 'Edit Barang' : 'Tambah Barang'}</DialogTitle>
@@ -596,7 +680,10 @@ export default function InventarisPage() {
                   </FormItem>
                 )}
               />
-              <DialogFooter>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button type="button" variant="outline" onClick={() => onBarangDialogOpenChange(false)}>
+                  Batal
+                </Button>
                 <Button type="submit">{editingBarang ? 'Simpan Perubahan' : 'Simpan'}</Button>
               </DialogFooter>
             </form>
@@ -614,7 +701,12 @@ export default function InventarisPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Hapus</AlertDialogAction>
+            <AlertDialogAction
+              className={cn(buttonVariants({ variant: 'destructive' }))}
+              onClick={handleDelete}
+            >
+              Hapus
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

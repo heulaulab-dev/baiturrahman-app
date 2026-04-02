@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { FileText, Save, Eye, EyeOff, Image, Video, Loader2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Save, Eye, EyeOff, Image, Video, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,9 +24,11 @@ export function TentangKami() {
   });
 
   const [previewMode, setPreviewMode] = useState(false);
+  const hasHydratedFromServer = useRef(false);
 
-  // Update form data when data is loaded
-  if (data && formData.body === '' && !previewMode) {
+  useEffect(() => {
+    if (!data || hasHydratedFromServer.current) return;
+    hasHydratedFromServer.current = true;
     setFormData({
       title: data.title || 'Tentang Kami',
       subtitle: data.subtitle || '',
@@ -35,7 +37,7 @@ export function TentangKami() {
       video_url: data.video_url || '',
       is_active: data.is_active || false,
     });
-  }
+  }, [data]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,15 +53,15 @@ export function TentangKami() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-muted" />
+        <Loader2 className="size-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold">Tentang Kami</h2>
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-semibold text-foreground">Tentang kami</h2>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setPreviewMode(!previewMode)}>
             {previewMode ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
@@ -70,9 +72,9 @@ export function TentangKami() {
 
       {previewMode ? (
         /* Preview Mode */
-        <div className="border border-border rounded-lg p-6 space-y-6">
+        <div className="space-y-6 rounded-lg border border-border bg-card p-6 shadow-sm">
           {formData.image_url && (
-            <div className="w-full h-64 rounded-lg overflow-hidden bg-muted">
+            <div className="h-64 w-full overflow-hidden rounded-lg bg-muted">
               <img
                 src={formData.image_url}
                 alt="Tentang Kami"
@@ -81,10 +83,10 @@ export function TentangKami() {
             </div>
           )}
           <div className="text-center">
-            {formData.title && <h1 className="text-4xl font-bold mb-2">{formData.title}</h1>}
-            {formData.subtitle && <p className="text-xl text-muted">{formData.subtitle}</p>}
+            {formData.title && <h1 className="mb-2 text-4xl font-bold text-foreground">{formData.title}</h1>}
+            {formData.subtitle && <p className="text-xl text-muted-foreground">{formData.subtitle}</p>}
           </div>
-          <div className="prose dark:prose-invert max-w-none">
+          <div className="prose prose-neutral max-w-none dark:prose-invert">
             {formData.body && <div dangerouslySetInnerHTML={{ __html: formData.body }} />}
           </div>
           {formData.video_url && (
@@ -98,7 +100,7 @@ export function TentangKami() {
             </div>
           )}
           {!formData.is_active && (
-            <div className="text-center text-sm text-muted py-4 border-t border-border">
+            <div className="border-t border-border py-4 text-center text-sm text-amber-700 dark:text-amber-500/90">
               Konten ini sedang tidak aktif / disembunyikan
             </div>
           )}
@@ -136,7 +138,7 @@ export function TentangKami() {
               rows={12}
               required
             />
-            <p className="text-xs text-muted">
+            <p className="text-xs text-muted-foreground">
               Anda dapat menggunakan HTML untuk formatting (misalnya: &lt;p&gt;, &lt;strong&gt;, &lt;em&gt;)
             </p>
           </div>
@@ -145,7 +147,7 @@ export function TentangKami() {
             <div className="space-y-2">
               <Label htmlFor="image_url">URL Gambar Utama</Label>
               <div className="relative">
-                <Image className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                <Image className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="image_url"
                   value={formData.image_url}
@@ -159,7 +161,7 @@ export function TentangKami() {
             <div className="space-y-2">
               <Label htmlFor="video_url">URL Video (YouTube, dll)</Label>
               <div className="relative">
-                <Video className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                <Video className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="video_url"
                   value={formData.video_url}
@@ -171,7 +173,7 @@ export function TentangKami() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 p-4 border border-border rounded-lg">
+          <div className="flex items-center space-x-2 rounded-lg border border-border bg-muted/20 p-4">
             <Switch
               id="is_active"
               checked={formData.is_active}

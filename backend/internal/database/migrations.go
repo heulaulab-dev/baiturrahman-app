@@ -25,6 +25,7 @@ func Migrate(db *gorm.DB) error {
 		&models.Struktur{},
 		&models.AsetTetap{},
 		&models.BarangTidakTetap{},
+		&models.Reservation{},
 	)
 }
 

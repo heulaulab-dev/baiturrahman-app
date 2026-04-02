@@ -11,6 +11,7 @@ import {
   getAdminAnnouncements,
   getAdminKhutbahs,
   getAdminUsers,
+  createUser,
   getTentangKami,
   updateTentangKami,
   getAdminHistoryEntries,
@@ -28,6 +29,11 @@ import {
   toggleStrukturStatus,
   getActiveStruktursCount,
   updateMosqueInfo,
+  getAdminReservations,
+  updateAdminReservation,
+  deleteAdminReservation,
+  type GetReservationsParams,
+  type UpdateReservationRequest,
 } from './adminApiService'
 
 export const useDonationStats = () => {
@@ -154,6 +160,16 @@ export const useAdminUsers = () => {
     queryKey: ['admin', 'users'],
     queryFn: getAdminUsers,
     staleTime: 1000 * 60 * 5,
+  })
+}
+
+export const useCreateUser = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
+    },
   })
 }
 
@@ -316,6 +332,36 @@ export const useUpdateMosqueInfo = () => {
     mutationFn: updateMosqueInfo,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mosque-info'] })
+    },
+  })
+}
+
+export const useAdminReservations = (params?: GetReservationsParams) => {
+  return useQuery({
+    queryKey: ['admin', 'reservations', params],
+    queryFn: () => getAdminReservations(params),
+    staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
+  })
+}
+
+export const useUpdateReservation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateReservationRequest }) =>
+      updateAdminReservation(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'reservations'] })
+    },
+  })
+}
+
+export const useDeleteReservation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteAdminReservation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'reservations'] })
     },
   })
 }

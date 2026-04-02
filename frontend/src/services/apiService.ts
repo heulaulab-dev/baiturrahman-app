@@ -14,6 +14,8 @@ import type {
   Struktur,
   ApiResponse,
   PaymentMethodsResponse,
+  Reservation,
+  CreateReservationRequest,
 } from '@/types'
 
 // Mosque Info
@@ -64,6 +66,11 @@ export const createDonation = async (data: {
 }): Promise<Donation> => {
   const response = await api.post<Donation>('/v1/donations', data)
   return response.data
+}
+
+export const createReservation = async (data: CreateReservationRequest): Promise<Reservation> => {
+  const response = await api.post<ApiResponse<Reservation>>('/v1/reservations', data)
+  return response.data.data
 }
 
 export const getPaymentMethods = async (): Promise<PaymentMethod[]> => {

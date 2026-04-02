@@ -208,6 +208,41 @@ export interface DonationFull {
   payment_method?: PaymentMethod
 }
 
+export type ReservationStatus = 'pending' | 'approved' | 'rejected' | 'cancelled'
+
+export interface Reservation {
+  id: string
+  requester_name: string
+  requester_phone?: string
+  requester_email?: string
+  facility: string
+  event_title?: string
+  start_at: string
+  end_at: string
+  participant_count?: number
+  notes?: string
+  status: ReservationStatus
+  admin_notes?: string
+  reviewed_by?: string
+  reviewed_at?: string
+  reviewer?: Pick<User, 'id' | 'full_name' | 'email'>
+  created_at: string
+  updated_at: string
+}
+
+/** Body untuk POST publik `/v1/reservations` (ISO 8601 untuk waktu). */
+export interface CreateReservationRequest {
+  requester_name: string
+  requester_phone?: string
+  requester_email?: string
+  facility: string
+  event_title?: string
+  start_at: string
+  end_at: string
+  participant_count?: number
+  notes?: string
+}
+
 export interface DonationStats {
   total_amount: number
   total_count: number

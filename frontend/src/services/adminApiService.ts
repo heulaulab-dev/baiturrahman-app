@@ -4,6 +4,7 @@ import type {
   DonationStats,
   Event,
   User,
+  UserRole,
   PaymentMethod,
   Announcement,
   Khutbah,
@@ -13,6 +14,8 @@ import type {
   Struktur,
   ContentSection,
   MosqueInfo,
+  Reservation,
+  ReservationStatus,
 } from '@/types'
 
 export const getDonationStats = async (): Promise<DonationStats> => {
@@ -98,6 +101,19 @@ export const getAdminKhutbahs = async (
 export const getAdminUsers = async (): Promise<PaginatedResponse<User>> => {
   const response = await api.get<PaginatedResponse<User>>('/v1/admin/users')
   return response.data
+}
+
+export interface CreateUserRequest {
+  username: string
+  email: string
+  password: string
+  full_name: string
+  role: UserRole
+}
+
+export const createUser = async (data: CreateUserRequest): Promise<User> => {
+  const response = await api.post<ApiResponse<User>>('/v1/admin/users', data)
+  return response.data.data
 }
 
 // Content - Tentang Kami
@@ -231,4 +247,46 @@ export const getActiveStruktursCount = async (): Promise<number> => {
 export const updateMosqueInfo = async (data: Partial<MosqueInfo>): Promise<MosqueInfo> => {
   const response = await api.put<ApiResponse<MosqueInfo>>('/v1/admin/mosque', data)
   return response.data.data
+}
+
+export interface GetReservationsParams {
+  page?: number
+  limit?: number
+  status?: ReservationStatus
+  facility?: string
+  from?: string
+  to?: string
+}
+
+export const getAdminReservations = async (
+  params: GetReservationsParams = {}
+): Promise<PaginatedResponse<Reservation>> => {
+  const response = await api.get<PaginatedResponse<Reservation>>('/v1/admin/reservations', { params })
+  return response.data
+}
+
+export interface UpdateReservationRequest {
+  requester_name?: string
+  requester_phone?: string | null
+  requester_email?: string | null
+  facility?: string
+  event_title?: string | null
+  start_at?: string
+  end_at?: string
+  participant_count?: number | null
+  notes?: string | null
+  status?: ReservationStatus
+  admin_notes?: string | null
+}
+
+export const updateAdminReservation = async (
+  id: string,
+  data: UpdateReservationRequest
+): Promise<Reservation> => {
+  const response = await api.put<ApiResponse<Reservation>>(`/v1/admin/reservations/${id}`, data)
+  return response.data.data
+}
+
+export const deleteAdminReservation = async (id: string): Promise<void> => {
+  await api.delete(`/v1/admin/reservations/${id}`)
 }

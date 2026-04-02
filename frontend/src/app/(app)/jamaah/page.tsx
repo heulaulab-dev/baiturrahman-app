@@ -1,7 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Filter, UserPlus, MoreHorizontal } from 'lucide-react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import axios from 'axios';
+import { z } from 'zod';
+import { Search, Filter, UserPlus, MoreHorizontal, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -49,9 +54,59 @@ import {
 	TabsList,
 	TabsTrigger,
 } from '@/components/ui/tabs';
-import { useAdminUsers } from '@/services/adminHooks';
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import {
+	Form,
+	FormControl,
+	FormDescription,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from '@/components/ui/form';
+import { useAdminUsers, useCreateUser } from '@/services/adminHooks';
+import type { UserRole } from '@/types';
 
 const filterOptions = ['Semua', 'Aktif', 'Tidak Aktif', 'Muallaf'];
+
+const roleOptions: { value: UserRole; label: string }[] = [
+	{ value: 'editor', label: 'Editor' },
+	{ value: 'admin', label: 'Admin' },
+	{ value: 'super_admin', label: 'Super Admin' },
+];
+
+const addMemberSchema = z
+	.object({
+		full_name: z.string().min(2, 'Nama lengkap minimal 2 karakter'),
+		username: z.string().min(3, 'Username minimal 3 karakter').max(100, 'Username maksimal 100 karakter'),
+		email: z.string().email('Email tidak valid'),
+		password: z.string().min(6, 'Password minimal 6 karakter'),
+		confirm_password: z.string().min(6, 'Konfirmasi password wajib diisi'),
+		role: z.enum(['super_admin', 'admin', 'editor']),
+	})
+	.refine((data) => data.password === data.confirm_password, {
+		message: 'Password tidak cocok',
+		path: ['confirm_password'],
+	});
+
+type AddMemberFormValues = z.infer<typeof addMemberSchema>;
+
+const defaultAddMemberValues: AddMemberFormValues = {
+	full_name: '',
+	username: '',
+	email: '',
+	password: '',
+	confirm_password: '',
+	role: 'editor',
+};
 
 function getInitials(nama: string) {
 	return nama.split(' ').slice(0, 2).map((n) => n[0]).join('');
@@ -59,6 +114,12 @@ function getInitials(nama: string) {
 
 export default function JamaahPage() {
 	const { data: usersResponse } = useAdminUsers();
+	const createUserMutation = useCreateUser();
+	const addMemberForm = useForm<AddMemberFormValues>({
+		resolver: zodResolver(addMemberSchema),
+		defaultValues: defaultAddMemberValues,
+	});
+
 	const membersData = (usersResponse?.data ?? []).map((user) => ({
 		id: user.id,
 		nama: user.full_name,
@@ -74,6 +135,7 @@ export default function JamaahPage() {
 	const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
 	const [selectedMember, setSelectedMember] = useState<typeof membersData[0] | null>(null);
 	const [showDetailDrawer, setShowDetailDrawer] = useState(false);
+	const [addMemberOpen, setAddMemberOpen] = useState(false);
 
 	const filteredData = membersData.filter((member) => {
 		if (filter === 'Semua') return true;
@@ -102,15 +164,169 @@ export default function JamaahPage() {
 		setShowDetailDrawer(true);
 	}
 
+	function onAddMemberOpenChange(open: boolean) {
+		setAddMemberOpen(open);
+		if (!open) {
+			addMemberForm.reset(defaultAddMemberValues);
+		}
+	}
+
+	async function onSubmitAddMember(values: AddMemberFormValues) {
+		try {
+			await createUserMutation.mutateAsync({
+				full_name: values.full_name,
+				username: values.username,
+				email: values.email,
+				password: values.password,
+				role: values.role,
+			});
+			toast.success('Anggota berhasil ditambahkan');
+			onAddMemberOpenChange(false);
+		} catch (err) {
+			if (axios.isAxiosError(err)) {
+				const msg = (err.response?.data as { error?: string })?.error;
+				toast.error(msg ?? 'Gagal menambah anggota');
+			} else {
+				toast.error('Gagal menambah anggota');
+			}
+		}
+	}
+
 	return (
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4 mb-6">
 				<h2 className="text-3xl font-semibold text-foreground">Struktur Anggota Jamaah</h2>
-				<Button className="gap-2">
+				<Button type="button" className="gap-2" onClick={() => setAddMemberOpen(true)}>
 					<UserPlus className="w-4 h-4" />
 					Tambah Anggota
 				</Button>
 			</div>
+
+			<Dialog open={addMemberOpen} onOpenChange={onAddMemberOpenChange}>
+				<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>Tambah anggota</DialogTitle>
+						<DialogDescription>
+							Buat akun pengguna baru. Anggota dapat masuk dengan username/email dan password yang Anda
+							tetapkan.
+						</DialogDescription>
+					</DialogHeader>
+					<Form {...addMemberForm}>
+						<form onSubmit={addMemberForm.handleSubmit(onSubmitAddMember)} className="space-y-4">
+							<FormField
+								control={addMemberForm.control}
+								name="full_name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Nama lengkap</FormLabel>
+										<FormControl>
+											<Input autoComplete="name" placeholder="Nama lengkap" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={addMemberForm.control}
+								name="username"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Username</FormLabel>
+										<FormControl>
+											<Input autoComplete="username" placeholder="username_unik" {...field} />
+										</FormControl>
+										<FormDescription>Dipakai untuk login; tampil sebagai identitas di daftar.</FormDescription>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={addMemberForm.control}
+								name="email"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Email</FormLabel>
+										<FormControl>
+											<Input type="email" autoComplete="email" placeholder="email@contoh.com" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={addMemberForm.control}
+								name="role"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Peran</FormLabel>
+										<Select onValueChange={field.onChange} value={field.value}>
+											<FormControl>
+												<SelectTrigger aria-label="Peran pengguna">
+													<SelectValue placeholder="Pilih peran" />
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{roleOptions.map((opt) => (
+													<SelectItem key={opt.value} value={opt.value}>
+														{opt.label}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={addMemberForm.control}
+								name="password"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Password</FormLabel>
+										<FormControl>
+											<Input type="password" autoComplete="new-password" placeholder="••••••••" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={addMemberForm.control}
+								name="confirm_password"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Konfirmasi password</FormLabel>
+										<FormControl>
+											<Input type="password" autoComplete="new-password" placeholder="••••••••" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<DialogFooter className="gap-2 sm:gap-0">
+								<Button
+									type="button"
+									variant="secondary"
+									onClick={() => onAddMemberOpenChange(false)}
+									disabled={createUserMutation.isPending}
+								>
+									Batal
+								</Button>
+								<Button type="submit" disabled={createUserMutation.isPending}>
+									{createUserMutation.isPending ? (
+										<>
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											Menyimpan…
+										</>
+									) : (
+										'Simpan'
+									)}
+								</Button>
+							</DialogFooter>
+						</form>
+					</Form>
+				</DialogContent>
+			</Dialog>
 
 			<div className="flex flex-wrap items-center gap-3">
 				<InputGroup className="w-full sm:w-64">

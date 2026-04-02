@@ -63,6 +63,9 @@ func main() {
 	// Initialize handlers
 	h := handlers.New(db)
 
+	// Public uploaded images (same paths as returned by POST /api/v1/admin/upload)
+	r.Static("/uploads", "./uploads")
+
 	// API v1 routes
 	v1 := r.Group("/api/v1")
 	{
@@ -209,8 +212,8 @@ func main() {
 			admin.PUT("/users/:id", h.UpdateUser)
 			admin.DELETE("/users/:id", h.DeleteUser)
 
-			// Reservations
-			admin.POST("/reservations", h.CreateReservationAdmin)
+			// Reservations (static /create before :id so "create" is never captured as an id)
+			admin.POST("/reservations/create", h.CreateReservationAdmin)
 			admin.GET("/reservations", h.GetReservations)
 			admin.GET("/reservations/:id", h.GetReservationByID)
 			admin.PUT("/reservations/:id", h.UpdateReservation)
@@ -235,6 +238,9 @@ func main() {
 
 	// Start server
 	log.Printf("Server starting on :%s", cfg.Port)
+	if cfg.Environment != "production" {
+		log.Printf("Reservations API: POST /api/v1/admin/reservations/create (auth), GET /api/v1/admin/reservations")
+	}
 	if err := r.Run(":" + cfg.Port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}

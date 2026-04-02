@@ -6,6 +6,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useMutation } from '@tanstack/react-query';
 import { usePaymentMethods, createDonation } from '@/services/hooks';
+import { resolveBackendAssetUrl } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -63,6 +64,7 @@ export function DonationSection() {
 	// Group payment methods by type
 	const bankMethods = paymentMethods?.filter((pm) => pm.type === 'bank_transfer') || [];
 	const qrisMethods = paymentMethods?.filter((pm) => pm.type === 'qris') || [];
+	const qrisImageSrc = resolveBackendAssetUrl(qrisMethods[0]?.qr_code_url);
 	const ewalletMethods = paymentMethods?.filter((pm) => pm.type === 'ewallet') || [];
 	let bankContent: React.ReactNode;
 
@@ -186,13 +188,14 @@ export function DonationSection() {
 						className="md:col-span-1"
 					>
 						<div className="border-2 border-sacred-green p-8 flex flex-col items-center justify-center aspect-square">
-							{qrisMethods.length > 0 && qrisMethods[0].qr_code_url ? (
+							{qrisMethods.length > 0 && qrisImageSrc ? (
 								<Image
-									src={qrisMethods[0].qr_code_url}
+									src={qrisImageSrc}
 									alt="QRIS Masjid Baiturrahman"
 									width={160}
 									height={160}
 									className="mb-4"
+									unoptimized
 								/>
 							) : (
 								<QrCode size={160} className="text-sacred-green mb-4" />

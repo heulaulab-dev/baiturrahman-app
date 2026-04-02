@@ -68,7 +68,7 @@ export const createPaymentMethod = async (data: {
 
 export const updatePaymentMethod = async (
   id: string,
-  data: Partial<PaymentMethod>
+  data: Partial<PaymentMethod> & { qr_code_url?: string | null }
 ): Promise<PaymentMethod> => {
   const response = await api.put<ApiResponse<PaymentMethod>>(`/v1/admin/payment-methods/${id}`, data)
   return response.data.data
@@ -267,7 +267,7 @@ export const getAdminReservations = async (
 }
 
 export const createAdminReservation = async (data: CreateReservationRequest): Promise<Reservation> => {
-  const response = await api.post<ApiResponse<Reservation>>('/v1/admin/reservations', data)
+  const response = await api.post<ApiResponse<Reservation>>('/v1/admin/reservations/create', data)
   return response.data.data
 }
 

@@ -68,7 +68,14 @@ export const createDonation = async (data: {
   return response.data
 }
 
+/** Buat reservasi dari dashboard (JWT). Backend: POST /v1/admin/reservations/create */
 export const createReservation = async (data: CreateReservationRequest): Promise<Reservation> => {
+  const response = await api.post<ApiResponse<Reservation>>('/v1/admin/reservations/create', data)
+  return response.data.data
+}
+
+/** Pengunjung tanpa login. Backend: POST /v1/reservations */
+export const createPublicReservation = async (data: CreateReservationRequest): Promise<Reservation> => {
   const response = await api.post<ApiResponse<Reservation>>('/v1/reservations', data)
   return response.data.data
 }
@@ -117,10 +124,10 @@ export const getHistoryEntriesByDateRange = async (
   return response.data
 }
 
-// Strukturs (Public)
+// Strukturs (Public) — backend returns ApiResponse<Struktur[]>
 export const getPublicStrukturs = async (): Promise<Struktur[]> => {
-  const response = await api.get<Struktur[]>('/v1/strukturs')
-  return response.data
+  const response = await api.get<ApiResponse<Struktur[]>>('/v1/strukturs')
+  return response.data.data
 }
 
 // Tentang Kami (Public)

@@ -7,14 +7,18 @@ import { Calendar, Clock, MapPin } from 'lucide-react'
 import { useEvents } from '@/services/hooks'
 import Image from 'next/image'
 import Link from 'next/link'
+import { eventVisibleOnPublicPages, formatEventClockLabel, formatEventDateIso } from '@/lib/event-display'
+import { resolveBackendAssetUrl } from '@/lib/utils'
 
 export function EventsSection() {
   const { data: events, isLoading } = useEvents()
 
-  // Filter only published events and take first 3
   const eventsArray = Array.isArray(events) ? events : []
   const upcomingEvents = eventsArray
-    .filter((e) => e.is_published)
+    .filter(eventVisibleOnPublicPages)
+    .sort(
+      (a, b) => formatEventDateIso(a.event_date).getTime() - formatEventDateIso(b.event_date).getTime()
+    )
     .slice(0, 3)
 
   return (
@@ -44,9 +48,9 @@ export function EventsSection() {
               <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                 {/* Image */}
                 <div className="relative h-48 bg-gradient-to-br from-gray-700 to-gray-900">
-                  {event.image_url ? (
+                  {resolveBackendAssetUrl(event.image_url ?? undefined) ? (
                     <Image
-                      src={event.image_url}
+                      src={resolveBackendAssetUrl(event.image_url ?? undefined)!}
                       alt={event.title}
                       fill
                       className="object-cover"
@@ -69,7 +73,7 @@ export function EventsSection() {
                     <div className="flex items-center gap-2">
                       <Calendar size={16} />
                       <span>
-                        {new Date(event.date).toLocaleDateString('id-ID', {
+                        {formatEventDateIso(event.event_date).toLocaleDateString('id-ID', {
                           day: 'numeric',
                           month: 'long',
                           year: 'numeric',
@@ -78,11 +82,11 @@ export function EventsSection() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock size={16} />
-                      <span>{event.time}</span>
+                      <span>{formatEventClockLabel(event.event_time) ?? '—'}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin size={16} />
-                      <span className="line-clamp-1">{event.location}</span>
+                      <span className="line-clamp-1">{event.location ?? '—'}</span>
                     </div>
                   </div>
 

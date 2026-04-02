@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { Users } from 'lucide-react';
 import { usePublicStrukturs } from '@/services/hooks';
-import { ApiResponse, Struktur } from '@/types';
+import type { Struktur } from '@/types';
 
 const roleConfig = {
   ketua: { label: 'Ketua', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' },
@@ -20,7 +20,7 @@ const roleConfig = {
 export function StrukturSection() {
   const { data, isLoading } = usePublicStrukturs();
 
-  const strukturs = (data as unknown as ApiResponse<Struktur[]>) || [];
+  const strukturs: Struktur[] = Array.isArray(data) ? data : [];
 
   if (isLoading) {
     return (
@@ -32,7 +32,7 @@ export function StrukturSection() {
     );
   }
 
-  if (!strukturs || (strukturs as unknown as Struktur[]).length === 0) {
+  if (strukturs.length === 0) {
     return (
       <section id="struktur" className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="mx-auto container">
@@ -54,7 +54,7 @@ export function StrukturSection() {
 
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {(strukturs as unknown as Struktur[]).map((struktur: Struktur) => {
+            {strukturs.map((struktur) => {
               const config = roleConfig[struktur.role] || roleConfig.lainnya;
 
               return (

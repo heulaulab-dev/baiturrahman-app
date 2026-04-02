@@ -8,11 +8,8 @@ import { useAnnouncements } from '@/services/hooks';
 export function AnnouncementsSection() {
 	const { data: announcements } = useAnnouncements();
 
-	// Filter only published announcements and take first 3
 	const announcementsArray = Array.isArray(announcements) ? announcements : [];
-	const publishedAnnouncements = announcementsArray
-		.filter((a) => a.is_published)
-		.slice(0, 3);
+	const publishedAnnouncements = announcementsArray.slice(0, 3);
 
 	return (
 		<section id='announcements' className='bg-white dark:bg-gray-900 py-20'>
@@ -50,14 +47,13 @@ export function AnnouncementsSection() {
 										{announcement.content}
 									</p>
 									<div className='mt-4 text-gray-400 dark:text-gray-500 text-xs'>
-										{new Date(announcement.created_at).toLocaleDateString(
-											'id-ID',
-											{
-												day: 'numeric',
-												month: 'long',
-												year: 'numeric',
-											},
-										)}
+										{new Date(
+											announcement.published_at ?? announcement.created_at,
+										).toLocaleDateString('id-ID', {
+											day: 'numeric',
+											month: 'long',
+											year: 'numeric',
+										})}
 									</div>
 								</CardContent>
 							</Card>

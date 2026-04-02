@@ -1,4 +1,5 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
 import {
 	getMosqueInfo,
 	getPrayerTimesByDate,
@@ -117,6 +118,10 @@ export const useLatestKhutbah = () => {
 		queryKey: ['khutbah', 'latest'],
 		queryFn: getLatestKhutbah,
 		staleTime: 1000 * 60 * 60, // 1 hour
+		retry: (failureCount, error) => {
+			if (isAxiosError(error) && error.response?.status === 404) return false;
+			return failureCount < 3;
+		},
 	});
 };
 

@@ -1,192 +1,169 @@
-'use client';
+'use client'
 
-import { useState, type ReactNode } from 'react';
-import { FileText, Image, Calendar } from 'lucide-react';
-import { StatusBadge } from '@/components/dashboard/StatusBadge';
-import { TentangKami } from '@/components/dashboard/TentangKami';
-import { HistoryManagement } from '@/components/dashboard/HistoryManagement';
-import { StrukturManagement } from '@/components/dashboard/StrukturManagement';
-import { useAdminAnnouncements, useAdminEvents, useAdminKhutbahs } from '@/services/adminHooks';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState } from 'react'
+import { Download, Image } from 'lucide-react'
+import { toast } from 'sonner'
+import { AnnouncementsManagement } from '@/components/dashboard/AnnouncementsManagement'
+import { EventsManagement } from '@/components/dashboard/EventsManagement'
+import { HistoryManagement } from '@/components/dashboard/HistoryManagement'
+import { KhutbahManagement } from '@/components/dashboard/KhutbahManagement'
+import { StrukturManagement } from '@/components/dashboard/StrukturManagement'
+import { TentangKami } from '@/components/dashboard/TentangKami'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { downloadKontenRingkasanCsv } from '@/lib/konten-csv'
+import { useAdminAnnouncements, useAdminEvents, useAdminKhutbahs } from '@/services/adminHooks'
 
-type TabType = 'tentang-kami' | 'events' | 'berita' | 'mimbar-jumat' | 'sejarah' | 'struktur' | 'banner' | 'gallery';
+type TabType =
+  | 'tentang-kami'
+  | 'events'
+  | 'berita'
+  | 'mimbar-jumat'
+  | 'sejarah'
+  | 'struktur'
+  | 'banner'
+  | 'gallery'
 
 export default function KontenPage() {
-	const [activeTab, setActiveTab] = useState<TabType>('events');
-	const { data: eventsResponse, isLoading: eventsLoading } = useAdminEvents(12);
-	const { data: announcementsResponse, isLoading: announcementsLoading } = useAdminAnnouncements(12);
-	const { data: khutbahsResponse, isLoading: khutbahsLoading } = useAdminKhutbahs(12);
-	const events = eventsResponse?.data ?? [];
-	const announcements = announcementsResponse?.data ?? [];
-	const khutbahs = khutbahsResponse?.data ?? [];
-	let eventsContent: ReactNode;
-	let announcementsContent: ReactNode;
-	let khutbahsContent: ReactNode;
+  const [activeTab, setActiveTab] = useState<TabType>('tentang-kami')
+  const { data: eventsResponse, isLoading: eventsLoading } = useAdminEvents(100)
+  const { data: announcementsResponse, isLoading: announcementsLoading } = useAdminAnnouncements(100)
+  const { data: khutbahsResponse, isLoading: khutbahsLoading } = useAdminKhutbahs(100)
+  const events = eventsResponse?.data ?? []
+  const announcements = announcementsResponse?.data ?? []
+  const khutbahs = khutbahsResponse?.data ?? []
 
-	const getEventStatus = (isPublished: boolean) => {
-		if (isPublished) return { badge: 'success' as const, label: 'Published' };
-		return { badge: 'default' as const, label: 'Draft' };
-	};
+  const listsLoading = eventsLoading || announcementsLoading || khutbahsLoading
 
-	if (eventsLoading) {
-		eventsContent = <p className="text-sm text-muted-foreground">Memuat events...</p>;
-	} else if (events.length === 0) {
-		eventsContent = <p className="text-sm text-muted-foreground">Belum ada data events</p>;
-	} else {
-		eventsContent = events.map((item) => (
-			<div key={item.id} className="border border-border bg-background hover:bg-muted/30 transition-colors rounded-lg p-4 cursor-pointer">
-				<div className="flex items-center justify-between mb-2">
-					<span className="px-2 py-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">Event</span>
-					<StatusBadge status={getEventStatus(item.is_published).badge}>
-						{getEventStatus(item.is_published).label}
-					</StatusBadge>
-				</div>
-				<h3 className="text-foreground font-semibold mb-1">{item.title}</h3>
-				<p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
-				<div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-					<Calendar className="w-3 h-3" />
-					<span>{new Date(item.date).toLocaleDateString('id-ID')}</span>
-				</div>
-			</div>
-		));
-	}
+  const handleExportCsv = () => {
+    if (listsLoading) {
+      toast.error('Tunggu hingga data selesai dimuat')
+      return
+    }
+    try {
+      downloadKontenRingkasanCsv({ events, announcements, khutbahs })
+      toast.success('CSV berhasil diunduh')
+    } catch {
+      toast.error('Gagal mengekspor CSV')
+    }
+  }
 
-	if (announcementsLoading) {
-		announcementsContent = <p className="text-sm text-muted-foreground">Memuat berita...</p>;
-	} else if (announcements.length === 0) {
-		announcementsContent = <p className="text-sm text-muted-foreground">Belum ada data berita</p>;
-	} else {
-		announcementsContent = announcements.map((item) => (
-			<div key={item.id} className="border border-border bg-background hover:bg-muted/30 transition-colors rounded-lg p-4 cursor-pointer">
-				<div className="flex items-center justify-between mb-2">
-					<span className="px-2 py-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">Berita</span>
-					<span className="text-xs text-muted-foreground">{new Date(item.created_at).toLocaleDateString('id-ID')}</span>
-				</div>
-				<h3 className="text-foreground font-semibold mb-1">{item.title}</h3>
-				<p className="text-sm text-muted-foreground line-clamp-2">{item.content}</p>
-			</div>
-		));
-	}
+  const tabs: { key: TabType; label: string }[] = [
+    { key: 'tentang-kami', label: 'Tentang kami' },
+    { key: 'events', label: 'Event' },
+    { key: 'berita', label: 'Berita' },
+    { key: 'mimbar-jumat', label: 'Mimbar Jumat' },
+    { key: 'sejarah', label: 'Sejarah' },
+    { key: 'struktur', label: 'Struktur' },
+    { key: 'banner', label: 'Banner' },
+    { key: 'gallery', label: 'Galeri' },
+  ]
 
-	if (khutbahsLoading) {
-		khutbahsContent = <p className="text-sm text-muted-foreground">Memuat mimbar...</p>;
-	} else if (khutbahs.length === 0) {
-		khutbahsContent = <p className="text-sm text-muted-foreground">Belum ada data mimbar jumat</p>;
-	} else {
-		khutbahsContent = khutbahs.map((khutbah) => (
-			<div key={khutbah.id} className="border border-border bg-background hover:bg-muted/30 transition-colors rounded-lg p-6">
-				<div className="flex items-center justify-between mb-3">
-					<div className="text-xs text-muted-foreground">{new Date(khutbah.date).toLocaleDateString('id-ID')}</div>
-					<StatusBadge status={khutbah.status === 'published' ? 'success' : 'default'}>
-						{khutbah.status === 'published' ? 'Published' : 'Draft'}
-					</StatusBadge>
-				</div>
-				<h3 className="text-lg font-semibold text-foreground mb-2">{khutbah.tema}</h3>
-				<div className="text-sm text-muted-foreground">Khatib: {khutbah.khatib}</div>
-				<Button variant="ghost" size="sm" className="mt-3">
-					<FileText className="w-4 h-4" />
-					Unduh PDF
-				</Button>
-			</div>
-		));
-	}
+  return (
+    <div className="space-y-6 p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-3xl font-semibold text-foreground">Konten</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Kelola profil, publikasi, dan aset konten situs masjid.
+          </p>
+        </div>
+        <Button type="button" variant="outline" onClick={handleExportCsv} disabled={listsLoading}>
+          <Download className="mr-2 size-4 shrink-0" aria-hidden />
+          Export CSV
+        </Button>
+      </div>
 
-	const tabs: { key: TabType; label: string }[] = [
-		{ key: 'tentang-kami', label: 'Tentang Kami' },
-		{ key: 'events', label: 'Events' },
-		{ key: 'berita', label: 'Berita' },
-		{ key: 'mimbar-jumat', label: 'Mimbar Jumat' },
-		{ key: 'sejarah', label: 'Sejarah' },
-		{ key: 'struktur', label: 'Struktur' },
-		{ key: 'banner', label: 'Banner' },
-		{ key: 'gallery', label: 'Galeri' },
-	];
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)} className="space-y-6">
+        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 border border-border/60 bg-muted/30 p-1 shadow-sm">
+          {tabs.map((tab) => (
+            <TabsTrigger
+              key={tab.key}
+              value={tab.key}
+              className="text-xs data-[state=active]:bg-primary/15 data-[state=active]:text-primary sm:text-sm"
+            >
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-	return (
-		<div className="space-y-6 p-6">
-			<Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)} className="space-y-6">
-				<TabsList className="h-auto w-full flex-wrap justify-start gap-2 bg-muted/30 p-2">
-					{tabs.map((tab) => (
-						<TabsTrigger key={tab.key} value={tab.key}>
-							{tab.label}
-						</TabsTrigger>
-					))}
-				</TabsList>
+        <TabsContent value="tentang-kami" className="outline-none">
+          <TentangKami />
+        </TabsContent>
 
-			{/* Tentang Kami Tab */}
-			<TabsContent value="tentang-kami"><TentangKami /></TabsContent>
+        <TabsContent value="events" className="space-y-6 outline-none">
+          <Card>
+            <CardHeader>
+              <CardTitle>Event</CardTitle>
+              <CardDescription>Kegiatan / kajian yang tampil di halaman publik (bukan status dibatalkan).</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <EventsManagement />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-			{/* Events Tab */}
-			<TabsContent value="events">
-				<div>
-					<div className="flex items-center justify-between mb-6">
-						<h2 className="text-3xl font-semibold text-foreground">Events</h2>
-						<Button>
-							+ Tambah Event
-						</Button>
-					</div>
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						{eventsContent}
-					</div>
-				</div>
-			</TabsContent>
+        <TabsContent value="berita" className="space-y-6 outline-none">
+          <Card>
+            <CardHeader>
+              <CardTitle>Berita &amp; pengumuman</CardTitle>
+              <CardDescription>
+                Filter &quot;aktif&quot; di API menentukan apa yang muncul di landing (terbit, semat, belum kedaluwarsa).
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AnnouncementsManagement />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-			{/* Berita Tab */}
-			<TabsContent value="berita">
-				<div>
-					<div className="flex items-center justify-between mb-6">
-						<h2 className="text-3xl font-semibold text-foreground">Berita</h2>
-						<Button>
-							+ Tulis Berita
-						</Button>
-					</div>
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						{announcementsContent}
-					</div>
-				</div>
-			</TabsContent>
+        <TabsContent value="mimbar-jumat" className="space-y-6 outline-none">
+          <Card>
+            <CardHeader>
+              <CardTitle>Mimbar Jumat</CardTitle>
+              <CardDescription>Khutbah terbit tampil sebagai &quot;terbaru&quot; dan arsip publik.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <KhutbahManagement />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-			{/* Mimbar Jumat Tab */}
-			<TabsContent value="mimbar-jumat">
-				<div>
-					<div className="flex items-center justify-between mb-6">
-						<h2 className="text-3xl font-semibold text-foreground">Mimbar Jumat</h2>
-						<Button>
-							+ Mimbar Baru
-						</Button>
-					</div>
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						{khutbahsContent}
-					</div>
-				</div>
-			</TabsContent>
+        <TabsContent value="sejarah" className="outline-none">
+          <HistoryManagement />
+        </TabsContent>
 
-			{/* Sejarah Tab */}
-			<TabsContent value="sejarah"><HistoryManagement /></TabsContent>
+        <TabsContent value="struktur" className="outline-none">
+          <StrukturManagement />
+        </TabsContent>
 
-			{/* Struktur Tab */}
-			<TabsContent value="struktur"><StrukturManagement /></TabsContent>
+        <TabsContent value="banner" className="outline-none">
+          <Card>
+            <CardHeader>
+              <CardTitle>Banner</CardTitle>
+              <CardDescription>Pengelolaan banner hero akan ditambahkan pada pembaruan berikutnya.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+              <Image className="mb-3 size-12 text-primary/35" aria-hidden />
+              <p className="text-sm">Belum tersedia</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-			{/* Banner / Gallery placeholder */}
-			<TabsContent value="banner">
-				<Card className="py-20">
-					<CardContent className="flex flex-col items-center justify-center text-muted-foreground">
-						<Image className="mb-3 h-12 w-12 opacity-70" />
-						<p className="text-sm">Halaman Banner belum tersedia</p>
-					</CardContent>
-				</Card>
-			</TabsContent>
-			<TabsContent value="gallery">
-				<Card className="py-20">
-					<CardContent className="flex flex-col items-center justify-center text-muted-foreground">
-						<Image className="mb-3 h-12 w-12 opacity-70" />
-						<p className="text-sm">Halaman Galeri belum tersedia</p>
-					</CardContent>
-				</Card>
-			</TabsContent>
-			</Tabs>
-		</div>
-	);
+        <TabsContent value="gallery" className="outline-none">
+          <Card>
+            <CardHeader>
+              <CardTitle>Galeri</CardTitle>
+              <CardDescription>Album foto masjid akan ditambahkan pada pembaruan berikutnya.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+              <Image className="mb-3 size-12 text-primary/35" aria-hidden />
+              <p className="text-sm">Belum tersedia</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
 }

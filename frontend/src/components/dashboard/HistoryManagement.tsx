@@ -152,7 +152,7 @@ export function HistoryManagement() {
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Cari sejarah..."
             value={searchQuery}
@@ -199,8 +199,8 @@ export function HistoryManagement() {
           ))}
         </div>
       ) : filteredEntries.length === 0 ? (
-        <div className="text-center py-12 text-muted">
-          <Calendar className="w-12 h-12 mx-auto mb-4 text-muted/30" />
+        <div className="py-12 text-center text-muted-foreground">
+          <Calendar className="mx-auto mb-4 h-12 w-12 text-primary/25" />
           <p>Tidak ada sejarah yang ditemukan</p>
         </div>
       ) : (
@@ -208,22 +208,22 @@ export function HistoryManagement() {
           {filteredEntries.map((entry) => (
             <div
               key={entry.id}
-              className="border border-border bg-background hover:bg-muted/30 transition-colors rounded-lg p-4"
+              className="rounded-lg border border-border bg-card p-4 shadow-sm transition-colors hover:border-primary/25 hover:bg-muted/20"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="px-2 py-1 text-xs font-medium tracking-wider text-muted uppercase bg-muted/50 rounded">
+                    <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium uppercase tracking-wider text-primary">
                       {categoryOptions.find(c => c.value === entry.category)?.label || entry.category}
                     </span>
                     <StatusBadge status={entry.is_published ? 'success' : 'default'}>
-                      {entry.is_published ? 'Published' : 'Draft'}
+                      {entry.is_published ? 'Terbit' : 'Draf'}
                     </StatusBadge>
                   </div>
                   <h3 className="text-lg font-semibold text-foreground mb-2">{entry.title}</h3>
-                  <p className="text-sm text-muted line-clamp-2 mb-3">{entry.content}</p>
-                  <div className="flex items-center gap-2 text-xs text-muted">
-                    <Calendar className="w-3 h-3" />
+                  <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">{entry.content}</p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Calendar className="h-3 w-3 text-primary/75" />
                     <span>{new Date(entry.entry_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                   </div>
                 </div>

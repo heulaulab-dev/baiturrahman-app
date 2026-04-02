@@ -82,7 +82,7 @@ export function PendingDonationsTable() {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Menunggu Konfirmasi</h3>
         <Link
-          href="/dashboard/donasi"
+          href="/donasi"
           className="text-sm text-muted-foreground hover:underline transition-colors"
         >
           Lihat Semua →

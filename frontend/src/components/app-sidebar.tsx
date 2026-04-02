@@ -11,8 +11,8 @@ import {
   FileText,
   LayoutDashboard,
   Boxes,
+  HelpCircle,
 } from "lucide-react"
-import { useAuth } from "@/context/AuthContext"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
@@ -29,16 +29,7 @@ import {
 } from "@/components/ui/sidebar"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useAuth()
   const { isMobile, setOpen, controlMode } = useSidebar()
-
-  // Generate user data from auth context
-  const userData = {
-    name: user?.full_name || user?.username || "Admin",
-    email: user?.email || "admin@baiturrahim.id",
-    avatar: user?.avatar_url || "/avatars/admin.jpg",
-  }
-
   const navMain = [
     {
       title: "Dashboard",
@@ -135,9 +126,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     {
       title: "Bantuan",
       url: "/bantuan",
-      icon: User,
+      icon: HelpCircle,
     },
   ]
+
+  // Offcanvas menyembunyikan sidebar sepenuhnya → tidak ada area untuk hover.
+  // Mode hover & ikon memakai collapsible "icon" agar strip samping tetap ada lalu melebar saat di-hover.
+  const sidebarCollapsible =
+    controlMode === "expanded" ? "offcanvas" : "icon"
 
   const desktopHoverHandlers =
     !isMobile && controlMode === "hover"
@@ -148,20 +144,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       : {}
 
   return (
-    <Sidebar collapsible="offcanvas" {...desktopHoverHandlers} {...props}>
+    <Sidebar collapsible={sidebarCollapsible} {...desktopHoverHandlers} {...props}>
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton size='lg' asChild>
-                <Link href='/dashboard'>
-                  <div className='flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground'>
-                    <Building2 className='size-4' />
+              <SidebarMenuButton size="lg" asChild tooltip="Masjid Baiturrahim">
+                <Link href="/dashboard">
+                  <div className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                    <Building2 className="size-4" />
                   </div>
-                  <div className='grid flex-1 text-left text-sm leading-tight'>
-                    <span className='truncate font-semibold'>
+                  <div className="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                    <span className="truncate font-semibold">
                       Masjid Baiturrahim
                     </span>
-                    <span className='truncate text-xs text-sidebar-foreground/70'>Sistem Manajemen</span>
+                    <span className="truncate text-xs text-sidebar-foreground/70">Sistem Manajemen</span>
                   </div>
                 </Link>
               </SidebarMenuButton>
@@ -173,7 +169,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <NavSecondary items={navSecondary} className='mt-auto' />
         </SidebarContent>
         <SidebarFooter>
-          <NavUser user={userData} />
+          <NavUser />
         </SidebarFooter>
         <SidebarRail />
     </Sidebar>

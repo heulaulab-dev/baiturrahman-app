@@ -2,14 +2,11 @@
 
 import { LoginForm } from '@/components/auth/LoginForm';
 import Image from 'next/image';
-import Logo from '@/public/Logo.svg';
 import { LoginRequest } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
 import { getCookie } from '@/lib/cookies';
-import loginImage from '@/public/images/login-image.jpg';
-
 function LoginContent() {
 	const { login, isAuthenticated, isLoading } = useAuth();
 	const router = useRouter();
@@ -37,10 +34,18 @@ function LoginContent() {
 
 	return (
 		<LoginForm
-			logo={<Image src={Logo} alt='Baiturrahman' width={160} height={160} />}
+			logo={
+				<Image
+					src="/Logo.svg"
+					alt="Baiturrahman"
+					width={160}
+					height={160}
+					unoptimized
+				/>
+			}
 			title='Masuk ke dashboard admin'
 			description='Masuk ke dashboard admin'
-			imageSrc={loginImage.src}
+			imageSrc="/images/login-image.jpg"
 			imageAlt='Masuk ke dashboard admin'
 			onSubmit={onSubmit}
 			forgotPasswordHref='/forgot-password'

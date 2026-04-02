@@ -1,9 +1,11 @@
 "use client"
 
+import { Fragment } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { PanelLeft } from "lucide-react"
+import { Settings2 } from "lucide-react"
 import { SearchForm } from "@/components/search-form"
+import { NavUserHeader } from "@/components/nav-user"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,12 +14,12 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
-  SidebarControlMode,
+  type SidebarControlMode,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,100 +29,151 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils"
 
-function getBreadcrumbTitle(pathname: string): { title: string; href: string } {
+const SEGMENT_LABELS: Record<string, string> = {
+  dashboard: "Dashboard",
+  profil: "Profil masjid",
+  jamaah: "Jamaah",
+  kategori: "Kategori",
+  reservasi: "Reservasi",
+  "ruang-rapat": "Ruang rapat",
+  "acara-khusus": "Acara khusus",
+  donasi: "Donasi",
+  inventaris: "Inventaris",
+  laporan: "Laporan",
+  konten: "Konten",
+  berita: "Berita & artikel",
+  pengumuman: "Pengumuman",
+  kegiatan: "Kegiatan",
+  pengaturan: "Pengaturan",
+  struktur: "Struktur organisasi",
+  pengguna: "Pengguna",
+  bantuan: "Bantuan",
+}
+
+function formatSegmentLabel(segment: string): string {
+  return (
+    SEGMENT_LABELS[segment] ||
+    segment
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ")
+  )
+}
+
+function buildBreadcrumbs(pathname: string): { label: string; href: string }[] {
   const segments = pathname.split("/").filter(Boolean)
 
-  if (segments.length === 0 || pathname === "/dashboard") {
-    return { title: "Dashboard", href: "/dashboard" }
+  if (segments.length === 0) {
+    return [{ label: "Dashboard", href: "/dashboard" }]
   }
 
-  const pathMap: Record<string, string> = {
-    "dashboard": "Dashboard",
-    "profil": "Profil Masjid",
-    "jamaah": "Jamaah",
-    "kategori": "Kategori",
-    "reservasi": "Reservasi",
-    "ruang-rapat": "Ruang Rapat",
-    "acara-khusus": "Acara Khusus",
-    "donasi": "Donasi",
-    "laporan": "Laporan",
-    "konten": "Konten",
-    "berita": "Berita & Artikel",
-    "pengumuman": "Pengumuman",
-    "kegiatan": "Kegiatan",
-    "pengaturan": "Pengaturan",
-    "struktur": "Struktur Organisasi",
-    "pengguna": "Pengguna",
-    "bantuan": "Bantuan",
+  if (segments.length === 1 && segments[0] === "dashboard") {
+    return [{ label: "Dashboard", href: "/dashboard" }]
   }
 
-  const lastSegment = segments.at(-1)
-  const currentTitle = pathMap[lastSegment ?? ""] || lastSegment || "Dashboard"
+  const crumbs: { label: string; href: string }[] = [
+    { label: "Dashboard", href: "/dashboard" },
+  ]
 
-  return {
-    title: currentTitle,
-    href: pathname,
-  }
+  segments.forEach((seg, index) => {
+    const href = `/${segments.slice(0, index + 1).join("/")}`
+    if (href === "/dashboard") {
+      return
+    }
+    crumbs.push({
+      label: formatSegmentLabel(seg),
+      href,
+    })
+  })
+
+  return crumbs
 }
 
 export function SiteHeader() {
   const pathname = usePathname()
-  const breadcrumb = getBreadcrumbTitle(pathname)
+  const crumbs = buildBreadcrumbs(pathname)
   const { isMobile, controlMode, setControlMode } = useSidebar()
+  const lastIndex = crumbs.length - 1
 
   return (
-    <header className="flex sticky top-0 z-50 h-14 w-full items-center border-b bg-background">
-      <div className="flex h-full w-full items-center gap-2 px-4">
-        {isMobile ? null : (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Sidebar control menu">
-                <PanelLeft className="h-4 w-4" />
-                <span className="sr-only">Sidebar control</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-44">
-              <DropdownMenuLabel>Sidebar control</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup
-                value={controlMode}
-                onValueChange={(value) =>
-                  setControlMode(value as SidebarControlMode)
-                }
-              >
-                <DropdownMenuRadioItem value="expanded">
-                  Expanded
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="collapsed">
-                  Collapsed
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="hover">
-                  Expand on hover
-                </DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-        <Separator orientation="vertical" className="mr-2 h-4" />
-        <Breadcrumb className="hidden sm:block">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link href="/dashboard">Dashboard</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            {pathname !== "/dashboard" && (
-              <>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>{breadcrumb.title}</BreadcrumbPage>
+    <header
+      className={cn(
+        "sticky top-0 z-50 flex h-14 w-full shrink-0 items-center border-b border-border/80",
+        "bg-background/95 shadow-sm backdrop-blur-md supports-backdrop-filter:bg-background/80"
+      )}
+    >
+      <div className="flex h-full w-full min-w-0 items-center gap-2 px-3 sm:px-4">
+
+        {isMobile === false ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 shrink-0"
+                  aria-label="Mode tampilan sidebar"
+                >
+                  <Settings2 className="size-4" />
+                  <span className="sr-only">Mode sidebar</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-52">
+                <DropdownMenuLabel className="font-normal text-muted-foreground">
+                  Tampilan sidebar
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup
+                  value={controlMode}
+                  onValueChange={(value) => setControlMode(value as SidebarControlMode)}
+                >
+                  <DropdownMenuRadioItem value="expanded">Buka penuh</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="collapsed">Ikon saja</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="hover">Buka saat di-hover</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        ) : null}
+
+        <Separator orientation="vertical" className="hidden h-6 sm:block" />
+
+        {/* Desktop breadcrumb */}
+        <Breadcrumb className="hidden min-w-0 flex-1 sm:flex">
+          <BreadcrumbList className="flex-nowrap">
+            {crumbs.map((crumb, i) => (
+              <Fragment key={crumb.href}>
+                <BreadcrumbItem className="min-w-0">
+                  {i === lastIndex ? (
+                    <BreadcrumbPage className="max-w-[40vw] truncate font-medium text-foreground md:max-w-none">
+                      {crumb.label}
+                    </BreadcrumbPage>
+                  ) : (
+                    <BreadcrumbLink asChild>
+                      <Link href={crumb.href} className="max-w-[32vw] truncate md:max-w-56">
+                        {crumb.label}
+                      </Link>
+                    </BreadcrumbLink>
+                  )}
                 </BreadcrumbItem>
-              </>
-            )}
+                {i < lastIndex ? <BreadcrumbSeparator /> : null}
+              </Fragment>
+            ))}
           </BreadcrumbList>
         </Breadcrumb>
-        <SearchForm className="w-full sm:ml-auto sm:w-auto" />
+
+        {/* Mobile: current page only */}
+        <div className="flex min-w-0 flex-1 items-center sm:hidden">
+          <span className="truncate text-sm font-medium text-foreground">
+            {crumbs.at(-1)?.label ?? "Dashboard"}
+          </span>
+        </div>
+
+        <div className="ml-auto flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
+          <NavUserHeader />
+          <Separator orientation="vertical" className="hidden h-6 sm:block" />
+          <SearchForm className="w-[min(12rem,30vw)] sm:w-full sm:max-w-xs" />
+        </div>
       </div>
     </header>
   )

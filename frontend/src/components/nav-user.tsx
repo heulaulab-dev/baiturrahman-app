@@ -1,18 +1,17 @@
 "use client"
 
+import Link from "next/link"
 import {
-  BadgeCheck,
-  Bell,
   ChevronsUpDown,
+  HelpCircle,
   LogOut,
+  Settings,
+  User,
 } from "lucide-react"
+import { toast } from "sonner"
 import { useAuth } from "@/context/AuthContext"
-
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,24 +27,56 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import type { UserRole } from "@/types"
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-    avatar: string
+function initialsFromName(fullName: string, email: string): string {
+  const trimmed = fullName.trim()
+  if (!trimmed) {
+    return email.slice(0, 2).toUpperCase()
   }
-}) {
+  const parts = trimmed.split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) {
+    const first = parts.at(0) ?? ""
+    const last = parts.at(-1) ?? ""
+    const a = first[0] ?? ""
+    const b = last[0] ?? ""
+    if (a && b) return `${a}${b}`.toUpperCase()
+  }
+  return trimmed.slice(0, 2).toUpperCase()
+}
+
+function roleLabel(role: UserRole): string {
+  switch (role) {
+    case "super_admin":
+      return "Super admin"
+    case "admin":
+      return "Admin"
+    case "editor":
+      return "Editor"
+    default:
+      return role
+  }
+}
+
+export function NavUser() {
   const { isMobile } = useSidebar()
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
+
+  if (!user) {
+    return null
+  }
+
+  const displayName = user.full_name?.trim() || user.username || "Pengguna"
+  const email = user.email
+  const avatarSrc = user.avatar_url?.trim() || undefined
+  const initials = initialsFromName(user.full_name || user.username, user.email)
 
   const handleLogout = async () => {
     try {
       await logout()
-    } catch (error) {
-      console.error("Logout failed:", error)
+      toast.success("Anda telah keluar")
+    } catch {
+      toast.error("Gagal keluar, coba lagi")
     }
   }
 
@@ -58,49 +89,69 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+              <Avatar className="size-8 rounded-lg">
+                <AvatarImage src={avatarSrc} alt={displayName} />
+                <AvatarFallback className="rounded-lg bg-sidebar-primary/15 text-xs font-semibold text-sidebar-primary">
+                  {initials}
+                </AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+              <div className="grid min-w-0 flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">{displayName}</span>
+                <span className="truncate text-xs text-sidebar-foreground/70">{email}</span>
               </div>
-              <ChevronsUpDown className="ml-auto size-4" />
+              <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-60" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-64 rounded-lg"
             side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+              <div className="flex items-center gap-3 px-2 py-2">
+                <Avatar className="size-10 rounded-lg">
+                  <AvatarImage src={avatarSrc} alt={displayName} />
+                  <AvatarFallback className="rounded-lg bg-primary/15 text-sm font-semibold text-primary">
+                    {initials}
+                  </AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                <div className="grid min-w-0 flex-1 text-left leading-tight">
+                  <span className="truncate font-semibold">{displayName}</span>
+                  <span className="truncate text-xs text-muted-foreground">{email}</span>
+                  <Badge variant="outline" className="mt-2 w-fit text-[10px] font-normal uppercase tracking-wide">
+                    {roleLabel(user.role)}
+                  </Badge>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck data-icon="inline-start" />
-                Profil Saya
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link href="/dashboard/profil">
+                  <User />
+                  Profil masjid
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell data-icon="inline-start" />
-                Notifikasi
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link href="/pengaturan">
+                  <Settings />
+                  Pengaturan
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link href="/bantuan">
+                  <HelpCircle />
+                  Bantuan
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOut data-icon="inline-start" />
+            <DropdownMenuItem
+              className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
+              onClick={handleLogout}
+            >
+              <LogOut />
               Keluar
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -13,7 +13,6 @@ import {
   Boxes,
   HelpCircle,
 } from "lucide-react"
-import { useAuth } from "@/context/AuthContext"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
@@ -30,16 +29,7 @@ import {
 } from "@/components/ui/sidebar"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useAuth()
   const { isMobile, setOpen, controlMode } = useSidebar()
-
-  // Generate user data from auth context
-  const userData = {
-    name: user?.full_name || user?.username || "Admin",
-    email: user?.email || "admin@baiturrahim.id",
-    avatar: user?.avatar_url || "/avatars/admin.jpg",
-  }
-
   const navMain = [
     {
       title: "Dashboard",
@@ -174,7 +164,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <NavSecondary items={navSecondary} className='mt-auto' />
         </SidebarContent>
         <SidebarFooter>
-          <NavUser user={userData} />
+          <NavUser />
         </SidebarFooter>
         <SidebarRail />
     </Sidebar>

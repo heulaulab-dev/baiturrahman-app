@@ -12,6 +12,7 @@ import { toast } from "sonner"
 import { useAuth } from "@/context/AuthContext"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +28,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { cn } from "@/lib/utils"
 import type { UserRole } from "@/types"
 
 function initialsFromName(fullName: string, email: string): string {
@@ -45,7 +47,7 @@ function initialsFromName(fullName: string, email: string): string {
   return trimmed.slice(0, 2).toUpperCase()
 }
 
-function roleLabel(role: UserRole): string {
+function userRoleLabel(role: UserRole): string {
   switch (role) {
     case "super_admin":
       return "Super admin"
@@ -58,6 +60,74 @@ function roleLabel(role: UserRole): string {
   }
 }
 
+function UserAccountMenuBody({
+  displayName,
+  email,
+  avatarSrc,
+  initials,
+  role,
+  onLogout,
+}: Readonly<{
+  displayName: string
+  email: string
+  avatarSrc: string | undefined
+  initials: string
+  role: UserRole
+  onLogout: () => void
+}>) {
+  return (
+    <>
+      <DropdownMenuLabel className="p-0 font-normal">
+        <div className="flex items-center gap-3 px-2 py-2">
+          <Avatar className="size-10 rounded-lg">
+            <AvatarImage src={avatarSrc} alt={displayName} />
+            <AvatarFallback className="rounded-lg bg-primary/15 text-sm font-semibold text-primary">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="grid min-w-0 flex-1 text-left leading-tight">
+            <span className="truncate font-semibold">{displayName}</span>
+            <span className="truncate text-xs text-muted-foreground">{email}</span>
+            <Badge variant="outline" className="mt-2 w-fit text-[10px] font-normal uppercase tracking-wide">
+              {userRoleLabel(role)}
+            </Badge>
+          </div>
+        </div>
+      </DropdownMenuLabel>
+      <DropdownMenuSeparator />
+      <DropdownMenuGroup>
+        <DropdownMenuItem asChild className="cursor-pointer">
+          <Link href="/dashboard/profil">
+            <User />
+            Profil masjid
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild className="cursor-pointer">
+          <Link href="/pengaturan">
+            <Settings />
+            Pengaturan
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild className="cursor-pointer">
+          <Link href="/bantuan">
+            <HelpCircle />
+            Bantuan
+          </Link>
+        </DropdownMenuItem>
+      </DropdownMenuGroup>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
+        onClick={onLogout}
+      >
+        <LogOut />
+        Keluar
+      </DropdownMenuItem>
+    </>
+  )
+}
+
+/** Menu akun di sidebar footer */
 export function NavUser() {
   const { isMobile } = useSidebar()
   const { user, logout } = useAuth()
@@ -108,55 +178,73 @@ export function NavUser() {
             align="end"
             sideOffset={4}
           >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-3 px-2 py-2">
-                <Avatar className="size-10 rounded-lg">
-                  <AvatarImage src={avatarSrc} alt={displayName} />
-                  <AvatarFallback className="rounded-lg bg-primary/15 text-sm font-semibold text-primary">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="grid min-w-0 flex-1 text-left leading-tight">
-                  <span className="truncate font-semibold">{displayName}</span>
-                  <span className="truncate text-xs text-muted-foreground">{email}</span>
-                  <Badge variant="outline" className="mt-2 w-fit text-[10px] font-normal uppercase tracking-wide">
-                    {roleLabel(user.role)}
-                  </Badge>
-                </div>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/dashboard/profil">
-                  <User />
-                  Profil masjid
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/pengaturan">
-                  <Settings />
-                  Pengaturan
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/bantuan">
-                  <HelpCircle />
-                  Bantuan
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
-              onClick={handleLogout}
-            >
-              <LogOut />
-              Keluar
-            </DropdownMenuItem>
+            <UserAccountMenuBody
+              displayName={displayName}
+              email={email}
+              avatarSrc={avatarSrc}
+              initials={initials}
+              role={user.role}
+              onLogout={handleLogout}
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
+  )
+}
+
+/** Menu akun kompak di site header (avatar) */
+export function NavUserHeader({ className }: Readonly<{ className?: string }>) {
+  const { user, logout } = useAuth()
+
+  if (!user) {
+    return null
+  }
+
+  const displayName = user.full_name?.trim() || user.username || "Pengguna"
+  const email = user.email
+  const avatarSrc = user.avatar_url?.trim() || undefined
+  const initials = initialsFromName(user.full_name || user.username, user.email)
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      toast.success("Anda telah keluar")
+    } catch {
+      toast.error("Gagal keluar, coba lagi")
+    }
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "size-9 shrink-0 rounded-full border border-transparent bg-background ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring",
+            className
+          )}
+          aria-label={`Menu akun: ${displayName}`}
+        >
+          <Avatar className="size-8">
+            <AvatarImage src={avatarSrc} alt={displayName} />
+            <AvatarFallback className="bg-primary/15 text-xs font-semibold text-primary">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="min-w-64 rounded-lg" side="bottom" align="end" sideOffset={6}>
+        <UserAccountMenuBody
+          displayName={displayName}
+          email={email}
+          avatarSrc={avatarSrc}
+          initials={initials}
+          role={user.role}
+          onLogout={handleLogout}
+        />
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

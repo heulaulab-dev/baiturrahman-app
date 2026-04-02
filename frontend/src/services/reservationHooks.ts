@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { useDeleteReservation, useUpdateReservation } from '@/services/adminHooks';
-import { createReservation } from '@/services/apiService';
+import { createAdminReservation } from '@/services/adminApiService';
 import type { CreateReservationRequest, ReservationStatus } from '@/types';
 
 function toastApiError(err: unknown, fallback: string) {
@@ -83,7 +83,7 @@ export function useReservationAdminActions() {
 export function useCreateReservationSubmit() {
 	const queryClient = useQueryClient();
 	const mutation = useMutation({
-		mutationFn: (data: CreateReservationRequest) => createReservation(data),
+		mutationFn: (data: CreateReservationRequest) => createAdminReservation(data),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['admin', 'reservations'] });
 		},

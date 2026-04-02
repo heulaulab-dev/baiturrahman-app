@@ -210,6 +210,7 @@ func main() {
 			admin.DELETE("/users/:id", h.DeleteUser)
 
 			// Reservations
+			admin.POST("/reservations", h.CreateReservationAdmin)
 			admin.GET("/reservations", h.GetReservations)
 			admin.GET("/reservations/:id", h.GetReservationByID)
 			admin.PUT("/reservations/:id", h.UpdateReservation)

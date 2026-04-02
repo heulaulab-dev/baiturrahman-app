@@ -74,6 +74,45 @@ func (h *Handler) CreateReservation(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusCreated, r, "Reservation request submitted successfully")
 }
 
+// CreateReservationAdmin creates a reservation from the dashboard (JWT admin). No "must be future" rule.
+func (h *Handler) CreateReservationAdmin(c *gin.Context) {
+	var req createReservationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if msg := validateReservationWindowForAdmin(req.StartAt, req.EndAt); msg != "" {
+		utils.ErrorResponse(c, http.StatusBadRequest, msg)
+		return
+	}
+
+	var emailPtr *string
+	if req.RequesterEmail != "" {
+		emailPtr = &req.RequesterEmail
+	}
+
+	r := models.Reservation{
+		RequesterName:    req.RequesterName,
+		RequesterPhone:   req.RequesterPhone,
+		RequesterEmail:   emailPtr,
+		Facility:         req.Facility,
+		EventTitle:       req.EventTitle,
+		StartAt:          req.StartAt,
+		EndAt:            req.EndAt,
+		ParticipantCount: req.ParticipantCount,
+		Notes:            req.Notes,
+		Status:           models.ReservationStatusPending,
+	}
+
+	if err := h.DB.Create(&r).Error; err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to create reservation")
+		return
+	}
+
+	utils.SuccessResponse(c, http.StatusCreated, r, "Reservation created successfully")
+}
+
 func (h *Handler) GetReservations(c *gin.Context) {
 	page, limit := utils.GetPaginationParams(c)
 	offset := utils.GetOffset(page, limit)

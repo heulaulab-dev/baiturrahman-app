@@ -16,6 +16,7 @@ import type {
   MosqueInfo,
   Reservation,
   ReservationStatus,
+  CreateReservationRequest,
 } from '@/types'
 
 export const getDonationStats = async (): Promise<DonationStats> => {
@@ -263,6 +264,11 @@ export const getAdminReservations = async (
 ): Promise<PaginatedResponse<Reservation>> => {
   const response = await api.get<PaginatedResponse<Reservation>>('/v1/admin/reservations', { params })
   return response.data
+}
+
+export const createAdminReservation = async (data: CreateReservationRequest): Promise<Reservation> => {
+  const response = await api.post<ApiResponse<Reservation>>('/v1/admin/reservations', data)
+  return response.data.data
 }
 
 export interface UpdateReservationRequest {

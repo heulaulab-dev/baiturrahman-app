@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
   type SidebarControlMode,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
 import {

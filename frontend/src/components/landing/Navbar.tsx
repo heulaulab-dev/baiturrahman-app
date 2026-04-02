@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
-import Logo from '@/public/Logo.svg';
 import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
@@ -43,7 +42,14 @@ export function Navbar() {
 					<div className="flex items-center justify-between h-16 md:h-20">
 						{/* Logo */}
 						<Link href="/" className="flex items-center gap-3">
-							<Image src={Logo} alt="Baiturrahman" className='w-50' />
+							<Image
+								src="/Logo.svg"
+								alt="Baiturrahman"
+								width={200}
+								height={56}
+								className="h-10 w-auto md:h-12"
+								unoptimized
+							/>
 						</Link>
 
 						{/* Desktop Nav */}

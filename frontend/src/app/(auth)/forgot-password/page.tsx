@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm'
 import { useRouter } from 'next/navigation'
-import Logo from '@/public/Logo.svg'
 import Image from 'next/image'
 
 export default function ForgotPasswordPage() {
@@ -16,7 +15,13 @@ export default function ForgotPasswordPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
-            <Image src={Logo} alt="Baiturrahman" width={160} height={160} />
+            <Image
+              src="/Logo.svg"
+              alt="Baiturrahman"
+              width={160}
+              height={160}
+              unoptimized
+            />
           </div>
           <h1 className="text-2xl font-semibold text-foreground mb-2">
             Lupa Password?

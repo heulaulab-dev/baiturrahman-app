@@ -1,12 +1,6 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import Logo from '@/public/Logo.svg';
-import InstagramIcon from '@/public/icon/instagram.svg';
-import YoutubeIcon from '@/public/icon/youtube.svg';
-import FacebookIcon from '@/public/icon/facebook.svg';
-import TwitterIcon from '@/public/icon/twitter.svg';
-import WhatsappIcon from '@/public/icon/whatsapp.svg';
 
 import {
 	LANDING_PRAYER_PILLS,
@@ -38,11 +32,11 @@ const quickLinks: Record<string, QuickLinkItem[]> = {
 };
 
 const socialLinks = [
-	{ icon: InstagramIcon, href: 'https://instagram.com/baiturrahim' },
-	{ icon: YoutubeIcon, href: 'https://youtube.com/baiturrahim' },
-	{ icon: FacebookIcon, href: 'https://facebook.com/baiturrahim' },
-	{ icon: TwitterIcon, href: 'https://twitter.com/baiturrahim' },
-	{ icon: WhatsappIcon, href: 'https://wa.me/6281234567890' },
+	{ iconSrc: '/icon/instagram.svg', href: 'https://instagram.com/baiturrahim' },
+	{ iconSrc: '/icon/youtube.svg', href: 'https://youtube.com/baiturrahim' },
+	{ iconSrc: '/icon/facebook.svg', href: 'https://facebook.com/baiturrahim' },
+	{ iconSrc: '/icon/twitter.svg', href: 'https://twitter.com/baiturrahim' },
+	{ iconSrc: '/icon/whatsapp.svg', href: 'https://wa.me/6281234567890' },
 ];
 
 export function Footer() {
@@ -56,7 +50,14 @@ export function Footer() {
 					{/* Left: Brand */}
 					<div className="md:col-span-1">
 						<div className="flex items-center gap-3 mb-4">
-							<Image src={Logo} alt="Baiturrahim" className="w-100" />
+							<Image
+								src="/Logo.svg"
+								alt="Baiturrahim"
+								width={220}
+								height={62}
+								className="h-auto w-44 max-w-full"
+								unoptimized
+							/>
 						</div>
 						<p className="text-sm text-sacred-muted mb-4">
 							{mosqueInfo?.description || 'Pusat ibadah dan kegiatan keagamaan Muslim'}
@@ -115,20 +116,23 @@ export function Footer() {
 							))}
 						</div>
 						<div className="flex gap-2">
-							{socialLinks.map((social) => {
-								const Icon = social.icon;
-								return (
-									<Link
-										key={social.href}
-										href={social.href}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="p-2 border border-sacred-green text-sacred-green hover:border-sacred-gold hover:text-sacred-gold transition-colors"
-									>
-										<Image src={Icon} alt={social.href} width={18} height={18} />
-									</Link>
-								);
-							})}
+							{socialLinks.map((social) => (
+								<Link
+									key={social.href}
+									href={social.href}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="p-2 border border-sacred-green text-sacred-green hover:border-sacred-gold hover:text-sacred-gold transition-colors"
+								>
+									<Image
+										src={social.iconSrc}
+										alt=""
+										width={18}
+										height={18}
+										unoptimized
+									/>
+								</Link>
+							))}
 						</div>
 					</div>
 				</div>

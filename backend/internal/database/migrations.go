@@ -1,7 +1,6 @@
 package database
 
 import (
-	"masjid-baiturrahim-backend/config"
 	"masjid-baiturrahim-backend/internal/models"
 
 	"golang.org/x/crypto/bcrypt"
@@ -19,39 +18,30 @@ func Migrate(db *gorm.DB) error {
 		&models.Announcement{},
 		&models.Donation{},
 		&models.PaymentMethod{},
-		&models.Khutbah{},
 		&models.Setting{},
-		&models.HistoryEntry{},
-		&models.Struktur{},
-		&models.AsetTetap{},
-		&models.BarangTidakTetap{},
-		&models.Reservation{},
-		&models.GalleryItem{},
 	)
 }
 
 func SeedDefaultAdmin(db *gorm.DB) error {
 	var count int64
 	db.Model(&models.User{}).Count(&count)
-
+	
 	// Only create default admin if no users exist
 	if count > 0 {
 		return nil
 	}
 
-	cfg := config.Load()
-
-	// Hash password from config
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(cfg.DefaultAdminPassword), 12)
+	// Hash password: "admin123"
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("admin123"), 12)
 	if err != nil {
 		return err
 	}
 
 	adminUser := models.User{
-		Username:     cfg.DefaultAdminUsername,
-		Email:        cfg.DefaultAdminEmail,
+		Username:     "admin",
+		Email:        "admin@masjidbaiturrahim.com",
 		PasswordHash: string(hashedPassword),
-		FullName:     cfg.DefaultAdminFullName,
+		FullName:     "Administrator",
 		Role:         models.RoleAdmin,
 		IsActive:     true,
 	}
@@ -61,22 +51,4 @@ func SeedDefaultAdmin(db *gorm.DB) error {
 	}
 
 	return nil
-}
-
-// SeedDefaultMosqueInfo inserts a placeholder row so GET /mosque returns 200 on a fresh database.
-func SeedDefaultMosqueInfo(db *gorm.DB) error {
-	var count int64
-	db.Model(&models.MosqueInfo{}).Count(&count)
-	if count > 0 {
-		return nil
-	}
-
-	placeholder := models.MosqueInfo{
-		Name:        "Masjid Baiturrahim",
-		Address:     "—",
-		City:        "—",
-		Province:    "—",
-		Description: "Silakan lengkapi informasi masjid melalui panel admin.",
-	}
-	return db.Create(&placeholder).Error
 }

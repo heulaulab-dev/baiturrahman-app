@@ -1,62 +1,38 @@
 # Changelog
 
-All notable changes to Masjid Baiturrahim project will be documented in this file.
+All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
 ### Added
-- **Khutbah Backend**: New Khutbah model and API endpoints for Friday sermon management
-  - CRUD operations (Create, Read, Update, Delete)
-  - Latest khutbah endpoint for landing page
-  - Archive endpoint for historical khutbahs
-  - Toggle publish status endpoint
+- Added `deployment/` directory with pre-configured VPS deployment files
+- Added Traefik configuration for automatic SSL with Let's Encrypt
+- Added Docker Compose files for backend and PostgreSQL deployment
+- Added Dockerfile for backend container
+- Added deployment documentation in `deployment/README.md`
+- Added SELinux configuration guide for Rocky Linux
+- Added firewalld configuration guide for Rocky Linux
 
 ### Changed
-- **DonationSection**: Now fetches payment methods from backend API
-  - Displays bank accounts, QRIS codes, e-wallets dynamically
-  - Grouped by payment method type
-  - Added copy-to-clipboard for account numbers
-  - Added donation form submission to backend
+- Updated main README.md to reflect new deployment structure
+- Removed manual scp upload instructions - now using git clone only
+- Simplified deployment process with pre-configured files
 
-- **KajianSection**: Now fetches events from backend API
-  - Displays featured event and upcoming events list
-  - Shows event date, time, location, and image
-  - Added loading and empty states
-
-- **BeritaSection**: Now fetches announcements from backend API
-  - Displays featured announcement and archive list
-  - Added loading and empty states
-
-- **ContactSection**: Now fetches mosque info from backend API
-  - Displays address, phone, email, website dynamically
-  - Shows social media links if configured in backend
-
-- **MimbarJumatSection**: Now fetches khutbah from backend API
-  - Displays latest khutbah with khatib, tema, imam, muadzin
-  - Archive list for historical khutbahs
-  - Download link for khutbah files
-
-### Fixed
-- **PaymentMethod Type**: Updated to match backend model structure
-  - Added `type` field (bank_transfer, ewallet, qris)
-  - Renamed `account_holder` to `account_name`
-  - Added `qr_code_url`, `instructions`, `display_order` fields
-
-- **Accessibility Issues**:
-  - Added `htmlFor` attributes to all form labels
-  - Changed empty anchor links to buttons
-  - Added proper button types
-  - Used Next.js Image component for QR codes
-
-### Technical
-- **Frontend Services**: Added Khutbah API service functions and React hooks
-- **Backend Routes**: Registered Khutbah routes in main.go
-- **Database**: Added Khutbah table to AutoMigrate
-
----
+### Tech Stack
+- Next.js: 14 → 16
+- Tailwind CSS: Upgraded to v4.1.18
+- PostgreSQL: 15 (Alpine for production)
 
 ## [Previous]
 
-### Documentation
-- Added prayer times scrapper integration specification
-- Added prayer times implementation plan
+### Initial Release
+- Frontend with Next.js App Router
+- Backend with Go/Gin framework
+- PostgreSQL database
+- Authentication with JWT
+- Content management system
+- Organizational structure management
+- Prayer times management
+- Event and announcement system
+- Donation system
+- Admin dashboard with role-based access

@@ -49,8 +49,6 @@ type MosqueInfo struct {
 	MapsEmbedURL  *string       `gorm:"type:text" json:"maps_embed_url,omitempty"`
 	SocialMedia   SocialMedia   `gorm:"type:jsonb" json:"social_media"`
 	EstablishedYear *int        `json:"established_year,omitempty"`
-	Vision       string       `gorm:"type:text" json:"vision,omitempty"`
-	Mission       string       `gorm:"type:text" json:"mission,omitempty"`
 	CreatedAt     time.Time     `json:"created_at"`
 	UpdatedAt     time.Time     `json:"updated_at"`
 }

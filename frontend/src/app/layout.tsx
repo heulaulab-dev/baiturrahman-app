@@ -6,6 +6,7 @@ import { QueryProvider } from '@/components/providers/QueryProvider'
 import { SmoothScrollHandler } from '@/components/providers/SmoothScrollHandler'
 import { AuthProvider } from '@/context/AuthContext'
 import { Toaster } from 'sonner'
+import { Analytics } from '@vercel/analytics/next'
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -58,6 +59,7 @@ export default function RootLayout({
 							<main className='flex-1'>{children}</main>
 							<Toaster />
 						</div>
+						<Analytics />
 					</QueryProvider>
 				</AuthProvider>
 			</body>

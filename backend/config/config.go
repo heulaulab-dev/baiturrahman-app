@@ -13,12 +13,6 @@ type Config struct {
 	JWTSecret   string
 	FrontendURL string
 	Environment string
-
-	// Default Admin Account
-	DefaultAdminUsername    string
-	DefaultAdminEmail       string
-	DefaultAdminPassword    string
-	DefaultAdminFullName    string
 }
 
 func Load() *Config {
@@ -33,11 +27,6 @@ func Load() *Config {
 		JWTSecret:   getEnv("JWT_SECRET", "your-secret-key-change-in-production-min-32-characters"),
 		FrontendURL: getEnv("FRONTEND_URL", "http://localhost:3000"),
 		Environment: getEnv("ENVIRONMENT", "development"),
-
-		DefaultAdminUsername: getEnv("DEFAULT_ADMIN_USERNAME", "admin"),
-		DefaultAdminEmail:    getEnv("DEFAULT_ADMIN_EMAIL", "admin@masjidbaiturrahim.com"),
-		DefaultAdminPassword: getEnv("DEFAULT_ADMIN_PASSWORD", "admin123"),
-		DefaultAdminFullName: getEnv("DEFAULT_ADMIN_FULL_NAME", "Administrator"),
 	}
 }
 

@@ -12,6 +12,7 @@ interface AuthContextType {
   login: (credentials: LoginRequest, redirectUrl?: string, rememberMe?: boolean) => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
+  hasPermission: (permissionKey: string) => boolean
   isRemembered: boolean
 }
 
@@ -70,9 +71,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const hasPermission = (permissionKey: string): boolean => {
+    if (!user) return false
+    if (user.role === 'super_admin' || user.role === 'admin') return true
+    return user.permissions?.includes(permissionKey) ?? false
+  }
+
   return (
     <AuthContext.Provider
-      value={{ user, isLoading, isAuthenticated, login, logout, refreshUser, isRemembered }}
+      value={{ user, isLoading, isAuthenticated, login, logout, refreshUser, hasPermission, isRemembered }}
     >
       {children}
     </AuthContext.Provider>

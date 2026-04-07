@@ -22,6 +22,10 @@ import {
   toggleAdminKhutbahStatus,
   getAdminUsers,
   createUser,
+  getRbacRoles,
+  getRbacPermissions,
+  getRbacRolePermissions,
+  updateRbacRolePermissions,
   getTentangKami,
   updateTentangKami,
   getAdminHistoryEntries,
@@ -54,6 +58,7 @@ import {
   type CreateAnnouncementPayload,
   type CreateKhutbahPayload,
 } from './adminApiService'
+import type { OrgRole } from '@/types'
 
 function invalidateKontenLandingQueries(queryClient: QueryClient) {
   queryClient.invalidateQueries({ queryKey: ['events'] })
@@ -307,6 +312,44 @@ export const useCreateUser = () => {
   return useMutation({
     mutationFn: createUser,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
+    },
+  })
+}
+
+export const useRbacRoles = () => {
+  return useQuery({
+    queryKey: ['admin', 'rbac', 'roles'],
+    queryFn: getRbacRoles,
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
+export const useRbacPermissions = () => {
+  return useQuery({
+    queryKey: ['admin', 'rbac', 'permissions'],
+    queryFn: getRbacPermissions,
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
+export const useRbacRolePermissions = (orgRole: OrgRole | '') => {
+  return useQuery({
+    queryKey: ['admin', 'rbac', 'role-permissions', orgRole],
+    queryFn: () => getRbacRolePermissions(orgRole as OrgRole),
+    enabled: !!orgRole,
+    staleTime: 1000 * 30,
+  })
+}
+
+export const useUpdateRbacRolePermissions = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ orgRole, permissionKeys }: { orgRole: OrgRole; permissionKeys: string[] }) =>
+      updateRbacRolePermissions(orgRole, permissionKeys),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'rbac', 'role-permissions', variables.orgRole] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'rbac', 'roles'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
     },
   })

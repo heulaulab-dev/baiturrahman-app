@@ -29,7 +29,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
-import type { UserRole } from "@/types"
+import type { OrgRole, UserRole } from "@/types"
 
 function initialsFromName(fullName: string, email: string): string {
   const trimmed = fullName.trim()
@@ -60,12 +60,38 @@ function userRoleLabel(role: UserRole): string {
   }
 }
 
+function orgRoleLabel(role: OrgRole): string {
+  switch (role) {
+    case "ketua":
+      return "Ketua"
+    case "sekretaris":
+      return "Sekretaris"
+    case "bendahara":
+      return "Bendahara"
+    case "humas":
+      return "Humas"
+    case "imam_syah":
+      return "Imam Syah"
+    case "muadzin":
+      return "Muadzin"
+    case "dai_amil":
+      return "Dai Amil"
+    case "marbot":
+      return "Marbot"
+    case "lainnya":
+      return "Lainnya"
+    default:
+      return role
+  }
+}
+
 function UserAccountMenuBody({
   displayName,
   email,
   avatarSrc,
   initials,
   role,
+  orgRole,
   onLogout,
 }: Readonly<{
   displayName: string
@@ -73,6 +99,7 @@ function UserAccountMenuBody({
   avatarSrc: string | undefined
   initials: string
   role: UserRole
+  orgRole: OrgRole
   onLogout: () => void
 }>) {
   return (
@@ -88,8 +115,8 @@ function UserAccountMenuBody({
           <div className="grid min-w-0 flex-1 text-left leading-tight">
             <span className="truncate font-semibold">{displayName}</span>
             <span className="truncate text-xs text-muted-foreground">{email}</span>
-            <Badge variant="outline" className="mt-2 w-fit text-[10px] font-normal uppercase tracking-wide">
-              {userRoleLabel(role)}
+            <Badge variant="outline" className="mt-2 w-fit text-[10px] font-normal tracking-wide">
+              {`${userRoleLabel(role)} • ${orgRoleLabel(orgRole)}`}
             </Badge>
           </div>
         </div>
@@ -185,6 +212,7 @@ export function NavUser() {
               avatarSrc={avatarSrc}
               initials={initials}
               role={user.role}
+              orgRole={user.org_role}
               onLogout={handleLogout}
             />
           </DropdownMenuContent>
@@ -243,6 +271,7 @@ export function NavUserHeader({ className }: Readonly<{ className?: string }>) {
           avatarSrc={avatarSrc}
           initials={initials}
           role={user.role}
+          orgRole={user.org_role}
           onLogout={handleLogout}
         />
       </DropdownMenuContent>

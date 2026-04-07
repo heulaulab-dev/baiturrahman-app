@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { downloadLaporanKeuanganCsv } from '@/lib/laporan-csv'
+import { useAuth } from '@/context/AuthContext'
 import { useDonationStats } from '@/services/adminHooks'
 import type { DonationStats } from '@/types'
 
@@ -54,6 +55,8 @@ function formatCurrency(amount: number): string {
 }
 
 export default function LaporanPage() {
+  const { hasPermission } = useAuth()
+  const canAccessDonationReports = hasPermission('view_donation_reports')
   const [period, setPeriod] = useState<Period>('bulan-ini')
   const { data: stats, isLoading } = useDonationStats()
 
@@ -103,6 +106,17 @@ export default function LaporanPage() {
   }, [stats?.by_category])
 
   const maxCategoryTotal = Math.max(...categories.map((c) => c.total), 1)
+
+  if (!canAccessDonationReports) {
+    return (
+      <div className="space-y-2 p-6">
+        <h2 className="text-2xl font-semibold text-foreground">Akses ditolak</h2>
+        <p className="text-sm text-muted-foreground">
+          Anda tidak memiliki izin untuk mengakses laporan donasi.
+        </p>
+      </div>
+    )
+  }
 
   const handleExportCsv = () => {
     if (!stats) {

@@ -11,6 +11,8 @@ import (
 func Migrate(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&models.User{},
+		&models.Permission{},
+		&models.RolePermission{},
 		&models.MosqueInfo{},
 		&models.OrganizationStructure{},
 		&models.PrayerTimes{},
@@ -53,11 +55,50 @@ func SeedDefaultAdmin(db *gorm.DB) error {
 		PasswordHash: string(hashedPassword),
 		FullName:     cfg.DefaultAdminFullName,
 		Role:         models.RoleAdmin,
+		OrgRole:      models.StrukturRoleLainnya,
 		IsActive:     true,
 	}
 
 	if err := db.Create(&adminUser).Error; err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func SeedDefaultPermissions(db *gorm.DB) error {
+	permissions := models.DefaultPermissionsCatalog()
+
+	for _, permission := range permissions {
+		if err := db.Where("key = ?", permission.Key).FirstOrCreate(&permission).Error; err != nil {
+			return err
+		}
+	}
+
+	defaultRolePermissions := []models.RolePermission{
+		{
+			OrgRole:       models.StrukturRoleBendahara,
+			PermissionKey: models.PermissionViewDonationReports,
+			Allowed:       true,
+		},
+		{
+			OrgRole:       models.StrukturRoleBendahara,
+			PermissionKey: models.PermissionViewDonationStats,
+			Allowed:       true,
+		},
+		{
+			OrgRole:       models.StrukturRoleBendahara,
+			PermissionKey: models.PermissionExportDonations,
+			Allowed:       true,
+		},
+	}
+
+	for _, rolePermission := range defaultRolePermissions {
+		if err := db.
+			Where("org_role = ? AND permission_key = ?", rolePermission.OrgRole, rolePermission.PermissionKey).
+			FirstOrCreate(&rolePermission).Error; err != nil {
+			return err
+		}
 	}
 
 	return nil

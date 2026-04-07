@@ -8,6 +8,7 @@ import type {
   EventStatus,
   User,
   UserRole,
+  OrgRole,
   PaymentMethod,
   Announcement,
   AnnouncementPriority,
@@ -278,10 +279,59 @@ export interface CreateUserRequest {
   password: string
   full_name: string
   role: UserRole
+  org_role: OrgRole
+  struktur_id?: string
 }
 
 export const createUser = async (data: CreateUserRequest): Promise<User> => {
   const response = await api.post<ApiResponse<User>>('/v1/admin/users', data)
+  return response.data.data
+}
+
+export interface RbacRoleItem {
+  value: OrgRole
+  label: string
+}
+
+export interface RbacPermissionItem {
+  key: string
+  name: string
+  description: string
+  module: string
+  is_active: boolean
+}
+
+export interface RbacRolePermissionItem extends RbacPermissionItem {
+  allowed: boolean
+}
+
+export interface RbacRolePermissionsResponse {
+  org_role: OrgRole
+  permissions: RbacRolePermissionItem[]
+}
+
+export const getRbacRoles = async (): Promise<RbacRoleItem[]> => {
+  const response = await api.get<ApiResponse<RbacRoleItem[]>>('/v1/admin/rbac/roles')
+  return response.data.data
+}
+
+export const getRbacPermissions = async (): Promise<RbacPermissionItem[]> => {
+  const response = await api.get<ApiResponse<RbacPermissionItem[]>>('/v1/admin/rbac/permissions')
+  return response.data.data
+}
+
+export const getRbacRolePermissions = async (orgRole: OrgRole): Promise<RbacRolePermissionsResponse> => {
+  const response = await api.get<ApiResponse<RbacRolePermissionsResponse>>(`/v1/admin/rbac/roles/${orgRole}/permissions`)
+  return response.data.data
+}
+
+export const updateRbacRolePermissions = async (
+  orgRole: OrgRole,
+  permissionKeys: string[]
+): Promise<RbacRolePermissionsResponse> => {
+  const response = await api.put<ApiResponse<RbacRolePermissionsResponse>>(`/v1/admin/rbac/roles/${orgRole}/permissions`, {
+    permission_keys: permissionKeys,
+  })
   return response.data.data
 }
 

@@ -1,4 +1,14 @@
 export type UserRole = 'super_admin' | 'admin' | 'editor'
+export type OrgRole =
+  | 'ketua'
+  | 'sekretaris'
+  | 'bendahara'
+  | 'humas'
+  | 'imam_syah'
+  | 'muadzin'
+  | 'dai_amil'
+  | 'marbot'
+  | 'lainnya'
 
 export interface User {
   id: string
@@ -6,6 +16,9 @@ export interface User {
   username: string
   full_name: string
   role: UserRole
+  org_role: OrgRole
+  struktur_id?: string | null
+  permissions?: string[]
   avatar_url?: string
   is_active: boolean
   last_login_at?: string

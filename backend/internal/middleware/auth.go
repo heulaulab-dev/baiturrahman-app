@@ -1,13 +1,14 @@
 package middleware
 
 import (
-	"net/http"
 	"masjid-baiturrahim-backend/config"
 	"masjid-baiturrahim-backend/internal/models"
 	"masjid-baiturrahim-backend/internal/utils"
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func AuthRequired() gin.HandlerFunc {
@@ -44,10 +45,6 @@ func AuthRequired() gin.HandlerFunc {
 		c.Set("userEmail", claims.Email)
 		c.Set("userRole", claims.Role)
 
-		c.Set("userID", claims.UserID)
-		c.Set("userEmail", claims.Email)
-		c.Set("userRole", claims.Role)
-
 		c.Next()
 	}
 }
@@ -71,6 +68,55 @@ func RequireRole(roles ...models.UserRole) gin.HandlerFunc {
 		}
 
 		if !allowed {
+			utils.ErrorResponse(c, http.StatusForbidden, "Insufficient permissions")
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
+
+func RequirePermission(permissionKey string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, exists := c.Get("userRole")
+		if !exists {
+			utils.ErrorResponse(c, http.StatusForbidden, "Role not found in context")
+			c.Abort()
+			return
+		}
+
+		// Keep technical admin roles as global bypass while RBAC is rolled out.
+		userRole := models.UserRole(role.(string))
+		if userRole == models.RoleSuperAdmin || userRole == models.RoleAdmin {
+			c.Next()
+			return
+		}
+
+		userID, exists := c.Get("userID")
+		if !exists {
+			utils.ErrorResponse(c, http.StatusForbidden, "User ID not found in context")
+			c.Abort()
+			return
+		}
+
+		db := c.MustGet("db").(*gorm.DB)
+
+		var user models.User
+		if err := db.Select("org_role").First(&user, "id = ?", userID).Error; err != nil {
+			utils.ErrorResponse(c, http.StatusForbidden, "Failed to resolve user permission")
+			c.Abort()
+			return
+		}
+
+		permissionMap, err := models.ResolvePermissionMapForOrgRole(db, user.OrgRole)
+		if err != nil {
+			utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to resolve permissions")
+			c.Abort()
+			return
+		}
+
+		if !permissionMap[permissionKey] {
 			utils.ErrorResponse(c, http.StatusForbidden, "Insufficient permissions")
 			c.Abort()
 			return

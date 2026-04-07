@@ -88,15 +88,24 @@ func main() {
 
 			// Public endpoints
 			public.GET("/mosque", h.GetMosqueInfo)
+			public.GET("/mosque-info", h.GetMosqueInfo) // Backward-compatible alias
 			public.GET("/structure", h.GetStructures)
+			public.GET("/strukturs", h.GetPublicStrukturs)
 			public.GET("/prayer-times", h.GetPrayerTimesByDate)
 			public.GET("/prayer-times/month", h.GetPrayerTimesByMonth)
 			public.GET("/content", h.GetContentSections)
+			public.GET("/content/tentang-kami", h.GetTentangKami)
 			public.GET("/events", h.GetEvents)
 			public.GET("/events/:slug", h.GetEventBySlug)
 			public.GET("/announcements", h.GetAnnouncements)
 			public.POST("/donations", h.CreateDonation)
 			public.GET("/payment-methods", h.GetPaymentMethods)
+			public.GET("/khutbahs/latest", h.GetLatestKhutbah)
+			public.GET("/khutbahs/archive", h.GetKhutbahArchive)
+			public.GET("/history-entries", h.GetPublishedEntries)
+			public.GET("/history-entries/date-range", h.GetHistoryEntriesByDateRange)
+			public.GET("/gallery/items", h.GetPublicGalleryItems)
+			public.POST("/reservations", h.CreateReservation)
 		}
 
 		// Protected routes (require authentication)
@@ -120,6 +129,16 @@ func main() {
 			admin.PUT("/structure/:id", h.UpdateStructure)
 			admin.DELETE("/structure/:id", h.DeleteStructure)
 			admin.PUT("/structure/reorder", h.ReorderStructures)
+
+			// Struktur (legacy dashboard API paths)
+			admin.GET("/strukturs", h.GetStrukturs)
+			admin.GET("/strukturs/:id", h.GetStrukturByID)
+			admin.POST("/strukturs", h.CreateStruktur)
+			admin.PUT("/strukturs/:id", h.UpdateStruktur)
+			admin.DELETE("/strukturs/:id", h.DeleteStruktur)
+			admin.PUT("/strukturs/reorder", h.ReorderStrukturs)
+			admin.PUT("/strukturs/:id/toggle", h.ToggleStrukturStatus)
+			admin.GET("/strukturs/active-count", h.GetActiveStruktursCount)
 
 			// Prayer Times
 			admin.POST("/prayer-times", h.CreatePrayerTimes)
@@ -147,6 +166,29 @@ func main() {
 			admin.PUT("/announcements/:id", h.UpdateAnnouncement)
 			admin.DELETE("/announcements/:id", h.DeleteAnnouncement)
 
+			// Khutbah
+			admin.GET("/khutbahs", h.GetKhutbahs)
+			admin.GET("/khutbahs/:id", h.GetKhutbahByID)
+			admin.POST("/khutbahs", h.CreateKhutbah)
+			admin.PUT("/khutbahs/:id", h.UpdateKhutbah)
+			admin.DELETE("/khutbahs/:id", h.DeleteKhutbah)
+			admin.PUT("/khutbahs/:id/toggle", h.ToggleKhutbahStatus)
+
+			// History Entries
+			admin.GET("/history-entries", h.GetHistoryEntries)
+			admin.GET("/history-entries/:id", h.GetHistoryEntryByID)
+			admin.POST("/history-entries", h.CreateHistoryEntry)
+			admin.PUT("/history-entries/:id", h.UpdateHistoryEntry)
+			admin.DELETE("/history-entries/:id", h.DeleteHistoryEntry)
+			admin.PUT("/history-entries/:id/toggle", h.ToggleHistoryEntryStatus)
+
+			// Reservations
+			admin.GET("/reservations", h.GetReservations)
+			admin.POST("/reservations/create", h.CreateReservationAdmin)
+			admin.GET("/reservations/:id", h.GetReservationByID)
+			admin.PUT("/reservations/:id", h.UpdateReservation)
+			admin.DELETE("/reservations/:id", h.DeleteReservation)
+
 			// Donations
 			admin.GET("/donations", h.GetDonations)
 			admin.PUT("/donations/:id/confirm", h.ConfirmDonation)
@@ -163,6 +205,14 @@ func main() {
 			// Upload
 			admin.POST("/upload", h.UploadImage)
 			admin.DELETE("/upload", h.DeleteImage)
+
+			// Gallery
+			admin.GET("/gallery/items", h.GetAdminGalleryItems)
+			admin.POST("/gallery/items", h.CreateGalleryItem)
+			admin.PUT("/gallery/items/:id", h.UpdateGalleryItem)
+			admin.DELETE("/gallery/items/:id", h.DeleteGalleryItem)
+			admin.PUT("/gallery/items/reorder", h.ReorderGalleryItems)
+			admin.PUT("/gallery/items/:id/toggle", h.ToggleGalleryItemPublished)
 
 			// Settings
 			admin.GET("/settings", h.GetSettings)

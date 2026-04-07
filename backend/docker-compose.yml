@@ -21,13 +21,13 @@ services:
     image: minio/minio
     container_name: baiturrahim-minio
     restart: unless-stopped
-    command: server /data --console-address ":${MINIO_CONSOLE_PORT:-9001}"
+    command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
       MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
     ports:
-      - "127.0.0.1:${MINIO_API_PORT:-9000}:${MINIO_API_PORT:-9000}"
-      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:${MINIO_CONSOLE_PORT:-9001}"
+      - "127.0.0.1:${MINIO_API_PORT}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT}:9001"
     volumes:
       - minio_data:/data
     networks:
@@ -47,7 +47,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET}
       FRONTEND_URL: ${FRONTEND_URL}
-      MINIO_ENDPOINT: http://minio:${MINIO_API_PORT:-9000}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MINIO_BUCKET: ${MINIO_BUCKET}

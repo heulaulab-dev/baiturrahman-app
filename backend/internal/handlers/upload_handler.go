@@ -1,12 +1,16 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
+	"mime"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
 	"masjid-baiturrahim-backend/internal/services"
 	"masjid-baiturrahim-backend/internal/utils"
 
@@ -23,13 +27,11 @@ func (h *Handler) UploadImage(c *gin.Context) {
 		return
 	}
 
-	// Check file size
 	if file.Size > MaxUploadSize {
 		utils.ErrorResponse(c, http.StatusBadRequest, "File size exceeds 5MB limit")
 		return
 	}
 
-	// Validate file type
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 	allowedExts := []string{".jpg", ".jpeg", ".png", ".gif", ".webp"}
 	allowed := false
@@ -44,18 +46,6 @@ func (h *Handler) UploadImage(c *gin.Context) {
 		return
 	}
 
-<<<<<<< HEAD
-	// Generate unique filename
-	filename := fmt.Sprintf("%s%s", uuid.New().String(), ext)
-	uploadDir := "uploads"
-	if err := os.MkdirAll(uploadDir, 0755); err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to create upload directory")
-		return
-	}
-
-	filePath := filepath.Join(uploadDir, filename)
-	if err := c.SaveUploadedFile(file, filePath); err != nil {
-=======
 	tmp, err := os.CreateTemp("", "upload-*"+ext)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to create temp file")
@@ -70,24 +60,17 @@ func (h *Handler) UploadImage(c *gin.Context) {
 	defer func() { _ = os.Remove(tmpPath) }()
 
 	if err := c.SaveUploadedFile(file, tmpPath); err != nil {
->>>>>>> parent of b547c3b (feat: MinIO uploads per module, optional khutbah PDF URL, landing asset URLs)
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to save file")
 		return
 	}
 
-	// Optimize image
-	optimizedPath, err := services.OptimizeImage(filePath)
+	optimizedPath, err := services.OptimizeImage(tmpPath)
 	if err != nil {
-		// If optimization fails, use original
-		optimizedPath = filePath
+		optimizedPath = tmpPath
+	} else {
+		defer func() { _ = os.Remove(optimizedPath) }()
 	}
 
-<<<<<<< HEAD
-	// Generate URL (in production, use CDN or storage service URL)
-	url := fmt.Sprintf("/uploads/%s", filepath.Base(optimizedPath))
-
-	utils.SuccessResponse(c, http.StatusOK, gin.H{"url": url}, "Image uploaded successfully")
-=======
 	objectKey := fmt.Sprintf("%s%s", uuid.New().String(), ext)
 	contentType := mime.TypeByExtension(ext)
 	if contentType == "" {
@@ -129,7 +112,6 @@ func objectKeyFromImageURL(raw string) (string, error) {
 		return "", errors.New("could not derive object key")
 	}
 	return key, nil
->>>>>>> parent of b547c3b (feat: MinIO uploads per module, optional khutbah PDF URL, landing asset URLs)
 }
 
 func (h *Handler) DeleteImage(c *gin.Context) {
@@ -142,27 +124,17 @@ func (h *Handler) DeleteImage(c *gin.Context) {
 		return
 	}
 
-<<<<<<< HEAD
-	// Extract filename from URL
-	filename := filepath.Base(req.URL)
-	filePath := filepath.Join("uploads", filename)
-=======
 	objectKey, err := objectKeyFromImageURL(req.URL)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid image URL")
 		return
 	}
->>>>>>> parent of b547c3b (feat: MinIO uploads per module, optional khutbah PDF URL, landing asset URLs)
 
-	if err := os.Remove(filePath); err != nil {
-		if os.IsNotExist(err) {
-			utils.ErrorResponse(c, http.StatusNotFound, "File not found")
-			return
-		}
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to delete file")
+	ctx := c.Request.Context()
+	if err := h.Minio.RemoveObject(ctx, objectKey); err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to delete object")
 		return
 	}
 
 	utils.SuccessResponse(c, http.StatusOK, nil, "Image deleted successfully")
 }
-

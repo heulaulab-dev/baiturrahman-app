@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
 	"masjid-baiturrahim-backend/config"
 	"masjid-baiturrahim-backend/internal/database"
 	"masjid-baiturrahim-backend/internal/handlers"
 	"masjid-baiturrahim-backend/internal/middleware"
+	"masjid-baiturrahim-backend/internal/services"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -34,7 +36,15 @@ func main() {
 	// Seed default admin user if not exists
 	if err := database.SeedDefaultAdmin(db); err != nil {
 		log.Printf("Warning: Failed to seed default admin: %v", err)
-	}-
+	}
+
+	minioSvc, err := services.NewMinioService(cfg)
+	if err != nil {
+		log.Fatal("MinIO: ", err)
+	}
+	if err := minioSvc.EnsureBucketAndPolicy(context.Background()); err != nil {
+		log.Fatal("MinIO bucket setup: ", err)
+	}
 
 	// Initialize Gin router
 	r := gin.Default()
@@ -61,7 +71,7 @@ func main() {
 	})
 
 	// Initialize handlers
-	h := handlers.New(db)
+	h := handlers.New(db, minioSvc)
 
 	// API v1 routes
 	v1 := r.Group("/api/v1")

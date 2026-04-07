@@ -1,23 +1,8 @@
 import { NextResponse } from 'next/server'
 
-/** Override when the default Cloudflare tunnel is down or you run the scrapper elsewhere. */
-const SCRAPPER_BASE =
-  process.env.MUSLIMPRO_SCRAPPER_BASE_URL?.trim() || 'https://muslimpro-scrapper.lleans.dev'
+const SCRAPPER_BASE = 'https://muslimpro-scrapper.lleans.dev'
 const DEFAULT_QUERY = 'Jakarta'
 const DEFAULT_CALC_METHOD = 'KEMENAG'
-
-function sanitizeUpstreamBody(body: unknown): unknown {
-  if (typeof body !== 'string') return body
-  const s = body.slice(0, 200)
-  if (body.trimStart().toLowerCase().startsWith('<!doctype') || body.includes('cloudflare')) {
-    return {
-      message:
-        'Upstream returned HTML (often Cloudflare Tunnel 1033: tunnel offline or cloudflared not running).',
-      preview: s,
-    }
-  }
-  return body.length > 2000 ? `${s}…` : body
-}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -53,12 +38,7 @@ export async function GET(request: Request) {
 
   if (!res.ok) {
     return NextResponse.json(
-      {
-        error: 'Upstream error',
-        upstreamStatus: res.status,
-        upstreamUrl,
-        detail: sanitizeUpstreamBody(body),
-      },
+      { error: 'Upstream error', status: res.status, body },
       { status: 502 }
     )
   }

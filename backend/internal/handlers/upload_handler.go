@@ -1,15 +1,11 @@
 package handlers
 
 import (
-	"errors"
 	"fmt"
-	"mime"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
-
 	"masjid-baiturrahim-backend/internal/services"
 	"masjid-baiturrahim-backend/internal/utils"
 
@@ -19,67 +15,20 @@ import (
 
 const MaxUploadSize = 5 * 1024 * 1024 // 5MB
 
-// allowedUploadModules are storage prefixes inside the MinIO bucket (e.g. donate/uuid.jpg).
-var allowedUploadModules = map[string]struct{}{
-	"general":         {},
-	"gallery":         {},
-	"donate":          {},
-	"konten":          {},
-	"profile":         {},
-	"announcements":   {},
-	"events":          {},
-	"struktur":        {},
-	"khutbah":         {},
-	"history":         {},
-	"mosque":          {},
-	"payment-methods": {},
-}
-
-func normalizeUploadModule(s string) string {
-	s = strings.TrimSpace(strings.ToLower(s))
-	if s == "" {
-		return "general"
-	}
-	b := strings.Builder{}
-	for _, r := range s {
-		switch {
-		case r >= 'a' && r <= 'z', r >= '0' && r <= '9':
-			b.WriteRune(r)
-		case r == '-' || r == '_':
-			b.WriteRune('-')
-		case r == ' ':
-			b.WriteRune('-')
-		default:
-			// skip other chars
-		}
-	}
-	out := strings.Trim(b.String(), "-")
-	if out == "" {
-		return "general"
-	}
-	if len(out) > 40 {
-		out = out[:40]
-	}
-	return out
-}
-
 func (h *Handler) UploadImage(c *gin.Context) {
-	if h.Minio == nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Storage not configured")
-		return
-	}
-
 	file, err := c.FormFile("file")
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusBadRequest, "No file provided")
 		return
 	}
 
+	// Check file size
 	if file.Size > MaxUploadSize {
 		utils.ErrorResponse(c, http.StatusBadRequest, "File size exceeds 5MB limit")
 		return
 	}
 
+	// Validate file type
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 	allowedExts := []string{".jpg", ".jpeg", ".png", ".gif", ".webp"}
 	allowed := false
@@ -94,98 +43,34 @@ func (h *Handler) UploadImage(c *gin.Context) {
 		return
 	}
 
-	mod := normalizeUploadModule(c.PostForm("module"))
-	if _, ok := allowedUploadModules[mod]; !ok {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid or disallowed storage module")
+	// Generate unique filename
+	filename := fmt.Sprintf("%s%s", uuid.New().String(), ext)
+	uploadDir := "uploads"
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to create upload directory")
 		return
 	}
 
-	tmp, err := os.CreateTemp("", "upload-*"+ext)
-	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to create temp file")
-		return
-	}
-	tmpPath := tmp.Name()
-	if err := tmp.Close(); err != nil {
-		_ = os.Remove(tmpPath)
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to prepare temp file")
-		return
-	}
-	defer func() { _ = os.Remove(tmpPath) }()
-
-	if err := c.SaveUploadedFile(file, tmpPath); err != nil {
+	filePath := filepath.Join(uploadDir, filename)
+	if err := c.SaveUploadedFile(file, filePath); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to save file")
 		return
 	}
 
-	optimizedPath, err := services.OptimizeImage(tmpPath)
+	// Optimize image
+	optimizedPath, err := services.OptimizeImage(filePath)
 	if err != nil {
-		optimizedPath = tmpPath
+		// If optimization fails, use original
+		optimizedPath = filePath
 	}
 
-	objectKey := fmt.Sprintf("%s/%s%s", mod, uuid.New().String(), ext)
-	contentType := mime.TypeByExtension(ext)
-	if contentType == "" {
-		contentType = "application/octet-stream"
-	}
+	// Generate URL (in production, use CDN or storage service URL)
+	url := fmt.Sprintf("/uploads/%s", filepath.Base(optimizedPath))
 
-	ctx := c.Request.Context()
-	if err := h.Minio.PutObject(ctx, objectKey, optimizedPath, contentType); err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to upload to storage")
-		return
-	}
-
-	publicURL := h.Minio.PublicObjectURL(objectKey)
-	utils.SuccessResponse(c, http.StatusOK, gin.H{"url": publicURL}, "Image uploaded successfully")
-}
-
-func objectKeyFromImageURL(raw string, bucket string) (string, error) {
-	raw = strings.TrimSpace(raw)
-	if raw == "" {
-		return "", errors.New("empty url")
-	}
-	if bucket == "" {
-		return "", errors.New("bucket not configured")
-	}
-
-	var urlPath string
-	if u, err := url.Parse(raw); err == nil && u.Path != "" {
-		urlPath = u.Path
-	}
-
-	if urlPath == "" {
-		beforeQuery := raw
-		if i := strings.IndexByte(beforeQuery, '?'); i >= 0 {
-			beforeQuery = beforeQuery[:i]
-		}
-		if i := strings.IndexByte(beforeQuery, '#'); i >= 0 {
-			beforeQuery = beforeQuery[:i]
-		}
-		urlPath = strings.ReplaceAll(beforeQuery, "\\", "/")
-	}
-	if urlPath != "" && !strings.HasPrefix(urlPath, "/") {
-		urlPath = "/" + urlPath
-	}
-
-	prefix := "/" + bucket + "/"
-	if strings.HasPrefix(urlPath, prefix) {
-		key := strings.TrimPrefix(urlPath, prefix)
-		key = strings.TrimSuffix(key, "/")
-		if key == "" || key == "." || strings.Contains(key, "..") {
-			return "", errors.New("could not derive object key")
-		}
-		return key, nil
-	}
-
-	return "", errors.New("could not derive object key")
+	utils.SuccessResponse(c, http.StatusOK, gin.H{"url": url}, "Image uploaded successfully")
 }
 
 func (h *Handler) DeleteImage(c *gin.Context) {
-	if h.Minio == nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Storage not configured")
-		return
-	}
-
 	var req struct {
 		URL string `json:"url" binding:"required"`
 	}
@@ -195,17 +80,19 @@ func (h *Handler) DeleteImage(c *gin.Context) {
 		return
 	}
 
-	objectKey, err := objectKeyFromImageURL(req.URL, h.Minio.BucketName())
-	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid image URL")
-		return
-	}
+	// Extract filename from URL
+	filename := filepath.Base(req.URL)
+	filePath := filepath.Join("uploads", filename)
 
-	ctx := c.Request.Context()
-	if err := h.Minio.RemoveObject(ctx, objectKey); err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to delete object")
+	if err := os.Remove(filePath); err != nil {
+		if os.IsNotExist(err) {
+			utils.ErrorResponse(c, http.StatusNotFound, "File not found")
+			return
+		}
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to delete file")
 		return
 	}
 
 	utils.SuccessResponse(c, http.StatusOK, nil, "Image deleted successfully")
 }
+

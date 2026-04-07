@@ -1,37 +1,23 @@
+version: "3.8"
+
 services:
   postgres:
     image: postgres:15-alpine
     container_name: baiturrahim-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: heulasuser
+      POSTGRES_PASSWORD: heulaspassword
+      POSTGRES_DB: baiturrahim_app
     volumes:
       - ../postgres-data:/var/lib/postgresql/data
     networks:
-      - baiturrahim-network
+      - traefik-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U heulasuser"]
       interval: 10s
       timeout: 5s
       retries: 5
-
-  minio:
-    image: minio/minio
-    container_name: baiturrahim-minio
-    restart: unless-stopped
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
-    ports:
-      - "127.0.0.1:9000:9000"
-      - "127.0.0.1:9001:9001"
-    volumes:
-      - minio_data:/data
-    networks:
-      - baiturrahim-network
 
   backend:
     build:
@@ -39,30 +25,25 @@ services:
       dockerfile: Dockerfile
     container_name: baiturrahim-backend
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:${BACKEND_PORT}:8080"
     environment:
       PORT: 8080
-      ENVIRONMENT: ${ENVIRONMENT}
-      DATABASE_URL: ${DATABASE_URL}
-      JWT_SECRET: ${JWT_SECRET}
-      FRONTEND_URL: ${FRONTEND_URL}
-      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://minio:9000}
-      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
-      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin123}
-      MINIO_BUCKET: ${MINIO_BUCKET:-uploads}
-      MINIO_OBJECT_URL: ${MINIO_OBJECT_URL:-http://minio:9000}
+      ENVIRONMENT: production
+      DATABASE_URL: postgres://heulasuser:heulaspassword@postgres:5432/baiturrahim_app?sslmode=disable
+      JWT_SECRET: CHANGE_THIS_TO_SECURE_RANDOM_STRING_MIN_32_CHARS
+      FRONTEND_URL: https://your-frontend-domain.com
     depends_on:
       postgres:
         condition: service_healthy
-      minio:
-        condition: service_started
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.your-domain.com`)"  # CHANGE THIS
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=8080"
     networks:
-      - baiturrahim-network
-
-volumes:
-  minio_data:
+      - traefik-network
 
 networks:
-  baiturrahim-network:
-    driver: bridge
+  traefik-network:
+    external: true

@@ -13,18 +13,6 @@ type Config struct {
 	JWTSecret   string
 	FrontendURL string
 	Environment string
-
-	// Default Admin Account
-	DefaultAdminUsername string
-	DefaultAdminEmail    string
-	DefaultAdminPassword string
-	DefaultAdminFullName string
-
-	MinioEndpoint  string
-	MinioAccessKey string
-	MinioSecretKey string
-	MinioBucket    string
-	MinioObjectURL string
 }
 
 func Load() *Config {
@@ -39,17 +27,6 @@ func Load() *Config {
 		JWTSecret:   getEnv("JWT_SECRET", "your-secret-key-change-in-production-min-32-characters"),
 		FrontendURL: getEnv("FRONTEND_URL", "http://localhost:3000"),
 		Environment: getEnv("ENVIRONMENT", "development"),
-
-		DefaultAdminUsername: getEnv("DEFAULT_ADMIN_USERNAME", "admin"),
-		DefaultAdminEmail:    getEnv("DEFAULT_ADMIN_EMAIL", "admin@masjidbaiturrahim.com"),
-		DefaultAdminPassword: getEnv("DEFAULT_ADMIN_PASSWORD", "admin123"),
-		DefaultAdminFullName: getEnv("DEFAULT_ADMIN_FULL_NAME", "Administrator"),
-
-		MinioEndpoint:  getEnv("MINIO_ENDPOINT", "http://minio:9000"),
-		MinioAccessKey: getEnv("MINIO_ACCESS_KEY", "minioadmin"),
-		MinioSecretKey: getEnv("MINIO_SECRET_KEY", "minioadmin123"),
-		MinioBucket:    getEnv("MINIO_BUCKET", "uploads"),
-		MinioObjectURL: getEnv("MINIO_OBJECT_URL", "http://minio:9000"),
 	}
 }
 

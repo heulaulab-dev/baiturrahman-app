@@ -13,6 +13,12 @@ type Config struct {
 	JWTSecret   string
 	FrontendURL string
 	Environment string
+
+	MinioEndpoint  string
+	MinioAccessKey string
+	MinioSecretKey string
+	MinioBucket    string
+	MinioObjectURL string
 }
 
 func Load() *Config {
@@ -27,6 +33,12 @@ func Load() *Config {
 		JWTSecret:   getEnv("JWT_SECRET", "your-secret-key-change-in-production-min-32-characters"),
 		FrontendURL: getEnv("FRONTEND_URL", "http://localhost:3000"),
 		Environment: getEnv("ENVIRONMENT", "development"),
+
+		MinioEndpoint:  getEnv("MINIO_ENDPOINT", ""),
+		MinioAccessKey: getEnv("MINIO_ACCESS_KEY", ""),
+		MinioSecretKey: getEnv("MINIO_SECRET_KEY", ""),
+		MinioBucket:    getEnv("MINIO_BUCKET", ""),
+		MinioObjectURL: getEnv("MINIO_OBJECT_URL", ""),
 	}
 }
 

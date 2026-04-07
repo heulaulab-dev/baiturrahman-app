@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, Plus, Edit, Trash2, GripVertical, Mail, Phone, Image as ImageIcon } from 'lucide-react';
+import { Users, Plus, Edit, Trash2, GripVertical, Mail, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +18,8 @@ import {
   useToggleStrukturStatus,
 } from '@/services/adminHooks';
 import type { Struktur } from '@/types';
+import { AdminImageUploadField } from '@/components/dashboard/AdminImageUploadField';
+import { resolveBackendAssetUrl } from '@/lib/utils';
 
 const roleOptions = [
   { value: 'ketua', label: 'Ketua' },
@@ -223,7 +225,7 @@ export function StrukturManagement() {
               <div className="flex flex-col items-center mb-4">
                 {struktur.photo_url ? (
                   <img
-                    src={struktur.photo_url}
+                    src={resolveBackendAssetUrl(struktur.photo_url) ?? struktur.photo_url}
                     alt={struktur.name}
                     className="w-20 h-20 rounded-full object-cover mb-3"
                   />
@@ -324,15 +326,14 @@ export function StrukturManagement() {
                     placeholder="Contoh: Bagian Dakwah"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="photo_url">URL Foto</Label>
-                  <Input
-                    id="photo_url"
-                    value={formData.photo_url}
-                    onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
-                    placeholder="https://example.com/photo.jpg"
-                  />
-                </div>
+                <AdminImageUploadField
+                  id="struktur-photo"
+                  label="Foto"
+                  value={formData.photo_url ?? ''}
+                  onChange={(url) => setFormData({ ...formData, photo_url: url })}
+                  module="structure"
+                  previewClassName="h-24 w-24 rounded-full border border-border object-cover"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">

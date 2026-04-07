@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Save, Eye, EyeOff, Image, Video, Loader2 } from 'lucide-react';
+import { Save, Eye, EyeOff, Video, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
+import { AdminImageUploadField } from '@/components/dashboard/AdminImageUploadField';
+import { resolveBackendAssetUrl } from '@/lib/utils';
 import { useTentangKami, useUpdateTentangKami } from '@/services/adminHooks';
 
 export function TentangKami() {
@@ -73,10 +75,10 @@ export function TentangKami() {
       {previewMode ? (
         /* Preview Mode */
         <div className="space-y-6 rounded-lg border border-border bg-card p-6 shadow-sm">
-          {formData.image_url && (
+          {resolveBackendAssetUrl(formData.image_url) && (
             <div className="h-64 w-full overflow-hidden rounded-lg bg-muted">
               <img
-                src={formData.image_url}
+                src={resolveBackendAssetUrl(formData.image_url)!}
                 alt="Tentang Kami"
                 className="w-full h-full object-cover"
               />
@@ -144,19 +146,14 @@ export function TentangKami() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="image_url">URL Gambar Utama</Label>
-              <div className="relative">
-                <Image className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
-                  className="pl-10"
-                />
-              </div>
-            </div>
+            <AdminImageUploadField
+              id="tentang-image"
+              label="Gambar utama"
+              value={formData.image_url}
+              onChange={(url) => setFormData({ ...formData, image_url: url })}
+              module="mosque"
+              description="Gambar untuk bagian Tentang Kami di situs publik."
+            />
 
             <div className="space-y-2">
               <Label htmlFor="video_url">URL Video (YouTube, dll)</Label>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Calendar, Plus, Edit, Trash2, MoreHorizontal, Filter, Search } from 'lucide-react';
+import { AdminImageUploadField } from '@/components/dashboard/AdminImageUploadField';
 import { StatusBadge } from './StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -307,15 +308,13 @@ export function HistoryManagement() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="image_url">URL Gambar</Label>
-                <Input
-                  id="image_url"
-                  value={formData.image_url || ''}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
+              <AdminImageUploadField
+                id="history-image"
+                label="Gambar (opsional)"
+                value={formData.image_url ?? ''}
+                onChange={(url) => setFormData({ ...formData, image_url: url })}
+                module="content"
+              />
 
               <div className="flex items-center space-x-2">
                 <Switch

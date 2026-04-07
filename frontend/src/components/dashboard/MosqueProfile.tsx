@@ -9,8 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useMosqueInfo } from '@/services/hooks';
+import { AdminImageUploadField } from '@/components/dashboard/AdminImageUploadField';
 import { useUpdateMosqueInfo, useDonationStats, useAdminUsers, useAdminEvents } from '@/services/adminHooks';
 import type { MosqueInfo } from '@/types';
+import { resolveBackendAssetUrl } from '@/lib/utils';
 
 function normalizeSocialMedia(sm: MosqueInfo['social_media'] | undefined) {
   return {
@@ -122,14 +124,22 @@ export function MosqueProfile() {
           /* Preview Mode */
           <Card>
             <CardContent className="p-6 space-y-6">
-              {formData.banner_url && (
+              {resolveBackendAssetUrl(formData.banner_url) && (
                 <div className="w-full h-48 rounded-lg overflow-hidden">
-                  <img src={formData.banner_url} alt="Banner" className="w-full h-full object-cover" />
+                  <img
+                    src={resolveBackendAssetUrl(formData.banner_url)!}
+                    alt="Banner"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               )}
               <div className="flex items-start gap-4">
-                {formData.logo_url && (
-                  <img src={formData.logo_url} alt="Logo" className="w-20 h-20 rounded-lg object-cover" />
+                {resolveBackendAssetUrl(formData.logo_url) && (
+                  <img
+                    src={resolveBackendAssetUrl(formData.logo_url)!}
+                    alt="Logo"
+                    className="w-20 h-20 rounded-lg object-cover"
+                  />
                 )}
                 <div>
                   <h1 className="text-2xl font-bold">{formData.name}</h1>
@@ -382,24 +392,21 @@ export function MosqueProfile() {
                 <div className="space-y-4">
                   <h4 className="text-sm font-medium tracking-wider text-muted-foreground uppercase">Gambar</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="logo_url">URL Logo</Label>
-                      <Input
-                        id="logo_url"
-                        value={formData.logo_url}
-                        onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                        placeholder="https://example.com/logo.png"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="banner_url">URL Banner</Label>
-                      <Input
-                        id="banner_url"
-                        value={formData.banner_url}
-                        onChange={(e) => setFormData({ ...formData, banner_url: e.target.value })}
-                        placeholder="https://example.com/banner.jpg"
-                      />
-                    </div>
+                    <AdminImageUploadField
+                      id="mosque-logo"
+                      label="Logo"
+                      value={formData.logo_url}
+                      onChange={(url) => setFormData({ ...formData, logo_url: url })}
+                      module="mosque"
+                    />
+                    <AdminImageUploadField
+                      id="mosque-banner"
+                      label="Banner"
+                      value={formData.banner_url}
+                      onChange={(url) => setFormData({ ...formData, banner_url: url })}
+                      module="mosque"
+                      previewClassName="max-h-32 w-full rounded-md border border-border object-cover"
+                    />
                   </div>
                 </div>
 

@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { AdminPdfUploadField } from '@/components/dashboard/AdminPdfUploadField'
 import { StatusBadge } from '@/components/dashboard/StatusBadge'
 import {
   useAdminKhutbahs,
@@ -290,15 +291,13 @@ export function KhutbahManagement() {
                 </Select>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="kh-file">URL file PDF / lampiran (opsional)</Label>
-              <Input
-                id="kh-file"
-                value={form.file_url ?? ''}
-                onChange={(ev) => setForm((f) => ({ ...f, file_url: ev.target.value || null }))}
-                placeholder="/uploads/… atau https://…"
-              />
-            </div>
+            <AdminPdfUploadField
+              id="kh-file"
+              label="Lampiran PDF (opsional)"
+              value={form.file_url ?? ''}
+              onChange={(url) => setForm((f) => ({ ...f, file_url: url || null }))}
+              module="khutbah"
+            />
             <div className="space-y-2">
               <Label htmlFor="kh-content">Catatan / ringkasan (opsional)</Label>
               <Textarea

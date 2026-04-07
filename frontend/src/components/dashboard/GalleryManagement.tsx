@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
 	ArrowDown,
 	ArrowUp,
@@ -33,9 +33,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { AdminImageUploadField } from '@/components/dashboard/AdminImageUploadField';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
 import { resolveBackendAssetUrl } from '@/lib/utils';
-import { uploadAdminImage } from '@/services/adminUploadService';
 import {
 	useAdminGalleryItems,
 	useCreateGalleryItem,
@@ -75,11 +75,9 @@ function itemToForm(item: GalleryItem): FormState {
 }
 
 export function GalleryManagement() {
-	const fileRef = useRef<HTMLInputElement>(null);
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [editing, setEditing] = useState<GalleryItem | null>(null);
 	const [form, setForm] = useState<FormState>(emptyForm);
-	const [uploading, setUploading] = useState(false);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const { data: items = [], isLoading } = useAdminGalleryItems();
@@ -120,22 +118,6 @@ export function GalleryManagement() {
 			toast.success('Urutan diperbarui');
 		} catch {
 			toast.error('Gagal mengubah urutan');
-		}
-	};
-
-	const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		e.target.value = '';
-		if (!file) return;
-		setUploading(true);
-		try {
-			const url = await uploadAdminImage(file);
-			setForm((f) => ({ ...f, image_url: url }));
-			toast.success('Gambar diunggah');
-		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Gagal mengunggah');
-		} finally {
-			setUploading(false);
 		}
 	};
 
@@ -344,33 +326,14 @@ export function GalleryManagement() {
 								}
 							/>
 						</div>
-						<div className="space-y-2">
-							<Label>Gambar</Label>
-							<input
-								ref={fileRef}
-								type="file"
-								accept="image/*"
-								className="hidden"
-								onChange={handleFile}
-							/>
-							<div className="flex flex-wrap items-center gap-2">
-								<Button
-									type="button"
-									variant="outline"
-									onClick={() => fileRef.current?.click()}
-									disabled={uploading}
-								>
-									{uploading ? 'Mengunggah…' : 'Pilih berkas'}
-								</Button>
-								<Input
-									placeholder="/uploads/… atau URL"
-									value={form.image_url}
-									onChange={(e) =>
-										setForm((f) => ({ ...f, image_url: e.target.value }))
-									}
-								/>
-							</div>
-						</div>
+						<AdminImageUploadField
+							id="g-image"
+							label="Gambar"
+							value={form.image_url}
+							onChange={(url) => setForm((f) => ({ ...f, image_url: url }))}
+							module="gallery"
+							description="Unggah gambar untuk item galeri (JPG/PNG/GIF/WebP, maks. 5MB)."
+						/>
 						<div className="space-y-2">
 							<Label htmlFor="g-link">Tautan saat diklik (opsional)</Label>
 							<Input

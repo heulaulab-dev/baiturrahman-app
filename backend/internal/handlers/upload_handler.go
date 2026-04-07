@@ -18,7 +18,62 @@ import (
 	"github.com/google/uuid"
 )
 
-const MaxUploadSize = 5 * 1024 * 1024 // 5MB
+const (
+	MaxImageUploadSize = 5 * 1024 * 1024  // 5MB
+	MaxPDFUploadSize   = 15 * 1024 * 1024 // 15MB
+)
+
+// uploadModuleAliases normalize Indonesian / synonym labels to canonical folder names.
+var uploadModuleAliases = map[string]string{
+	"donations":  "donate",
+	"donation":   "donate",
+	"pengumuman": "announcements",
+	"kegiatan":   "events",
+	"news":       "berita",
+	"sections":   "content",
+	"konten":     "content",
+	"masjid":     "mosque",
+	"struktur":   "structure",
+	"payment":    "donate",
+	"qris":       "donate",
+	"qr":         "donate",
+}
+
+var allowedUploadModules = map[string]struct{}{
+	"general": {}, "donate": {}, "content": {}, "berita": {}, "events": {},
+	"announcements": {}, "structure": {}, "mosque": {}, "khutbah": {}, "gallery": {},
+}
+
+func normalizeUploadModule(raw string) string {
+	s := strings.ToLower(strings.TrimSpace(raw))
+	var b strings.Builder
+	for _, r := range s {
+		switch {
+		case r >= 'a' && r <= 'z', r >= '0' && r <= '9', r == '-':
+			b.WriteRune(r)
+		}
+	}
+	out := b.String()
+	if out == "" {
+		return "general"
+	}
+	if alias, ok := uploadModuleAliases[out]; ok {
+		out = alias
+	}
+	if _, ok := allowedUploadModules[out]; !ok {
+		return "general"
+	}
+	return out
+}
+
+func isImageExt(ext string) bool {
+	switch ext {
+	case ".jpg", ".jpeg", ".png", ".gif", ".webp":
+		return true
+	default:
+		return false
+	}
+}
 
 func (h *Handler) UploadImage(c *gin.Context) {
 	file, err := c.FormFile("file")
@@ -27,22 +82,21 @@ func (h *Handler) UploadImage(c *gin.Context) {
 		return
 	}
 
-	if file.Size > MaxUploadSize {
-		utils.ErrorResponse(c, http.StatusBadRequest, "File size exceeds 5MB limit")
+	ext := strings.ToLower(filepath.Ext(file.Filename))
+	var maxSize int64
+	switch {
+	case ext == ".pdf":
+		maxSize = MaxPDFUploadSize
+	case isImageExt(ext):
+		maxSize = MaxImageUploadSize
+	default:
+		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid file type. Allowed: JPG, PNG, GIF, WebP, or PDF")
 		return
 	}
 
-	ext := strings.ToLower(filepath.Ext(file.Filename))
-	allowedExts := []string{".jpg", ".jpeg", ".png", ".gif", ".webp"}
-	allowed := false
-	for _, allowedExt := range allowedExts {
-		if ext == allowedExt {
-			allowed = true
-			break
-		}
-	}
-	if !allowed {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid file type. Only images are allowed")
+	if file.Size > maxSize {
+		limitMB := maxSize / (1024 * 1024)
+		utils.ErrorResponse(c, http.StatusBadRequest, fmt.Sprintf("File size exceeds %dMB limit", limitMB))
 		return
 	}
 
@@ -64,38 +118,53 @@ func (h *Handler) UploadImage(c *gin.Context) {
 		return
 	}
 
-	optimizedPath, err := services.OptimizeImage(tmpPath)
-	if err != nil {
-		optimizedPath = tmpPath
-	} else {
-		defer func() { _ = os.Remove(optimizedPath) }()
+	if isImageExt(ext) {
+		if _, err := services.OptimizeImage(tmpPath); err != nil {
+			// keep original bytes if optimization fails
+		}
 	}
 
-	objectKey := fmt.Sprintf("%s%s", uuid.New().String(), ext)
+	module := normalizeUploadModule(c.PostForm("module"))
+	objectKey := fmt.Sprintf("%s/%s%s", module, uuid.New().String(), ext)
 	contentType := mime.TypeByExtension(ext)
 	if contentType == "" {
 		contentType = "application/octet-stream"
 	}
 
 	ctx := c.Request.Context()
-	if err := h.Minio.PutObject(ctx, objectKey, optimizedPath, contentType); err != nil {
+	if err := h.Minio.PutObject(ctx, objectKey, tmpPath, contentType); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to upload to storage")
 		return
 	}
 
 	publicURL := h.Minio.PublicObjectURL(objectKey)
-	utils.SuccessResponse(c, http.StatusOK, gin.H{"url": publicURL}, "Image uploaded successfully")
+	utils.SuccessResponse(c, http.StatusOK, gin.H{"url": publicURL}, "File uploaded successfully")
 }
 
-func objectKeyFromImageURL(raw string) (string, error) {
+func extractObjectKeyFromURLPath(p string, bucket string) (string, error) {
+	p = strings.Trim(path.Clean("/"+strings.ReplaceAll(p, "\\", "/")), "/")
+	if p == "" || p == "." {
+		return "", errors.New("empty path")
+	}
+	parts := strings.Split(p, "/")
+	if len(parts) >= 2 && parts[0] == bucket {
+		return strings.Join(parts[1:], "/"), nil
+	}
+	if len(parts) == 1 {
+		return parts[0], nil
+	}
+	return strings.Join(parts, "/"), nil
+}
+
+func objectKeyFromImageURL(raw string, bucket string) (string, error) {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
 		return "", errors.New("empty url")
 	}
 
 	if u, err := url.Parse(raw); err == nil && u.Path != "" {
-		key := path.Base(u.Path)
-		if key != "" && key != "." && key != "/" {
+		key, err := extractObjectKeyFromURLPath(u.Path, bucket)
+		if err == nil && key != "" {
 			return key, nil
 		}
 	}
@@ -107,8 +176,8 @@ func objectKeyFromImageURL(raw string) (string, error) {
 	if i := strings.IndexByte(beforeQuery, '#'); i >= 0 {
 		beforeQuery = beforeQuery[:i]
 	}
-	key := path.Base(strings.ReplaceAll(beforeQuery, "\\", "/"))
-	if key == "" || key == "." {
+	key, err := extractObjectKeyFromURLPath(beforeQuery, bucket)
+	if err != nil || key == "" {
 		return "", errors.New("could not derive object key")
 	}
 	return key, nil
@@ -124,7 +193,7 @@ func (h *Handler) DeleteImage(c *gin.Context) {
 		return
 	}
 
-	objectKey, err := objectKeyFromImageURL(req.URL)
+	objectKey, err := objectKeyFromImageURL(req.URL, h.Minio.Bucket())
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid image URL")
 		return

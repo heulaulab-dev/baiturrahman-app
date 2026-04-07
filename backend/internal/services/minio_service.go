@@ -48,6 +48,11 @@ func NewMinioService(cfg *config.Config) (*MinioService, error) {
 	}, nil
 }
 
+// Bucket returns the configured bucket name (first path segment in public object URLs).
+func (s *MinioService) Bucket() string {
+	return s.bucket
+}
+
 // PublicObjectURL returns the browser-accessible URL for an object key (bucket name is uploads in path).
 func (s *MinioService) PublicObjectURL(objectKey string) string {
 	return fmt.Sprintf("%s/%s/%s", s.ObjectBaseURL, s.bucket, objectKey)

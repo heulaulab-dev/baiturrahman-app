@@ -19,6 +19,12 @@ type Config struct {
 	MinioSecretKey string
 	MinioBucket    string
 	MinioObjectURL string
+
+	// Default Admin Account
+	DefaultAdminUsername string
+	DefaultAdminEmail    string
+	DefaultAdminPassword string
+	DefaultAdminFullName string
 }
 
 func Load() *Config {
@@ -39,6 +45,11 @@ func Load() *Config {
 		MinioSecretKey: getEnv("MINIO_SECRET_KEY", ""),
 		MinioBucket:    getEnv("MINIO_BUCKET", ""),
 		MinioObjectURL: getEnv("MINIO_OBJECT_URL", ""),
+
+		DefaultAdminUsername: getEnv("DEFAULT_ADMIN_USERNAME", "admin"),
+		DefaultAdminEmail:    getEnv("DEFAULT_ADMIN_EMAIL", "admin@masjidbaiturrahim.com"),
+		DefaultAdminPassword: getEnv("DEFAULT_ADMIN_PASSWORD", "admin123"),
+		DefaultAdminFullName: getEnv("DEFAULT_ADMIN_FULL_NAME", "Administrator"),
 	}
 }
 

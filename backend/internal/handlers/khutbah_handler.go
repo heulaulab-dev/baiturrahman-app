@@ -1,13 +1,14 @@
 package handlers
 
 import (
-	"net/http"
 	"masjid-baiturrahim-backend/internal/models"
 	"masjid-baiturrahim-backend/internal/utils"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func (h *Handler) GetKhutbahs(c *gin.Context) {
@@ -41,6 +42,10 @@ func (h *Handler) GetLatestKhutbah(c *gin.Context) {
 	if err := h.DB.Where("status = ?", models.KhutbahStatusPublished).
 		Order("date DESC").
 		First(&khutbah).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utils.SuccessResponse(c, http.StatusOK, nil, "")
+			return
+		}
 		utils.ErrorResponse(c, http.StatusNotFound, "No khutbah found")
 		return
 	}

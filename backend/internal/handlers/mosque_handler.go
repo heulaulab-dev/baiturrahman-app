@@ -1,16 +1,22 @@
 package handlers
 
 import (
-	"net/http"
 	"masjid-baiturrahim-backend/internal/models"
 	"masjid-baiturrahim-backend/internal/utils"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func (h *Handler) GetMosqueInfo(c *gin.Context) {
 	var mosque models.MosqueInfo
 	if err := h.DB.First(&mosque).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// Landing and shared sections can render fallback content when mosque profile is not set yet.
+			utils.SuccessResponse(c, http.StatusOK, nil, "")
+			return
+		}
 		utils.ErrorResponse(c, http.StatusNotFound, "Mosque information not found")
 		return
 	}
@@ -37,4 +43,3 @@ func (h *Handler) UpdateMosqueInfo(c *gin.Context) {
 
 	utils.SuccessResponse(c, http.StatusOK, mosque, "Mosque information updated successfully")
 }
-

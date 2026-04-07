@@ -8,6 +8,18 @@ const nextConfig = {
 				protocol: 'https',
 				hostname: '**',
 			},
+			{
+				protocol: 'http',
+				hostname: 'minio',
+				port: '9000',
+				pathname: '/**',
+			},
+			{
+				protocol: 'http',
+				hostname: 'localhost',
+				port: '9000',
+				pathname: '/**',
+			},
 		],
 	},
 	webpack(config) {

@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
 	"masjid-baiturrahim-backend/config"
 	"masjid-baiturrahim-backend/internal/database"
 	"masjid-baiturrahim-backend/internal/handlers"
 	"masjid-baiturrahim-backend/internal/middleware"
+	"masjid-baiturrahim-backend/internal/services"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -39,6 +41,14 @@ func main() {
 		log.Printf("Warning: Failed to seed default mosque info: %v", err)
 	}
 
+	minioSvc, err := services.NewMinioService(cfg)
+	if err != nil {
+		log.Fatal("Failed to init MinIO:", err)
+	}
+	if err := minioSvc.EnsureBucketAndPolicy(context.Background()); err != nil {
+		log.Fatal("Failed to ensure MinIO bucket/policy:", err)
+	}
+
 	// Initialize Gin router
 	r := gin.Default()
 
@@ -64,7 +74,7 @@ func main() {
 	})
 
 	// Initialize handlers
-	h := handlers.New(db)
+	h := handlers.New(db, minioSvc)
 
 	// Public uploaded images (same paths as returned by POST /api/v1/admin/upload)
 	r.Static("/uploads", "./uploads")

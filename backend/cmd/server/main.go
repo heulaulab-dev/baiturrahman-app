@@ -34,10 +34,7 @@ func main() {
 	// Seed default admin user if not exists
 	if err := database.SeedDefaultAdmin(db); err != nil {
 		log.Printf("Warning: Failed to seed default admin: %v", err)
-	}
-	if err := database.SeedDefaultMosqueInfo(db); err != nil {
-		log.Printf("Warning: Failed to seed default mosque info: %v", err)
-	}
+	}-
 
 	// Initialize Gin router
 	r := gin.Default()
@@ -66,9 +63,6 @@ func main() {
 	// Initialize handlers
 	h := handlers.New(db)
 
-	// Public uploaded images (same paths as returned by POST /api/v1/admin/upload)
-	r.Static("/uploads", "./uploads")
-
 	// API v1 routes
 	v1 := r.Group("/api/v1")
 	{
@@ -79,10 +73,7 @@ func main() {
 			auth := public.Group("/auth")
 			{
 				auth.POST("/login", h.Login)
-				auth.POST("/register", h.Register)
 				auth.POST("/refresh", h.Refresh)
-				auth.POST("/forgot-password", h.ForgotPassword)
-				auth.POST("/reset-password", h.ResetPassword)
 			}
 
 			// Public endpoints
@@ -91,26 +82,11 @@ func main() {
 			public.GET("/prayer-times", h.GetPrayerTimesByDate)
 			public.GET("/prayer-times/month", h.GetPrayerTimesByMonth)
 			public.GET("/content", h.GetContentSections)
-			public.GET("/content/tentang-kami", h.GetTentangKami)
 			public.GET("/events", h.GetEvents)
 			public.GET("/events/:slug", h.GetEventBySlug)
 			public.GET("/announcements", h.GetAnnouncements)
 			public.POST("/donations", h.CreateDonation)
-			public.POST("/reservations", h.CreateReservation)
 			public.GET("/payment-methods", h.GetPaymentMethods)
-
-			// History Entries (public)
-			public.GET("/history-entries", h.GetHistoryEntries)
-			public.GET("/history-entries/date-range", h.GetHistoryEntriesByDateRange)
-
-			// Strukturs (public)
-			public.GET("/strukturs", h.GetPublicStrukturs)
-
-			// Khutbah (public)
-			public.GET("/khutbahs/latest", h.GetLatestKhutbah)
-			public.GET("/khutbahs/archive", h.GetKhutbahArchive)
-
-			public.GET("/gallery/items", h.GetPublicGalleryItems)
 		}
 
 		// Protected routes (require authentication)
@@ -149,10 +125,6 @@ func main() {
 			admin.PUT("/content/reorder", h.ReorderContentSections)
 			admin.PUT("/content/:id/toggle", h.ToggleContentSection)
 
-			// Tentang Kami (About Us) - using ContentSection
-			admin.GET("/content/tentang-kami", h.GetTentangKami)
-			admin.PUT("/content/tentang-kami", h.UpdateTentangKami)
-
 			// Events
 			admin.GET("/events", h.GetEvents)
 			admin.POST("/events", h.CreateEvent)
@@ -164,32 +136,6 @@ func main() {
 			admin.POST("/announcements", h.CreateAnnouncement)
 			admin.PUT("/announcements/:id", h.UpdateAnnouncement)
 			admin.DELETE("/announcements/:id", h.DeleteAnnouncement)
-
-			// Khutbah
-			admin.GET("/khutbahs", h.GetKhutbahs)
-			admin.GET("/khutbahs/:id", h.GetKhutbahByID)
-			admin.POST("/khutbahs", h.CreateKhutbah)
-			admin.PUT("/khutbahs/:id", h.UpdateKhutbah)
-			admin.DELETE("/khutbahs/:id", h.DeleteKhutbah)
-			admin.PUT("/khutbahs/:id/toggle", h.ToggleKhutbahStatus)
-
-			// History Entries
-			admin.GET("/history-entries", h.GetHistoryEntries)
-			admin.GET("/history-entries/:id", h.GetHistoryEntryByID)
-			admin.POST("/history-entries", h.CreateHistoryEntry)
-			admin.PUT("/history-entries/:id", h.UpdateHistoryEntry)
-			admin.DELETE("/history-entries/:id", h.DeleteHistoryEntry)
-			admin.PUT("/history-entries/:id/toggle", h.ToggleHistoryEntryStatus)
-
-			// Struktur
-			admin.GET("/strukturs", h.GetStrukturs)
-			admin.GET("/strukturs/:id", h.GetStrukturByID)
-			admin.POST("/strukturs", h.CreateStruktur)
-			admin.PUT("/strukturs/:id", h.UpdateStruktur)
-			admin.DELETE("/strukturs/:id", h.DeleteStruktur)
-			admin.PUT("/strukturs/reorder", h.ReorderStrukturs)
-			admin.PUT("/strukturs/:id/toggle", h.ToggleStrukturStatus)
-			admin.GET("/strukturs/active-count", h.GetActiveStruktursCount)
 
 			// Donations
 			admin.GET("/donations", h.GetDonations)
@@ -217,30 +163,6 @@ func main() {
 			admin.POST("/users", h.CreateUser)
 			admin.PUT("/users/:id", h.UpdateUser)
 			admin.DELETE("/users/:id", h.DeleteUser)
-
-			// Reservations (static /create before :id so "create" is never captured as an id)
-			admin.POST("/reservations/create", h.CreateReservationAdmin)
-			admin.GET("/reservations", h.GetReservations)
-			admin.GET("/reservations/:id", h.GetReservationByID)
-			admin.PUT("/reservations/:id", h.UpdateReservation)
-			admin.DELETE("/reservations/:id", h.DeleteReservation)
-
-			// Inventaris
-			admin.GET("/inventaris/aset-tetap", h.GetAsetTetap)
-			admin.POST("/inventaris/aset-tetap", h.CreateAsetTetap)
-			admin.PUT("/inventaris/aset-tetap/:id", h.UpdateAsetTetap)
-			admin.DELETE("/inventaris/aset-tetap/:id", h.DeleteAsetTetap)
-			admin.GET("/inventaris/barang", h.GetBarangTidakTetap)
-			admin.POST("/inventaris/barang", h.CreateBarangTidakTetap)
-			admin.PUT("/inventaris/barang/:id", h.UpdateBarangTidakTetap)
-			admin.DELETE("/inventaris/barang/:id", h.DeleteBarangTidakTetap)
-
-			admin.GET("/gallery/items", h.GetAdminGalleryItems)
-			admin.POST("/gallery/items", h.CreateGalleryItem)
-			admin.PUT("/gallery/items/reorder", h.ReorderGalleryItems)
-			admin.PUT("/gallery/items/:id", h.UpdateGalleryItem)
-			admin.PUT("/gallery/items/:id/toggle", h.ToggleGalleryItemPublished)
-			admin.DELETE("/gallery/items/:id", h.DeleteGalleryItem)
 		}
 	}
 
@@ -251,9 +173,6 @@ func main() {
 
 	// Start server
 	log.Printf("Server starting on :%s", cfg.Port)
-	if cfg.Environment != "production" {
-		log.Printf("Reservations API: POST /api/v1/admin/reservations/create (auth), GET /api/v1/admin/reservations")
-	}
 	if err := r.Run(":" + cfg.Port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}

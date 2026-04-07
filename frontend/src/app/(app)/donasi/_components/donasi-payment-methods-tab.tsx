@@ -64,7 +64,7 @@ export default function DonasiPaymentMethodsTab() {
 		if (!validateQrFile(file)) return;
 		setNewQrUploading(true);
 		try {
-			const url = await uploadAdminImage(file);
+			const url = await uploadAdminImage(file, 'donate');
 			setNewMethodQrStorageUrl(url);
 			toast.success('Gambar QR berhasil diunggah');
 		} catch (e) {
@@ -80,7 +80,7 @@ export default function DonasiPaymentMethodsTab() {
 		if (!validateQrFile(file)) return;
 		setEditQrUploading(true);
 		try {
-			const url = await uploadAdminImage(file);
+			const url = await uploadAdminImage(file, 'donate');
 			setEditMethodQrStorageUrl(url);
 			toast.success('Gambar QR berhasil diunggah');
 		} catch (e) {

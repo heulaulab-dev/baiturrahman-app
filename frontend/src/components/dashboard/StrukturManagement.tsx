@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Users, Plus, Edit, Trash2, GripVertical, Mail, Phone, Image as ImageIcon } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Users, Plus, Edit, Trash2, GripVertical, Mail, Phone, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +18,8 @@ import {
   useToggleStrukturStatus,
 } from '@/services/adminHooks';
 import type { Struktur } from '@/types';
+import { uploadAdminImage } from '@/services/adminUploadService';
+import { resolveBackendAssetUrl } from '@/lib/utils';
 
 const roleOptions = [
   { value: 'ketua', label: 'Ketua' },
@@ -77,6 +79,8 @@ export function StrukturManagement() {
     social_media: {},
     is_active: true,
   });
+  const photoFileRef = useRef<HTMLInputElement>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const { data, isLoading } = useAdminStrukturs();
 
@@ -168,6 +172,22 @@ export function StrukturManagement() {
     }
   };
 
+  const handlePhotoFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingPhoto(true);
+    try {
+      const url = await uploadAdminImage(file, 'struktur');
+      setFormData((f) => ({ ...f, photo_url: url }));
+      toast.success('Foto diunggah');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengunggah foto');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   return (
     <>
       <div className="flex items-center justify-between mb-6">
@@ -221,9 +241,10 @@ export function StrukturManagement() {
               </div>
 
               <div className="flex flex-col items-center mb-4">
-                {struktur.photo_url ? (
+                {resolveBackendAssetUrl(struktur.photo_url) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={struktur.photo_url}
+                    src={resolveBackendAssetUrl(struktur.photo_url)!}
                     alt={struktur.name}
                     className="w-20 h-20 rounded-full object-cover mb-3"
                   />
@@ -314,25 +335,63 @@ export function StrukturManagement() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="department">Departemen</Label>
-                  <Input
-                    id="department"
-                    value={formData.department}
-                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                    placeholder="Contoh: Bagian Dakwah"
-                  />
+              <div className="space-y-2">
+                <Label htmlFor="department">Departemen</Label>
+                <Input
+                  id="department"
+                  value={formData.department}
+                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                  placeholder="Contoh: Bagian Dakwah"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Foto (opsional)</Label>
+                <input
+                  ref={photoFileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePhotoFile}
+                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    disabled={uploadingPhoto}
+                    onClick={() => photoFileRef.current?.click()}
+                  >
+                    {uploadingPhoto ? (
+                      <Loader2 className="size-4 animate-spin" aria-hidden />
+                    ) : (
+                      <ImageIcon className="size-4" aria-hidden />
+                    )}
+                    {uploadingPhoto ? 'Mengunggah…' : 'Unggah foto'}
+                  </Button>
+                  {formData.photo_url ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground"
+                      onClick={() => setFormData({ ...formData, photo_url: '' })}
+                    >
+                      Hapus foto
+                    </Button>
+                  ) : null}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="photo_url">URL Foto</Label>
-                  <Input
-                    id="photo_url"
-                    value={formData.photo_url}
-                    onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
-                    placeholder="https://example.com/photo.jpg"
+                {resolveBackendAssetUrl(formData.photo_url) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={resolveBackendAssetUrl(formData.photo_url)!}
+                    alt="Pratinjau"
+                    className="mt-2 h-24 w-24 rounded-full border border-border object-cover"
                   />
-                </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">JPG/PNG/WebP, maks. 5MB.</p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">

@@ -22,7 +22,7 @@ type Khutbah struct {
 	Muadzin     *string       `gorm:"type:varchar(255)" json:"muadzin,omitempty"`
 	Date        time.Time     `gorm:"type:date;not null;index" json:"date"`
 	Content     *string       `gorm:"type:text" json:"content,omitempty"`
-	FileURL     *string       `gorm:"type:varchar(500)" json:"file_url,omitempty"`
+	FileURL     *string       `gorm:"type:text" json:"file_url,omitempty"`
 	Status      KhutbahStatus  `gorm:"type:varchar(50);default:'draft';not null;index" json:"status"`
 	CreatedBy   uuid.UUID     `gorm:"type:uuid;not null;index" json:"created_by"`
 	CreatedAt   time.Time     `json:"created_at"`

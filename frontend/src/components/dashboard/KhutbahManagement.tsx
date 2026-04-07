@@ -295,9 +295,12 @@ export function KhutbahManagement() {
               <Input
                 id="kh-file"
                 value={form.file_url ?? ''}
-                onChange={(ev) => setForm((f) => ({ ...f, file_url: ev.target.value || null }))}
-                placeholder="/uploads/… atau https://…"
+                onChange={(ev) => setForm((f) => ({ ...f, file_url: ev.target.value.trim() || null }))}
+                placeholder="https://… (tautan langsung ke berkas PDF atau dokumen)"
               />
+              <p className="text-xs text-muted-foreground">
+                Tampil di beranda sebagai tombol unduh. Unggah PDF ke penyimpanan Anda lalu tempel URL publiknya di sini.
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="kh-content">Catatan / ringkasan (opsional)</Label>

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Calendar, Plus, Edit, Trash2, MoreHorizontal, Filter, Search } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Calendar, Plus, Edit, Trash2, Search, ImageIcon, Loader2 } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,8 @@ import {
   useToggleHistoryEntryStatus,
 } from '@/services/adminHooks';
 import type { HistoryEntry } from '@/types';
+import { uploadAdminImage } from '@/services/adminUploadService';
+import { resolveBackendAssetUrl } from '@/lib/utils';
 
 const categoryOptions = [
   { value: 'milestone', label: 'Milestone' },
@@ -55,6 +57,8 @@ export function HistoryManagement() {
     image_url: '',
     is_published: false,
   });
+  const imageFileRef = useRef<HTMLInputElement>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const { data, isLoading } = useAdminHistoryEntries({
     status: filterStatus === 'all' ? undefined : filterStatus,
@@ -136,6 +140,22 @@ export function HistoryManagement() {
       toast.success('Status berhasil diperbarui');
     } catch (error) {
       toast.error('Gagal memperbarui status');
+    }
+  };
+
+  const handleHistoryImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingImage(true);
+    try {
+      const url = await uploadAdminImage(file, 'history');
+      setFormData((f) => ({ ...f, image_url: url }));
+      toast.success('Gambar diunggah');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengunggah gambar');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -308,13 +328,52 @@ export function HistoryManagement() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="image_url">URL Gambar</Label>
-                <Input
-                  id="image_url"
-                  value={formData.image_url || ''}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
+                <Label>Gambar (opsional)</Label>
+                <input
+                  ref={imageFileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleHistoryImageFile}
                 />
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    disabled={uploadingImage}
+                    onClick={() => imageFileRef.current?.click()}
+                  >
+                    {uploadingImage ? (
+                      <Loader2 className="size-4 animate-spin" aria-hidden />
+                    ) : (
+                      <ImageIcon className="size-4" aria-hidden />
+                    )}
+                    {uploadingImage ? 'Mengunggah…' : 'Unggah gambar'}
+                  </Button>
+                  {formData.image_url ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground"
+                      onClick={() => setFormData({ ...formData, image_url: '' })}
+                    >
+                      Hapus gambar
+                    </Button>
+                  ) : null}
+                </div>
+                {resolveBackendAssetUrl(formData.image_url) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={resolveBackendAssetUrl(formData.image_url)!}
+                    alt="Pratinjau"
+                    className="mt-2 h-28 max-w-full rounded-md border border-border object-cover"
+                  />
+                ) : (
+                  <p className="text-xs text-muted-foreground">JPG/PNG/Webp, maks. 5MB.</p>
+                )}
               </div>
 
               <div className="flex items-center space-x-2">

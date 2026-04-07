@@ -129,7 +129,7 @@ export function GalleryManagement() {
 		if (!file) return;
 		setUploading(true);
 		try {
-			const url = await uploadAdminImage(file);
+			const url = await uploadAdminImage(file, 'gallery');
 			setForm((f) => ({ ...f, image_url: url }));
 			toast.success('Gambar diunggah');
 		} catch (err) {
@@ -362,14 +362,33 @@ export function GalleryManagement() {
 								>
 									{uploading ? 'Mengunggah…' : 'Pilih berkas'}
 								</Button>
-								<Input
-									placeholder="/uploads/… atau URL"
-									value={form.image_url}
-									onChange={(e) =>
-										setForm((f) => ({ ...f, image_url: e.target.value }))
-									}
-								/>
+								{form.image_url ? (
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										className="text-muted-foreground"
+										onClick={() => setForm((f) => ({ ...f, image_url: '' }))}
+									>
+										Hapus gambar
+									</Button>
+								) : null}
 							</div>
+							{resolveBackendAssetUrl(form.image_url) ? (
+								<div className="relative mt-2 h-40 w-full max-w-sm overflow-hidden rounded-md border bg-muted">
+									<Image
+										src={resolveBackendAssetUrl(form.image_url)!}
+										alt=""
+										fill
+										sizes="(max-width: 384px) 100vw, 384px"
+										className="object-cover"
+									/>
+								</div>
+							) : (
+								<p className="text-xs text-muted-foreground">
+									Wajib mengunggah gambar (JPG/PNG/WebP, maks. 5MB).
+								</p>
+							)}
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="g-link">Tautan saat diklik (opsional)</Label>

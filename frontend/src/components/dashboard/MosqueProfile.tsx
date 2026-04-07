@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Save, Loader2, Eye } from 'lucide-react';
+import { Save, Loader2, Eye, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import { useMosqueInfo } from '@/services/hooks';
 import { useUpdateMosqueInfo, useDonationStats, useAdminUsers, useAdminEvents } from '@/services/adminHooks';
+import { uploadAdminImage } from '@/services/adminUploadService';
+import { resolveBackendAssetUrl } from '@/lib/utils';
 import type { MosqueInfo } from '@/types';
 
 function normalizeSocialMedia(sm: MosqueInfo['social_media'] | undefined) {
@@ -56,6 +58,10 @@ export function MosqueProfile() {
 
   const [previewMode, setPreviewMode] = useState(false);
   const lastSyncedVersion = useRef<string | null>(null);
+  const logoFileRef = useRef<HTMLInputElement>(null);
+  const bannerFileRef = useRef<HTMLInputElement>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
 
   useEffect(() => {
     if (!mosqueInfo) return;
@@ -83,6 +89,38 @@ export function MosqueProfile() {
       mission: mosqueInfo.mission || '',
     });
   }, [mosqueInfo]);
+
+  const handleLogoFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingLogo(true);
+    try {
+      const url = await uploadAdminImage(file, 'mosque');
+      setFormData((f) => ({ ...f, logo_url: url }));
+      toast.success('Logo diunggah');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengunggah logo');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleBannerFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingBanner(true);
+    try {
+      const url = await uploadAdminImage(file, 'mosque');
+      setFormData((f) => ({ ...f, banner_url: url }));
+      toast.success('Banner diunggah');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengunggah banner');
+    } finally {
+      setUploadingBanner(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,14 +160,14 @@ export function MosqueProfile() {
           /* Preview Mode */
           <Card>
             <CardContent className="p-6 space-y-6">
-              {formData.banner_url && (
+              {resolveBackendAssetUrl(formData.banner_url) && (
                 <div className="w-full h-48 rounded-lg overflow-hidden">
-                  <img src={formData.banner_url} alt="Banner" className="w-full h-full object-cover" />
+                  <img src={resolveBackendAssetUrl(formData.banner_url)!} alt="Banner" className="w-full h-full object-cover" />
                 </div>
               )}
               <div className="flex items-start gap-4">
-                {formData.logo_url && (
-                  <img src={formData.logo_url} alt="Logo" className="w-20 h-20 rounded-lg object-cover" />
+                {resolveBackendAssetUrl(formData.logo_url) && (
+                  <img src={resolveBackendAssetUrl(formData.logo_url)!} alt="Logo" className="w-20 h-20 rounded-lg object-cover" />
                 )}
                 <div>
                   <h1 className="text-2xl font-bold">{formData.name}</h1>
@@ -383,22 +421,95 @@ export function MosqueProfile() {
                   <h4 className="text-sm font-medium tracking-wider text-muted-foreground uppercase">Gambar</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="logo_url">URL Logo</Label>
-                      <Input
-                        id="logo_url"
-                        value={formData.logo_url}
-                        onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                        placeholder="https://example.com/logo.png"
+                      <Label>Logo</Label>
+                      <input
+                        ref={logoFileRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleLogoFile}
                       />
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => logoFileRef.current?.click()}
+                          disabled={uploadingLogo}
+                          className="gap-2"
+                        >
+                          <ImageIcon className="size-4 shrink-0" aria-hidden />
+                          {uploadingLogo ? 'Mengunggah…' : 'Unggah logo'}
+                        </Button>
+                        {formData.logo_url ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-muted-foreground"
+                            onClick={() => setFormData({ ...formData, logo_url: '' })}
+                          >
+                            Hapus logo
+                          </Button>
+                        ) : null}
+                      </div>
+                      {resolveBackendAssetUrl(formData.logo_url) ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={resolveBackendAssetUrl(formData.logo_url)!}
+                          alt="Pratinjau logo"
+                          className="mt-2 h-20 w-20 rounded-lg border border-border object-cover"
+                        />
+                      ) : (
+                        <p className="text-xs text-muted-foreground">Belum ada logo. Unggah gambar (maks. 5MB).</p>
+                      )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="banner_url">URL Banner</Label>
-                      <Input
-                        id="banner_url"
-                        value={formData.banner_url}
-                        onChange={(e) => setFormData({ ...formData, banner_url: e.target.value })}
-                        placeholder="https://example.com/banner.jpg"
+                      <Label>Banner</Label>
+                      <input
+                        ref={bannerFileRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleBannerFile}
                       />
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => bannerFileRef.current?.click()}
+                          disabled={uploadingBanner}
+                          className="gap-2"
+                        >
+                          <ImageIcon className="size-4 shrink-0" aria-hidden />
+                          {uploadingBanner ? 'Mengunggah…' : 'Unggah banner'}
+                        </Button>
+                        {formData.banner_url ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-muted-foreground"
+                            onClick={() => setFormData({ ...formData, banner_url: '' })}
+                          >
+                            Hapus banner
+                          </Button>
+                        ) : null}
+                      </div>
+                      {resolveBackendAssetUrl(formData.banner_url) ? (
+                        <>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={resolveBackendAssetUrl(formData.banner_url)!}
+                            alt="Pratinjau banner"
+                            className="mt-2 h-24 w-full max-w-xl rounded-lg border border-border object-cover"
+                          />
+                          <p className="text-xs text-muted-foreground">Disarankan rasio lebar (mis. 3:1) untuk header.</p>
+                        </>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">Belum ada banner. Unggah gambar (maks. 5MB).</p>
+                      )}
                     </div>
                   </div>
                 </div>

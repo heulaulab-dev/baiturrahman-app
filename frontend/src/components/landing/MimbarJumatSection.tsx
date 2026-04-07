@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Download, FileText } from 'lucide-react';
+import { resolveBackendAssetUrl } from '@/lib/utils';
 import { useLatestKhutbah, useKhutbahArchive } from '@/services/hooks';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
@@ -10,6 +10,7 @@ import { id } from 'date-fns/locale';
 export function MimbarJumatSection() {
 	const { data: latestKhutbah, isLoading: latestLoading } = useLatestKhutbah();
 	const { data: khutbahArchive, isLoading: archiveLoading } = useKhutbahArchive();
+	const latestPdfHref = resolveBackendAssetUrl(latestKhutbah?.file_url ?? undefined);
 
 	return (
 		<section id="mimbar-jumat" className="py-20 bg-white border-t border-sacred-green">
@@ -73,17 +74,17 @@ export function MimbarJumatSection() {
 										)}
 									</div>
 
-									{latestKhutbah.file_url && (
-										<Link
-											href={latestKhutbah.file_url}
+									{latestPdfHref ? (
+										<a
+											href={latestPdfHref}
 											target="_blank"
 											rel="noopener noreferrer"
 											className="mt-6 flex items-center gap-3 border-2 border-sacred-gold text-sacred-gold px-6 py-4 hover:bg-sacred-gold hover:text-white transition-colors duration-300"
 										>
 											<Download size={20} />
-											<span className="font-serif-cormorant">Unduh Khutbah</span>
-										</Link>
-									)}
+											<span className="font-serif-cormorant">Unduh / lampiran PDF</span>
+										</a>
+									) : null}
 								</>
 							) : (
 								<div className="text-center text-sacred-muted py-8">
@@ -111,25 +112,29 @@ export function MimbarJumatSection() {
 							</div>
 						) : khutbahArchive && khutbahArchive.length > 0 ? (
 							<>
-								<div className="mb-8">
-									<Link
-										href={latestKhutbah?.file_url || '#'}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="flex items-center gap-3 border-2 border-sacred-gold text-sacred-gold px-6 py-4 hover:bg-sacred-gold hover:text-white transition-colors duration-300"
-									>
-										<Download size={20} />
-										<span className="font-serif-cormorant">Unduh Khutbah Terbaru</span>
-									</Link>
-								</div>
+								{latestPdfHref ? (
+									<div className="mb-8">
+										<a
+											href={latestPdfHref}
+											target="_blank"
+											rel="noopener noreferrer"
+											className="flex items-center gap-3 border-2 border-sacred-gold text-sacred-gold px-6 py-4 hover:bg-sacred-gold hover:text-white transition-colors duration-300"
+										>
+											<Download size={20} />
+											<span className="font-serif-cormorant">Unduh khutbah terbaru</span>
+										</a>
+									</div>
+								) : null}
 
 								<div>
 									<span className="text-xs uppercase tracking-widest text-sacred-muted mb-4 block">
 										Archive
 									</span>
 									<div className="space-y-0">
-										{khutbahArchive.map((khutbah, index) => (
-											<motion.div
+										{khutbahArchive.map((khutbah, index) => {
+											const rowPdfHref = resolveBackendAssetUrl(khutbah.file_url ?? undefined)
+											return (
+												<motion.div
 												key={khutbah.id}
 												initial={{ opacity: 0, y: 10 }}
 												whileInView={{ opacity: 1, y: 0 }}
@@ -152,19 +157,20 @@ export function MimbarJumatSection() {
 														</span>
 													</div>
 												</div>
-												{khutbah.file_url && (
-													<Link
-														href={khutbah.file_url}
+												{rowPdfHref ? (
+													<a
+														href={rowPdfHref}
 														target="_blank"
 														rel="noopener noreferrer"
 														className="text-sacred-gold hover:text-white transition-colors"
 														onClick={(e) => e.stopPropagation()}
 													>
 														<Download size={16} />
-													</Link>
-												)}
-											</motion.div>
-										))}
+													</a>
+												) : null}
+												</motion.div>
+											)
+										})}
 									</div>
 								</div>
 							</>

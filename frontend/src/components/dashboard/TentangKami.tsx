@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Save, Eye, EyeOff, Image, Video, Loader2 } from 'lucide-react';
+import { Save, Eye, EyeOff, ImageIcon, Video, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { useTentangKami, useUpdateTentangKami } from '@/services/adminHooks';
+import { uploadAdminImage } from '@/services/adminUploadService';
+import { resolveBackendAssetUrl } from '@/lib/utils';
 
 export function TentangKami() {
   const { data, isLoading } = useTentangKami();
@@ -25,6 +27,8 @@ export function TentangKami() {
 
   const [previewMode, setPreviewMode] = useState(false);
   const hasHydratedFromServer = useRef(false);
+  const imageFileRef = useRef<HTMLInputElement>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     if (!data || hasHydratedFromServer.current) return;
@@ -38,6 +42,22 @@ export function TentangKami() {
       is_active: data.is_active || false,
     });
   }, [data]);
+
+  const handleMainImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingImage(true);
+    try {
+      const url = await uploadAdminImage(file, 'konten');
+      setFormData((f) => ({ ...f, image_url: url }));
+      toast.success('Gambar utama diunggah');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengunggah gambar');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,10 +93,10 @@ export function TentangKami() {
       {previewMode ? (
         /* Preview Mode */
         <div className="space-y-6 rounded-lg border border-border bg-card p-6 shadow-sm">
-          {formData.image_url && (
+          {resolveBackendAssetUrl(formData.image_url) && (
             <div className="h-64 w-full overflow-hidden rounded-lg bg-muted">
               <img
-                src={formData.image_url}
+                src={resolveBackendAssetUrl(formData.image_url)!}
                 alt="Tentang Kami"
                 className="w-full h-full object-cover"
               />
@@ -145,17 +165,48 @@ export function TentangKami() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="image_url">URL Gambar Utama</Label>
-              <div className="relative">
-                <Image className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
-                  className="pl-10"
-                />
+              <Label>Gambar utama</Label>
+              <input
+                ref={imageFileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleMainImageFile}
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => imageFileRef.current?.click()}
+                  disabled={uploadingImage}
+                  className="gap-2"
+                >
+                  <ImageIcon className="size-4 shrink-0" aria-hidden />
+                  {uploadingImage ? 'Mengunggah…' : 'Unggah gambar utama'}
+                </Button>
+                {formData.image_url ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground"
+                    onClick={() => setFormData({ ...formData, image_url: '' })}
+                  >
+                    Hapus gambar
+                  </Button>
+                ) : null}
               </div>
+              {resolveBackendAssetUrl(formData.image_url) ? (
+                // eslint-disable-next-line @next/next/no-img-element -- admin preview
+                <img
+                  src={resolveBackendAssetUrl(formData.image_url)!}
+                  alt="Pratinjau gambar utama"
+                  className="mt-2 h-32 w-full max-w-md rounded-md border border-border object-cover"
+                />
+              ) : (
+                <p className="text-xs text-muted-foreground">Belum ada gambar. Unggah JPG/PNG/WebP (maks. 5MB).</p>
+              )}
             </div>
 
             <div className="space-y-2">

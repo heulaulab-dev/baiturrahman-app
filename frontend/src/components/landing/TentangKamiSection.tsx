@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { resolveBackendAssetUrl } from '@/lib/utils';
 import { useTentangKami } from '@/services/hooks';
 
 export function TentangKamiSection() {
@@ -37,10 +38,10 @@ export function TentangKamiSection() {
             </h3>
           )}
 
-          {data.image_url && (
+          {resolveBackendAssetUrl(data.image_url) && (
             <div className="relative mb-8 h-64 w-full overflow-hidden rounded-lg md:h-96">
               <Image
-                src={data.image_url}
+                src={resolveBackendAssetUrl(data.image_url)!}
                 alt={data.title || 'Tentang Kami'}
                 fill
                 className="object-cover"

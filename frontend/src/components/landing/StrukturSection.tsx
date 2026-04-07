@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { Users } from 'lucide-react';
+import { resolveBackendAssetUrl } from '@/lib/utils';
 import { usePublicStrukturs } from '@/services/hooks';
 import type { Struktur } from '@/types';
 
@@ -64,10 +65,10 @@ export function StrukturSection() {
                 >
                   {/* Photo */}
                   <div className="flex justify-center mb-4">
-                    {struktur.photo_url ? (
+                    {resolveBackendAssetUrl(struktur.photo_url) ? (
                       <div className="relative h-24 w-24 overflow-hidden rounded-full border-4 border-white shadow-md">
                         <Image
-                          src={struktur.photo_url}
+                          src={resolveBackendAssetUrl(struktur.photo_url)!}
                           alt={struktur.name}
                           fill
                           className="object-cover"

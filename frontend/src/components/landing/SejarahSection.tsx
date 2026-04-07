@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { Landmark, Trophy, Sparkles } from 'lucide-react';
+import { resolveBackendAssetUrl } from '@/lib/utils';
 import { useHistoryEntries } from '@/services/hooks';
 import { HistoryEntry } from '@/types';
 
@@ -85,10 +86,10 @@ export function SejarahSection() {
                           </p>
                         )}
 
-                        {entry.image_url && (
+                        {resolveBackendAssetUrl(entry.image_url) && (
                           <div className="relative mt-4 h-64 w-full overflow-hidden rounded-lg">
                             <Image
-                              src={entry.image_url}
+                              src={resolveBackendAssetUrl(entry.image_url)!}
                               alt={entry.title || 'Sejarah'}
                               fill
                               className="object-cover"

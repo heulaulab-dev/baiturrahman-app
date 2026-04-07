@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Calendar, MapPin, Pencil, Plus, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Calendar, ImageIcon, Loader2, MapPin, Pencil, Plus, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { toast } from 'sonner'
@@ -31,6 +31,7 @@ import {
   useDeleteAdminEvent,
   useUpdateAdminEvent,
 } from '@/services/adminHooks'
+import { uploadAdminImage } from '@/services/adminUploadService'
 import type { CreateEventPayload } from '@/services/adminApiService'
 import type { Event, EventCategory, EventStatus } from '@/types'
 
@@ -111,6 +112,8 @@ export function EventsManagement() {
   const [slugTouched, setSlugTouched] = useState(false)
   const [form, setForm] = useState(() => emptyForm())
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const imageFileRef = useRef<HTMLInputElement>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -173,6 +176,22 @@ export function EventsManagement() {
       setDeleteId(null)
     } catch {
       toast.error('Gagal menghapus event')
+    }
+  }
+
+  const handleEventImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setUploadingImage(true)
+    try {
+      const url = await uploadAdminImage(file, 'events')
+      setForm((f) => ({ ...f, image_url: url }))
+      toast.success('Gambar diunggah')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengunggah gambar')
+    } finally {
+      setUploadingImage(false)
     }
   }
 
@@ -380,13 +399,52 @@ export function EventsManagement() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ev-img">URL gambar (opsional)</Label>
-              <Input
-                id="ev-img"
-                value={form.image_url ?? ''}
-                onChange={(ev) => setForm((f) => ({ ...f, image_url: ev.target.value || null }))}
-                placeholder="https://…"
+              <Label>Gambar (opsional)</Label>
+              <input
+                ref={imageFileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleEventImage}
               />
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  disabled={uploadingImage}
+                  onClick={() => imageFileRef.current?.click()}
+                >
+                  {uploadingImage ? (
+                    <Loader2 className="size-4 animate-spin" aria-hidden />
+                  ) : (
+                    <ImageIcon className="size-4" aria-hidden />
+                  )}
+                  {uploadingImage ? 'Mengunggah…' : 'Unggah gambar'}
+                </Button>
+                {form.image_url ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground"
+                    onClick={() => setForm((f) => ({ ...f, image_url: null }))}
+                  >
+                    Hapus gambar
+                  </Button>
+                ) : null}
+              </div>
+              {resolveBackendAssetUrl(form.image_url ?? undefined) ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={resolveBackendAssetUrl(form.image_url ?? undefined)!}
+                  alt=""
+                  className="mt-2 h-24 max-w-full rounded-md border border-border object-cover"
+                />
+              ) : (
+                <p className="text-xs text-muted-foreground">JPG/PNG/WebP, maks. 5MB.</p>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex items-center gap-2">

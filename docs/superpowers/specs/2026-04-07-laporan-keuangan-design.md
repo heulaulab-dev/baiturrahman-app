@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-07
 **Branch:** `feature/laporan-keuangan`
-**Status:** Draft — awaiting user review
+**Status:** Approved
 
 ---
 

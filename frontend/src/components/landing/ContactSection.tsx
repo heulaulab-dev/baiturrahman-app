@@ -21,7 +21,7 @@ import { toast } from 'sonner';
 const layananOptions = [
 	'Umum',
 	'Reservasi Ruangan',
-	'Donasi',
+	'Tabungan Akhirat',
 	'Kajian',		
 	'Lainnya',
 ];

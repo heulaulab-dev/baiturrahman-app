@@ -72,7 +72,7 @@ export function HeroSection() {
 							asChild
 							className='h-auto rounded-none border-0 bg-sacred-gold px-8 py-6 text-base font-normal text-white shadow-none hover:bg-sacred-gold-light'
 						>
-							<Link href='#donasi'>Donasi Sekarang</Link>
+							<Link href='#donasi'>Mulai tabung akhirat</Link>
 						</Button>
 					</motion.div>
 				</div>

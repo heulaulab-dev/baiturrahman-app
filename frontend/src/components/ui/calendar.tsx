@@ -84,13 +84,18 @@ function Calendar({
             : "[&>svg]:text-muted-foreground flex h-8 items-center gap-1 rounded-md pl-2 pr-1 text-sm [&>svg]:size-3.5",
           defaultClassNames.caption_label
         ),
-        table: "w-full border-collapse",
-        weekdays: cn("flex", defaultClassNames.weekdays),
+        // RDP v9: table element is UI.MonthGrid ("month_grid"). Key "table" is deprecated and ignored.
+        month_grid: cn(
+          "w-full border-collapse border-spacing-0",
+          defaultClassNames.month_grid
+        ),
+        weeks: cn(defaultClassNames.weeks),
+        weekdays: cn(defaultClassNames.weekdays),
         weekday: cn(
-          "text-muted-foreground flex-1 select-none rounded-md text-[0.8rem] font-normal",
+          "text-muted-foreground h-8 w-[--cell-size] px-0 text-center text-[0.8rem] font-normal",
           defaultClassNames.weekday
         ),
-        week: cn("mt-2 flex w-full", defaultClassNames.week),
+        week: cn(defaultClassNames.week),
         week_number_header: cn(
           "w-[--cell-size] select-none",
           defaultClassNames.week_number_header
@@ -100,7 +105,7 @@ function Calendar({
           defaultClassNames.week_number
         ),
         day: cn(
-          "group/day relative aspect-square h-full w-full select-none p-0 text-center [&:first-child[data-selected=true]_button]:rounded-l-md [&:last-child[data-selected=true]_button]:rounded-r-md",
+          "group/day relative size-[--cell-size] select-none p-0 text-center align-middle [&:has([data-selected-single=true])]:bg-accent [&:has([data-selected-single=true])]:text-accent-foreground first:[&:has([data-selected-single=true])]:rounded-l-md last:[&:has([data-selected-single=true])]:rounded-r-md",
           defaultClassNames.day
         ),
         range_start: cn(

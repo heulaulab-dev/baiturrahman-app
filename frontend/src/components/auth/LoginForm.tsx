@@ -13,7 +13,7 @@ import { motion } from 'framer-motion'
 import { Form } from '@/components/ui/form'
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { toast } from 'sonner'
-
+import Image from 'next/image'
 // Validation schema for the form
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email." }),
@@ -87,7 +87,7 @@ export function LoginForm({ logo, title, description, imageSrc, imageAlt, onSubm
   };
 
   return (
-		<div className='relative flex max-h-screen w-full flex-col md:flex-row'>
+		<div className='relative flex min-h-screen w-full flex-col md:flex-row '>
 			{/* Left Panel: Form */}
 			<div className='flex w-full flex-col items-center justify-center bg-background p-8 md:w-1/2'>
 				<div className='w-full max-w-md'>
@@ -213,10 +213,13 @@ export function LoginForm({ logo, title, description, imageSrc, imageAlt, onSubm
 
 			{/* Right Panel: Image */}
 			<div className='relative hidden w-1/2 md:block'>
-				<img
+				<Image
 					src={imageSrc}
 					alt={imageAlt}
 					className='h-full w-full object-cover'
+					width={1000}
+					height={1000}
+					loading='eager'
 				/>
 				<div className='absolute inset-0 bg-gradient-to-t from-black/20 to-transparent' />
 			</div>

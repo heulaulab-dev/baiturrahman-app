@@ -6,7 +6,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { toast } from 'sonner'
-import { Loader2, MoreHorizontal, X } from 'lucide-react'
+import { ArrowLeftRight, Loader2, MoreHorizontal, Receipt, X } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import {
   useApproveFinanceTransfer,
@@ -17,6 +17,15 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -108,6 +117,25 @@ function StatusBadge({ status }: { status: string }) {
     <Badge variant="outline" className="font-normal">
       {status}
     </Badge>
+  )
+}
+
+function TransferTableSkeleton() {
+  return (
+    <div className="space-y-0 divide-y divide-border/60 p-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="grid grid-cols-1 gap-2 py-3 first:pt-0 last:pb-0 sm:grid-cols-[minmax(0,0.75fr)_minmax(0,0.9fr)_minmax(0,1.2fr)_minmax(0,0.7fr)_minmax(0,3rem)] sm:items-center sm:gap-3"
+        >
+          <Skeleton className="h-5 w-28" />
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-5 w-full max-w-[220px]" />
+          <Skeleton className="h-6 w-20" />
+          <Skeleton className="h-9 w-9 justify-self-start sm:justify-self-end" />
+        </div>
+      ))}
+    </div>
   )
 }
 
@@ -222,15 +250,30 @@ export function FinanceTransferSection() {
   const totalPages = Math.max(1, data?.total_pages ?? 1)
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-semibold">Transfer Kas</h2>
-        <p className="text-sm text-muted-foreground">Dari kas besar menuju kas kecil. Persetujuan memerlukan izin khusus.</p>
-      </div>
+    <div className="space-y-6">
+      <Card className="shadow-sm">
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:space-y-0">
+          <div className="flex gap-4">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <ArrowLeftRight className="size-5" aria-hidden />
+            </div>
+            <div className="min-w-0 space-y-1">
+              <CardTitle className="text-xl sm:text-2xl">Transfer kas</CardTitle>
+              <CardDescription>
+                Dari kas besar ke kas kecil. Persetujuan memerlukan izin khusus.
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
 
       {canRequest && (
-        <div className="max-w-lg space-y-4 rounded-md border border-border p-4">
-          <h3 className="text-sm font-medium">Ajukan transfer</h3>
+        <Card className="max-w-lg shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base">Ajukan transfer</CardTitle>
+            <CardDescription>Isi tanggal, nominal, dan keterangan singkat.</CardDescription>
+          </CardHeader>
+          <CardContent>
           <form onSubmit={handleSubmit(onSubmitTransfer)} className="space-y-3">
             <Controller
               name="tx_date"
@@ -266,10 +309,16 @@ export function FinanceTransferSection() {
               )}
             </Button>
           </form>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
+      <Card className="shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base">Filter daftar</CardTitle>
+          <CardDescription>Status dan rentang tanggal untuk permintaan transfer.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
         <div className="space-y-1">
           <span className="text-xs text-muted-foreground">Status</span>
           <Select
@@ -326,24 +375,43 @@ export function FinanceTransferSection() {
             </Button>
           ) : null}
         </div>
-        <Button type="button" variant="ghost" size="sm" className="self-start sm:self-auto" onClick={() => { setStatus('all'); setFrom(''); setTo(''); setPage(1) }}>
+        <Button type="button" variant="outline" size="sm" className="self-start sm:self-auto" onClick={() => { setStatus('all'); setFrom(''); setTo(''); setPage(1) }}>
           Reset filter
         </Button>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="rounded-md border">
+      <Card className="overflow-hidden shadow-sm">
+        <CardHeader className="border-b bg-muted/20 pb-4">
+          <CardTitle className="text-base">Permintaan transfer</CardTitle>
+          <CardDescription>
+            {data != null ? `${data.total?.toLocaleString('id-ID') ?? 0} entri` : 'Memuat…'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
         {isLoading ? (
-          <p className="p-4 text-sm text-muted-foreground">Memuat transfer…</p>
+          <TransferTableSkeleton />
         ) : error ? (
-          <div className="p-4 text-sm">
-            <p className="text-destructive mb-2">Gagal memuat data</p>
+          <div className="p-6 text-sm">
+            <p className="mb-3 text-destructive">Gagal memuat data</p>
             <Button type="button" variant="outline" size="sm" onClick={() => refetch()}>
               Coba lagi
             </Button>
           </div>
         ) : rows.length === 0 ? (
-          <p className="p-4 text-sm text-muted-foreground">Tidak ada transfer untuk filter ini.</p>
+          <Empty className="min-h-[200px] border-0 bg-transparent md:min-h-[240px]">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Receipt className="size-6" aria-hidden />
+              </EmptyMedia>
+              <EmptyTitle>Tidak ada transfer</EmptyTitle>
+              <EmptyDescription>
+                Sesuaikan filter atau ajukan transfer baru dari formulir di atas.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -397,8 +465,10 @@ export function FinanceTransferSection() {
               })}
             </TableBody>
           </Table>
+          </div>
         )}
-      </div>
+        </CardContent>
+      </Card>
 
       {totalPages > 1 && (
         <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">

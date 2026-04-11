@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
-import { CalendarIcon } from 'lucide-react'
+import { CalendarIcon, ChevronDownIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
@@ -33,7 +33,7 @@ export interface FinanceFormDatePickerProps {
   error?: string
 }
 
-/** Single date bound to `YYYY-MM-DD` string for finance API filters and forms. */
+/** Single date bound to `YYYY-MM-DD` for finance APIs — matches shadcn Popover + Calendar composition. */
 export function FinanceFormDatePicker({
   id,
   label,
@@ -58,25 +58,34 @@ export function FinanceFormDatePicker({
             variant="outline"
             id={id}
             disabled={disabled}
-            data-empty={!selected}
+            aria-expanded={open}
             className={cn(
-              'w-full justify-start font-normal data-[empty=true]:text-muted-foreground',
+              'h-10 w-full justify-between gap-2 rounded-md border-input bg-background px-3 text-left text-sm font-normal shadow-xs transition-[color,box-shadow] outline-none',
+              'hover:bg-accent/50 hover:text-accent-foreground',
+              'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
+              !selected && 'text-muted-foreground',
               buttonClassName
             )}
           >
-            <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />
-            {selected ? (
-              format(selected, 'd MMMM yyyy', { locale: idLocale })
-            ) : (
-              <span>{placeholder}</span>
-            )}
+            <span className="flex min-w-0 flex-1 items-center gap-2">
+              <CalendarIcon className="size-4 shrink-0 opacity-60" aria-hidden />
+              <span className="truncate">
+                {selected ? format(selected, 'd MMMM yyyy', { locale: idLocale }) : placeholder}
+              </span>
+            </span>
+            <ChevronDownIcon className="size-4 shrink-0 opacity-50" aria-hidden />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+        <PopoverContent
+          align="start"
+          sideOffset={6}
+          className="w-auto overflow-hidden rounded-xl border bg-popover p-0 shadow-lg outline-none"
+        >
           <Calendar
             mode="single"
             selected={selected}
             defaultMonth={selected}
+            className="rounded-lg [--cell-size:2.5rem] p-2"
             onSelect={(d) => {
               onChange(dateToYmd(d))
               setOpen(false)

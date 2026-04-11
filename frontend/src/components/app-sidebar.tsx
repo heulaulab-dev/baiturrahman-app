@@ -41,6 +41,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const canAccessKonten = hasPermission('access_konten')
   const canAccessPengaturan = hasPermission('access_pengaturan')
   const canAccessRbacSettings = hasPermission('access_rbac_settings')
+  const canAccessFinanceReports = hasPermission('finance.view_reports')
 
   const navMain = [
     {
@@ -101,6 +102,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {
           title: "Manajemen Inventaris",
           url: "/inventaris",
+        },
+      ],
+    },
+    {
+      title: "Keuangan",
+      url: "/keuangan/kas-besar",
+      icon: FileText,
+      hidden: !canAccessFinanceReports,
+      items: [
+        {
+          title: "Kas Besar",
+          url: "/keuangan/kas-besar",
+        },
+        {
+          title: "Kas Kecil",
+          url: "/keuangan/kas-kecil",
+        },
+        {
+          title: "Transfer Kas",
+          url: "/keuangan/transfer",
+        },
+        {
+          title: "Laporan Bulanan",
+          url: "/keuangan/laporan",
         },
       ],
     },

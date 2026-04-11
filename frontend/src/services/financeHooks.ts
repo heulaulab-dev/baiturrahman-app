@@ -22,11 +22,11 @@ export const useFinanceTransactions = (params?: GetFinanceTransactionsParams) =>
     staleTime: 1000 * 30,
   })
 
-export const useFinanceBalance = (fundType: FinanceFundType) =>
+export const useFinanceBalance = (fundType: FinanceFundType, queryEnabled = true) =>
   useQuery({
     queryKey: ['admin', 'finance', 'balance', fundType],
     queryFn: () => getFinanceBalance(fundType),
-    enabled: !!fundType,
+    enabled: !!fundType && queryEnabled,
     staleTime: 1000 * 15,
   })
 

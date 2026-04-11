@@ -8,6 +8,7 @@ import { PendingDonationsTable } from '@/components/dashboard/PendingDonationsTa
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 import { DonationBarChart } from '@/components/dashboard/DonationBarChart';
 import { CategoryBreakdown } from '@/components/dashboard/CategoryBreakdown';
+import { FinanceBalanceSummary } from '@/components/dashboard/FinanceBalanceSummary';
 import { useDonationStats, useAdminEvents, useAdminUsers } from '@/services/adminHooks';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -65,6 +66,8 @@ export default function DashboardPage() {
           </>
         )}
       </div>
+
+      <FinanceBalanceSummary />
 
       {/* Section 2: Main Grid — Pending Donations + Quick Actions / Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

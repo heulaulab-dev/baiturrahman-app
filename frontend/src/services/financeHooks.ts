@@ -47,6 +47,9 @@ export const useCreateFinanceTransfer = () => {
     mutationFn: createFinanceTransfer,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'transactions'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'transfers'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'balance', 'kas_besar'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'balance', 'kas_kecil'] })
     },
   })
 }
@@ -57,6 +60,7 @@ export const useApproveFinanceTransfer = () => {
     mutationFn: approveFinanceTransfer,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'transactions'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'transfers'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'balance', 'kas_besar'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'balance', 'kas_kecil'] })
     },
@@ -69,6 +73,9 @@ export const useRejectFinanceTransfer = () => {
     mutationFn: rejectFinanceTransfer,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'transactions'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'transfers'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'balance', 'kas_besar'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'balance', 'kas_kecil'] })
     },
   })
 }

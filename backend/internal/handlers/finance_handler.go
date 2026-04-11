@@ -57,6 +57,29 @@ func userIDFromContext(c *gin.Context) (uuid.UUID, bool) {
 	return userID, ok
 }
 
+func resolveFinancePermissionMap(c *gin.Context, db *gorm.DB) (map[string]bool, error) {
+	role, ok := c.Get("userRole")
+	if !ok {
+		return nil, errors.New("role not in context")
+	}
+	userRole := models.UserRole(role.(string))
+	if userRole == models.RoleSuperAdmin || userRole == models.RoleAdmin {
+		return map[string]bool{
+			models.PermissionFinanceCreateTx:      true,
+			models.PermissionFinanceAdjustOpening: true,
+		}, nil
+	}
+	userID, ok := userIDFromContext(c)
+	if !ok {
+		return nil, errors.New("user not in context")
+	}
+	var user models.User
+	if err := db.Select("org_role").First(&user, "id = ?", userID).Error; err != nil {
+		return nil, err
+	}
+	return models.ResolvePermissionMapForOrgRole(db, user.OrgRole)
+}
+
 func (h *Handler) GetFinanceTransactions(c *gin.Context) {
 	page, limit := utils.GetPaginationParams(c)
 	offset := utils.GetOffset(page, limit)
@@ -112,10 +135,49 @@ func (h *Handler) CreateFinanceTransaction(c *gin.Context) {
 		return
 	}
 
+	switch req.TxType {
+	case models.FinanceTxPemasukan, models.FinanceTxPengeluaran, models.FinanceTxOpening, models.FinanceTxAdjustment:
+	default:
+		utils.ErrorResponse(c, http.StatusBadRequest, "invalid tx_type for manual create")
+		return
+	}
+
+	permMap, err := resolveFinancePermissionMap(c, h.DB)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusForbidden, "Failed to resolve permissions")
+		return
+	}
+	switch req.TxType {
+	case models.FinanceTxPemasukan, models.FinanceTxPengeluaran:
+		if !permMap[models.PermissionFinanceCreateTx] {
+			utils.ErrorResponse(c, http.StatusForbidden, "Insufficient permissions")
+			return
+		}
+	case models.FinanceTxOpening, models.FinanceTxAdjustment:
+		if !permMap[models.PermissionFinanceAdjustOpening] {
+			utils.ErrorResponse(c, http.StatusForbidden, "Insufficient permissions")
+			return
+		}
+	}
+
 	txDate, err := time.Parse("2006-01-02", req.TxDate)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusBadRequest, "tx_date must use format YYYY-MM-DD")
 		return
+	}
+
+	if req.TxType == models.FinanceTxPengeluaran {
+		var fundRows []models.FinanceTransaction
+		if err := h.DB.Where("fund_type = ? AND approval_status = ?", req.FundType, models.FinanceApprovalApproved).
+			Order("tx_date ASC, created_at ASC").Find(&fundRows).Error; err != nil {
+			utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to validate balance")
+			return
+		}
+		bal := services.ComputeFundBalance(fundRows, req.FundType)
+		if !services.HasSufficientBalance(bal, req.Amount) {
+			utils.ErrorResponse(c, http.StatusBadRequest, "Insufficient balance for this fund")
+			return
+		}
 	}
 
 	creatorID, ok := userIDFromContext(c)

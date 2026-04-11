@@ -201,7 +201,7 @@ func main() {
 
 			// Finance
 			admin.GET("/finance/transactions", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceTransactions)
-			admin.POST("/finance/transactions", middleware.RequirePermission(models.PermissionFinanceCreateTx), h.CreateFinanceTransaction)
+			admin.POST("/finance/transactions", middleware.RequireAnyPermission(models.PermissionFinanceCreateTx, models.PermissionFinanceAdjustOpening), h.CreateFinanceTransaction)
 			admin.GET("/finance/balance", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceBalance)
 			admin.POST("/finance/transfers", middleware.RequirePermission(models.PermissionFinanceRequestTransfer), h.CreateFinanceTransfer)
 			admin.GET("/finance/transfers", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceTransfers)

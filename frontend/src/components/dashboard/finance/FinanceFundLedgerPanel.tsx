@@ -1,11 +1,19 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { ChevronDown, Plus, X } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useFinanceBalance, useFinanceTransactions } from '@/services/financeHooks'
-import type { FinanceFundType } from '@/types'
+import type { FinanceApprovalStatus, FinanceFundType, FinanceTxType } from '@/types'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   Table,
   TableBody,
@@ -14,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { FinanceFormDatePicker } from '@/components/dashboard/finance/FinanceFormDatePicker'
 import {
   FinanceTransactionDialog,
   type FinanceManualTxMode,
@@ -32,6 +41,49 @@ function formatTxDate(iso: string): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return iso.slice(0, 10)
   return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+const TX_LABEL: Partial<Record<FinanceTxType, string>> = {
+  pemasukan: 'Pemasukan',
+  pengeluaran: 'Pengeluaran',
+  transfer_out: 'Transfer keluar',
+  transfer_in: 'Transfer masuk',
+  opening_balance: 'Saldo awal',
+  adjustment: 'Penyesuaian',
+}
+
+function TxTypeBadge({ type }: { type: FinanceTxType }) {
+  const label = TX_LABEL[type] ?? type
+  return (
+    <Badge variant="outline" className="font-normal">
+      {label}
+    </Badge>
+  )
+}
+
+function ApprovalBadge({ status }: { status: FinanceApprovalStatus }) {
+  if (status === 'pending') {
+    return (
+      <Badge variant="secondary" className="font-normal">
+        Menunggu
+      </Badge>
+    )
+  }
+  if (status === 'approved') {
+    return (
+      <Badge
+        variant="outline"
+        className="border-emerald-500/40 bg-emerald-500/10 font-normal text-emerald-800 dark:text-emerald-200"
+      >
+        Disetujui
+      </Badge>
+    )
+  }
+  return (
+    <Badge variant="destructive" className="font-normal">
+      Ditolak
+    </Badge>
+  )
 }
 
 export interface FinanceFundLedgerPanelProps {
@@ -71,6 +123,8 @@ export function FinanceFundLedgerPanel({ fundType, title }: FinanceFundLedgerPan
     setDialogOpen(true)
   }
 
+  const showAddMenu = canCreateTx || canAdjust
+
   if (!canView) {
     return (
       <div className="space-y-4 p-6">
@@ -94,40 +148,72 @@ export function FinanceFundLedgerPanel({ fundType, title }: FinanceFundLedgerPan
             </span>
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {canCreateTx && (
-            <>
-              <Button type="button" size="sm" onClick={() => openDialog('pemasukan')}>
-                Pemasukan
+        {showAddMenu && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" size="sm" className="gap-2 self-start">
+                <Plus className="h-4 w-4" />
+                Tambah transaksi
+                <ChevronDown className="h-4 w-4 opacity-70" />
               </Button>
-              <Button type="button" size="sm" variant="secondary" onClick={() => openDialog('pengeluaran')}>
-                Pengeluaran
-              </Button>
-            </>
-          )}
-          {canAdjust && (
-            <>
-              <Button type="button" size="sm" variant="outline" onClick={() => openDialog('opening_balance')}>
-                Saldo awal
-              </Button>
-              <Button type="button" size="sm" variant="outline" onClick={() => openDialog('adjustment')}>
-                Penyesuaian
-              </Button>
-            </>
-          )}
-        </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {canCreateTx && (
+                <>
+                  <DropdownMenuItem onClick={() => openDialog('pemasukan')}>Pemasukan</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openDialog('pengeluaran')}>Pengeluaran</DropdownMenuItem>
+                </>
+              )}
+              {canCreateTx && canAdjust && <DropdownMenuSeparator />}
+              {canAdjust && (
+                <>
+                  <DropdownMenuItem onClick={() => openDialog('opening_balance')}>Saldo awal</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openDialog('adjustment')}>Penyesuaian</DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
-      <div className="flex flex-wrap items-end gap-3 rounded-md border border-border p-4">
-        <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Dari</label>
-          <Input type="date" value={from} onChange={(e) => { setFrom(e.target.value); setPage(1) }} className="w-[160px]" />
+      <div className="flex flex-col gap-4 rounded-md border border-border p-4 sm:flex-row sm:flex-wrap sm:items-end">
+        <div className="flex flex-wrap items-end gap-2">
+          <FinanceFormDatePicker
+            id={`ledger-from-${fundType}`}
+            label="Dari tanggal"
+            value={from}
+            onChange={(v) => {
+              setFrom(v)
+              setPage(1)
+            }}
+            placeholder="Semua"
+            buttonClassName="sm:w-[220px]"
+          />
+          {from ? (
+            <Button type="button" variant="ghost" size="icon" className="shrink-0" onClick={() => { setFrom(''); setPage(1) }} aria-label="Hapus filter dari tanggal">
+              <X className="h-4 w-4" />
+            </Button>
+          ) : null}
         </div>
-        <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Sampai</label>
-          <Input type="date" value={to} onChange={(e) => { setTo(e.target.value); setPage(1) }} className="w-[160px]" />
+        <div className="flex flex-wrap items-end gap-2">
+          <FinanceFormDatePicker
+            id={`ledger-to-${fundType}`}
+            label="Sampai tanggal"
+            value={to}
+            onChange={(v) => {
+              setTo(v)
+              setPage(1)
+            }}
+            placeholder="Semua"
+            buttonClassName="sm:w-[220px]"
+          />
+          {to ? (
+            <Button type="button" variant="ghost" size="icon" className="shrink-0" onClick={() => { setTo(''); setPage(1) }} aria-label="Hapus filter sampai tanggal">
+              <X className="h-4 w-4" />
+            </Button>
+          ) : null}
         </div>
-        <Button type="button" variant="ghost" size="sm" onClick={() => { setFrom(''); setTo(''); setPage(1) }}>
+        <Button type="button" variant="ghost" size="sm" className="self-start sm:self-auto" onClick={() => { setFrom(''); setTo(''); setPage(1) }}>
           Reset filter
         </Button>
       </div>
@@ -160,13 +246,17 @@ export function FinanceFundLedgerPanel({ fundType, title }: FinanceFundLedgerPan
               {rows.map((row) => (
                 <TableRow key={row.id}>
                   <TableCell className="whitespace-nowrap">{formatTxDate(row.tx_date)}</TableCell>
-                  <TableCell>{row.tx_type}</TableCell>
+                  <TableCell>
+                    <TxTypeBadge type={row.tx_type} />
+                  </TableCell>
                   <TableCell>{row.category}</TableCell>
                   <TableCell className="max-w-[200px] truncate" title={row.description}>
                     {row.description}
                   </TableCell>
                   <TableCell className="text-right font-medium">{formatCurrency(row.amount)}</TableCell>
-                  <TableCell>{row.approval_status}</TableCell>
+                  <TableCell>
+                    <ApprovalBadge status={row.approval_status} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -175,7 +265,7 @@ export function FinanceFundLedgerPanel({ fundType, title }: FinanceFundLedgerPan
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
           <span className="text-muted-foreground">
             Halaman {page} dari {totalPages} ({data?.total ?? 0} transaksi)
           </span>

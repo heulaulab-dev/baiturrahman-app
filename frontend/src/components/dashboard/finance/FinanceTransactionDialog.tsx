@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import axios from 'axios'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { toast } from 'sonner'
@@ -17,11 +17,33 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import { FinanceFormDatePicker } from '@/components/dashboard/finance/FinanceFormDatePicker'
 import { useCreateFinanceTransaction } from '@/services/financeHooks'
 import type { FinanceFundType } from '@/types'
 
 export type FinanceManualTxMode = 'pemasukan' | 'pengeluaran' | 'opening_balance' | 'adjustment'
+
+const PRESET_CATEGORIES = [
+  { value: 'listrik', label: 'Listrik / utilitas' },
+  { value: 'air', label: 'Air' },
+  { value: 'kotak_jumat', label: 'Kotak amal Jumat' },
+  { value: 'kotak_luar', label: 'Kotak amal luar' },
+  { value: 'bisaroh_khotib', label: 'Bisaroh / honor khatib' },
+  { value: 'anak_yatim_duafa', label: 'Anak yatim & duafa' },
+  { value: 'pemeliharaan', label: 'Pemeliharaan / perbaikan' },
+  { value: 'kebersihan', label: 'Kebersihan' },
+] as const
 
 const formSchema = z.object({
   tx_date: z
@@ -58,6 +80,11 @@ function defaultValues(): FormValues {
   }
 }
 
+function categorySelectValue(category: string): string | undefined {
+  if (!category) return undefined
+  return PRESET_CATEGORIES.some((p) => p.value === category) ? category : 'lainnya'
+}
+
 export interface FinanceTransactionDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -81,6 +108,7 @@ export function FinanceTransactionDialog({
     reset,
     watch,
     setValue,
+    control,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -95,6 +123,9 @@ export function FinanceTransactionDialog({
 
   const showDisplayBelow = mode === 'pemasukan'
   const displayBelowChecked = watch('display_below')
+  const categoryField = watch('category')
+  const categoryBinding = categorySelectValue(categoryField)
+  const showCategoryCustom = categoryBinding === 'lainnya'
 
   async function onSubmit(values: FormValues) {
     try {
@@ -132,24 +163,61 @@ export function FinanceTransactionDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <Field>
-            <FieldLabel htmlFor="finance-tx-date">Tanggal</FieldLabel>
-            <Input id="finance-tx-date" type="date" {...register('tx_date')} />
-            {errors.tx_date && <FieldError>{errors.tx_date.message}</FieldError>}
-          </Field>
+          <Controller
+            name="tx_date"
+            control={control}
+            render={({ field }) => (
+              <FinanceFormDatePicker
+                id="finance-tx-date"
+                label="Tanggal"
+                value={field.value}
+                onChange={field.onChange}
+                error={errors.tx_date?.message}
+              />
+            )}
+          />
           <Field>
             <FieldLabel htmlFor="finance-tx-amount">Nominal (Rp)</FieldLabel>
             <Input id="finance-tx-amount" type="text" inputMode="decimal" placeholder="0" {...register('amount')} />
             {errors.amount && <FieldError>{errors.amount.message}</FieldError>}
           </Field>
           <Field>
-            <FieldLabel htmlFor="finance-tx-category">Kategori</FieldLabel>
-            <Input id="finance-tx-category" placeholder="contoh: listrik, kotak_jumat" {...register('category')} />
+            <FieldLabel>Kategori</FieldLabel>
+            <Select
+              value={categoryBinding}
+              onValueChange={(v) => {
+                if (v === 'lainnya') {
+                  setValue('category', categoryField && !PRESET_CATEGORIES.some((p) => p.value === categoryField) ? categoryField : '')
+                } else {
+                  setValue('category', v)
+                }
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Pilih kategori" />
+              </SelectTrigger>
+              <SelectContent>
+                {PRESET_CATEGORIES.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>
+                    {c.label}
+                  </SelectItem>
+                ))}
+                <SelectItem value="lainnya">Lainnya (ketik manual)</SelectItem>
+              </SelectContent>
+            </Select>
+            {showCategoryCustom && (
+              <Input
+                className="mt-2"
+                id="finance-tx-category-custom"
+                placeholder="Nama kategori"
+                {...register('category')}
+              />
+            )}
             {errors.category && <FieldError>{errors.category.message}</FieldError>}
           </Field>
           <Field>
             <FieldLabel htmlFor="finance-tx-desc">Keterangan</FieldLabel>
-            <Input id="finance-tx-desc" {...register('description')} />
+            <Textarea id="finance-tx-desc" rows={3} className="resize-y min-h-[80px]" {...register('description')} />
             {errors.description && <FieldError>{errors.description.message}</FieldError>}
           </Field>
           <Field>
@@ -157,15 +225,16 @@ export function FinanceTransactionDialog({
             <Input id="finance-tx-ref" {...register('reference_no')} />
           </Field>
           {showDisplayBelow && (
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                className="rounded border-input"
+            <div className="flex items-start gap-3 space-y-0">
+              <Checkbox
+                id="finance-display-below"
                 checked={Boolean(displayBelowChecked)}
-                onChange={(e) => setValue('display_below', e.target.checked)}
+                onCheckedChange={(c) => setValue('display_below', c === true)}
               />
-              Tampilkan terpisah di bawah saldo akhir laporan
-            </label>
+              <Label htmlFor="finance-display-below" className="text-sm font-normal leading-snug cursor-pointer">
+                Tampilkan terpisah di bawah saldo akhir laporan
+              </Label>
+            </div>
           )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

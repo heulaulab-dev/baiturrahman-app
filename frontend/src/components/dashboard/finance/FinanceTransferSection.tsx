@@ -2,11 +2,11 @@
 
 import { useMemo, useState } from 'react'
 import axios from 'axios'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
+import { Loader2, MoreHorizontal, X } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import {
   useApproveFinanceTransfer,
@@ -16,7 +16,15 @@ import {
 } from '@/services/financeHooks'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   Table,
   TableBody,
@@ -32,6 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { FinanceFormDatePicker } from '@/components/dashboard/finance/FinanceFormDatePicker'
 
 const transferFormSchema = z.object({
   tx_date: z
@@ -70,6 +79,38 @@ function transferErrorMessage(raw: string | undefined): string {
   return raw
 }
 
+function StatusBadge({ status }: { status: string }) {
+  if (status === 'pending') {
+    return (
+      <Badge variant="secondary" className="font-normal">
+        Menunggu
+      </Badge>
+    )
+  }
+  if (status === 'approved') {
+    return (
+      <Badge
+        variant="outline"
+        className="border-emerald-500/40 bg-emerald-500/10 font-normal text-emerald-800 dark:text-emerald-200"
+      >
+        Disetujui
+      </Badge>
+    )
+  }
+  if (status === 'rejected') {
+    return (
+      <Badge variant="destructive" className="font-normal">
+        Ditolak
+      </Badge>
+    )
+  }
+  return (
+    <Badge variant="outline" className="font-normal">
+      {status}
+    </Badge>
+  )
+}
+
 export function FinanceTransferSection() {
   const { hasPermission } = useAuth()
   const canView = hasPermission('finance.view_reports')
@@ -102,6 +143,7 @@ export function FinanceTransferSection() {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<TransferFormValues>({
     resolver: zodResolver(transferFormSchema),
@@ -187,14 +229,22 @@ export function FinanceTransferSection() {
       </div>
 
       {canRequest && (
-        <div className="rounded-md border border-border p-4 space-y-4 max-w-lg">
+        <div className="max-w-lg space-y-4 rounded-md border border-border p-4">
           <h3 className="text-sm font-medium">Ajukan transfer</h3>
           <form onSubmit={handleSubmit(onSubmitTransfer)} className="space-y-3">
-            <Field>
-              <FieldLabel htmlFor="tr-tx-date">Tanggal</FieldLabel>
-              <Input id="tr-tx-date" type="date" {...register('tx_date')} />
-              {errors.tx_date && <FieldError>{errors.tx_date.message}</FieldError>}
-            </Field>
+            <Controller
+              name="tx_date"
+              control={control}
+              render={({ field }) => (
+                <FinanceFormDatePicker
+                  id="transfer-form-date"
+                  label="Tanggal"
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={errors.tx_date?.message}
+                />
+              )}
+            />
             <Field>
               <FieldLabel htmlFor="tr-amount">Nominal (Rp)</FieldLabel>
               <Input id="tr-amount" type="text" inputMode="decimal" placeholder="0" {...register('amount')} />
@@ -202,7 +252,7 @@ export function FinanceTransferSection() {
             </Field>
             <Field>
               <FieldLabel htmlFor="tr-desc">Keterangan</FieldLabel>
-              <Input id="tr-desc" {...register('description')} />
+              <Textarea id="tr-desc" rows={3} className="resize-y min-h-[72px]" {...register('description')} />
               {errors.description && <FieldError>{errors.description.message}</FieldError>}
             </Field>
             <Button type="submit" disabled={createMutation.isPending}>
@@ -219,7 +269,7 @@ export function FinanceTransferSection() {
         </div>
       )}
 
-      <div className="flex flex-wrap items-end gap-3">
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
         <div className="space-y-1">
           <span className="text-xs text-muted-foreground">Status</span>
           <Select
@@ -229,7 +279,7 @@ export function FinanceTransferSection() {
               setPage(1)
             }}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -240,15 +290,43 @@ export function FinanceTransferSection() {
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Dari</label>
-          <Input type="date" value={from} onChange={(e) => { setFrom(e.target.value); setPage(1) }} className="w-[160px]" />
+        <div className="flex flex-wrap items-end gap-2">
+          <FinanceFormDatePicker
+            id="transfer-filter-from"
+            label="Dari tanggal"
+            value={from}
+            onChange={(v) => {
+              setFrom(v)
+              setPage(1)
+            }}
+            placeholder="Semua"
+            buttonClassName="sm:w-[200px]"
+          />
+          {from ? (
+            <Button type="button" variant="ghost" size="icon" className="shrink-0" onClick={() => { setFrom(''); setPage(1) }} aria-label="Hapus filter dari tanggal">
+              <X className="h-4 w-4" />
+            </Button>
+          ) : null}
         </div>
-        <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Sampai</label>
-          <Input type="date" value={to} onChange={(e) => { setTo(e.target.value); setPage(1) }} className="w-[160px]" />
+        <div className="flex flex-wrap items-end gap-2">
+          <FinanceFormDatePicker
+            id="transfer-filter-to"
+            label="Sampai tanggal"
+            value={to}
+            onChange={(v) => {
+              setTo(v)
+              setPage(1)
+            }}
+            placeholder="Semua"
+            buttonClassName="sm:w-[200px]"
+          />
+          {to ? (
+            <Button type="button" variant="ghost" size="icon" className="shrink-0" onClick={() => { setTo(''); setPage(1) }} aria-label="Hapus filter sampai tanggal">
+              <X className="h-4 w-4" />
+            </Button>
+          ) : null}
         </div>
-        <Button type="button" variant="ghost" size="sm" onClick={() => { setStatus('all'); setFrom(''); setTo(''); setPage(1) }}>
+        <Button type="button" variant="ghost" size="sm" className="self-start sm:self-auto" onClick={() => { setStatus('all'); setFrom(''); setTo(''); setPage(1) }}>
           Reset filter
         </Button>
       </div>
@@ -273,7 +351,7 @@ export function FinanceTransferSection() {
                 <TableHead>Nominal</TableHead>
                 <TableHead>Keterangan</TableHead>
                 <TableHead>Status</TableHead>
-                {canApprove && <TableHead className="text-right">Aksi</TableHead>}
+                {canApprove && <TableHead className="text-right w-[100px]">Aksi</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -287,29 +365,28 @@ export function FinanceTransferSection() {
                     <TableCell className="max-w-[220px] truncate" title={row.description}>
                       {row.description}
                     </TableCell>
-                    <TableCell>{row.approval_status}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={row.approval_status} />
+                    </TableCell>
                     {canApprove && (
                       <TableCell className="text-right">
                         {row.approval_status === 'pending' ? (
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              type="button"
-                              size="sm"
-                              disabled={busy}
-                              onClick={() => onApprove(linkId)}
-                            >
-                              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Setujui'}
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              disabled={busy}
-                              onClick={() => onReject(linkId)}
-                            >
-                              Tolak
-                            </Button>
-                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button type="button" variant="outline" size="icon" disabled={busy} aria-label="Aksi transfer">
+                                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => onApprove(linkId)}>Setujui transfer</DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onClick={() => onReject(linkId)}
+                              >
+                                Tolak transfer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         ) : (
                           <span className="text-xs text-muted-foreground">—</span>
                         )}
@@ -324,7 +401,7 @@ export function FinanceTransferSection() {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
           <span className="text-muted-foreground">
             Halaman {page} dari {totalPages}
           </span>

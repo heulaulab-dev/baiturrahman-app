@@ -68,10 +68,11 @@ function invalidateKontenLandingQueries(queryClient: QueryClient) {
   queryClient.invalidateQueries({ queryKey: ['khutbah', 'archive'] })
 }
 
-export const useDonationStats = () => {
+export const useDonationStats = (queryEnabled = true) => {
   return useQuery({
     queryKey: ['admin', 'donation-stats'],
     queryFn: getDonationStats,
+    enabled: queryEnabled,
     staleTime: 1000 * 60,
     refetchOnWindowFocus: true,
   })

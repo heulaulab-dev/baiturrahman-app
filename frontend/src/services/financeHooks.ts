@@ -87,11 +87,14 @@ export const useFinanceTransfers = (params?: GetFinanceTransfersParams) =>
     staleTime: 1000 * 30,
   })
 
-export const useFinanceMonthlyReport = (params: { fund_type: FinanceFundType; year: number; month: number }) =>
+export const useFinanceMonthlyReport = (
+  params: { fund_type: FinanceFundType; year: number; month: number },
+  queryEnabled = true
+) =>
   useQuery({
     queryKey: ['admin', 'finance', 'monthly-report', params],
     queryFn: () => getFinanceMonthlyReport(params),
-    enabled: Boolean(params.fund_type && params.year && params.month),
+    enabled: Boolean(params.fund_type && params.year && params.month) && queryEnabled,
     staleTime: 1000 * 30,
   })
 

@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-11  
 **Branch:** `feature/laporan-keuangan` (asumsi)  
-**Status:** Draft — menunggu review file di repo  
+**Status:** Approved  
 **Relates to:** `docs/superpowers/specs/2026-04-07-laporan-keuangan-design.md`
 
 ---

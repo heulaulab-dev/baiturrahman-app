@@ -17,9 +17,15 @@ const (
 	PermissionAccessPengaturan   = "access_pengaturan"
 	PermissionAccessRbacSettings = "access_rbac_settings"
 
-	PermissionViewDonationReports = "view_donation_reports"
-	PermissionViewDonationStats   = "view_donation_stats"
-	PermissionExportDonations     = "export_donations"
+	PermissionViewDonationReports    = "view_donation_reports"
+	PermissionViewDonationStats      = "view_donation_stats"
+	PermissionExportDonations        = "export_donations"
+	PermissionFinanceViewReports     = "finance.view_reports"
+	PermissionFinanceCreateTx        = "finance.create_transaction"
+	PermissionFinanceRequestTransfer = "finance.request_transfer"
+	PermissionFinanceApproveTransfer = "finance.approve_transfer"
+	PermissionFinanceExportReports   = "finance.export_reports"
+	PermissionFinanceAdjustOpening   = "finance.adjust_opening_balance"
 )
 
 type Permission struct {
@@ -116,6 +122,48 @@ func DefaultPermissionsCatalog() []Permission {
 			Module:      "donations",
 			IsActive:    true,
 		},
+		{
+			Key:         PermissionFinanceViewReports,
+			Name:        "Lihat Laporan Keuangan",
+			Description: "Dapat melihat transaksi dan laporan keuangan",
+			Module:      "finance",
+			IsActive:    true,
+		},
+		{
+			Key:         PermissionFinanceCreateTx,
+			Name:        "Buat Transaksi Keuangan",
+			Description: "Dapat membuat transaksi pemasukan dan pengeluaran kas",
+			Module:      "finance",
+			IsActive:    true,
+		},
+		{
+			Key:         PermissionFinanceRequestTransfer,
+			Name:        "Ajukan Transfer Kas",
+			Description: "Dapat membuat permintaan transfer kas besar ke kas kecil",
+			Module:      "finance",
+			IsActive:    true,
+		},
+		{
+			Key:         PermissionFinanceApproveTransfer,
+			Name:        "Setujui Transfer Kas",
+			Description: "Dapat menyetujui atau menolak permintaan transfer kas",
+			Module:      "finance",
+			IsActive:    true,
+		},
+		{
+			Key:         PermissionFinanceExportReports,
+			Name:        "Ekspor Laporan Keuangan",
+			Description: "Dapat mengunduh laporan keuangan PDF dan CSV",
+			Module:      "finance",
+			IsActive:    true,
+		},
+		{
+			Key:         PermissionFinanceAdjustOpening,
+			Name:        "Koreksi Saldo Awal",
+			Description: "Dapat membuat penyesuaian saldo awal dan koreksi kas",
+			Module:      "finance",
+			IsActive:    true,
+		},
 	}
 }
 
@@ -174,29 +222,37 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 
 	return map[StrukturRole]map[string]bool{
 		StrukturRoleBendahara: {
-			PermissionAccessDashboard:     baseMenuPermissions[PermissionAccessDashboard],
-			PermissionAccessJamaah:        baseMenuPermissions[PermissionAccessJamaah],
-			PermissionAccessReservasi:     baseMenuPermissions[PermissionAccessReservasi],
-			PermissionAccessDonasiMenu:    baseMenuPermissions[PermissionAccessDonasiMenu],
-			PermissionAccessInventaris:    baseMenuPermissions[PermissionAccessInventaris],
-			PermissionAccessLaporanMenu:   baseMenuPermissions[PermissionAccessLaporanMenu],
-			PermissionAccessKonten:        baseMenuPermissions[PermissionAccessKonten],
-			PermissionAccessPengaturan:    baseMenuPermissions[PermissionAccessPengaturan],
-			PermissionAccessRbacSettings:  baseMenuPermissions[PermissionAccessRbacSettings],
-			PermissionViewDonationReports: true,
-			PermissionViewDonationStats:   true,
-			PermissionExportDonations:     true,
+			PermissionAccessDashboard:        baseMenuPermissions[PermissionAccessDashboard],
+			PermissionAccessJamaah:           baseMenuPermissions[PermissionAccessJamaah],
+			PermissionAccessReservasi:        baseMenuPermissions[PermissionAccessReservasi],
+			PermissionAccessDonasiMenu:       baseMenuPermissions[PermissionAccessDonasiMenu],
+			PermissionAccessInventaris:       baseMenuPermissions[PermissionAccessInventaris],
+			PermissionAccessLaporanMenu:      baseMenuPermissions[PermissionAccessLaporanMenu],
+			PermissionAccessKonten:           baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessPengaturan:       baseMenuPermissions[PermissionAccessPengaturan],
+			PermissionAccessRbacSettings:     baseMenuPermissions[PermissionAccessRbacSettings],
+			PermissionViewDonationReports:    true,
+			PermissionViewDonationStats:      true,
+			PermissionExportDonations:        true,
+			PermissionFinanceViewReports:     true,
+			PermissionFinanceCreateTx:        true,
+			PermissionFinanceRequestTransfer: true,
+			PermissionFinanceApproveTransfer: true,
+			PermissionFinanceExportReports:   true,
+			PermissionFinanceAdjustOpening:   true,
 		},
 		StrukturRoleKetua: {
-			PermissionAccessDashboard:    baseMenuPermissions[PermissionAccessDashboard],
-			PermissionAccessJamaah:       baseMenuPermissions[PermissionAccessJamaah],
-			PermissionAccessReservasi:    baseMenuPermissions[PermissionAccessReservasi],
-			PermissionAccessDonasiMenu:   baseMenuPermissions[PermissionAccessDonasiMenu],
-			PermissionAccessInventaris:   baseMenuPermissions[PermissionAccessInventaris],
-			PermissionAccessLaporanMenu:  baseMenuPermissions[PermissionAccessLaporanMenu],
-			PermissionAccessKonten:       baseMenuPermissions[PermissionAccessKonten],
-			PermissionAccessPengaturan:   baseMenuPermissions[PermissionAccessPengaturan],
-			PermissionAccessRbacSettings: true,
+			PermissionAccessDashboard:      baseMenuPermissions[PermissionAccessDashboard],
+			PermissionAccessJamaah:         baseMenuPermissions[PermissionAccessJamaah],
+			PermissionAccessReservasi:      baseMenuPermissions[PermissionAccessReservasi],
+			PermissionAccessDonasiMenu:     baseMenuPermissions[PermissionAccessDonasiMenu],
+			PermissionAccessInventaris:     baseMenuPermissions[PermissionAccessInventaris],
+			PermissionAccessLaporanMenu:    baseMenuPermissions[PermissionAccessLaporanMenu],
+			PermissionAccessKonten:         baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessPengaturan:     baseMenuPermissions[PermissionAccessPengaturan],
+			PermissionAccessRbacSettings:   true,
+			PermissionFinanceViewReports:   true,
+			PermissionFinanceExportReports: true,
 		},
 		StrukturRoleSekretaris: {
 			PermissionAccessDashboard:    baseMenuPermissions[PermissionAccessDashboard],

@@ -1,0 +1,100 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  approveFinanceTransfer,
+  createFinanceTransaction,
+  createFinanceTransfer,
+  exportFinanceMonthlyCsv,
+  exportFinanceMonthlyPdf,
+  getFinanceBalance,
+  getFinanceMonthlyReport,
+  getFinanceTransfers,
+  getFinanceTransactions,
+  rejectFinanceTransfer,
+  type GetFinanceTransfersParams,
+  type GetFinanceTransactionsParams,
+} from './financeApiService'
+import type { FinanceFundType } from '@/types'
+
+export const useFinanceTransactions = (params?: GetFinanceTransactionsParams) =>
+  useQuery({
+    queryKey: ['admin', 'finance', 'transactions', params],
+    queryFn: () => getFinanceTransactions(params),
+    staleTime: 1000 * 30,
+  })
+
+export const useFinanceBalance = (fundType: FinanceFundType) =>
+  useQuery({
+    queryKey: ['admin', 'finance', 'balance', fundType],
+    queryFn: () => getFinanceBalance(fundType),
+    enabled: !!fundType,
+    staleTime: 1000 * 15,
+  })
+
+export const useCreateFinanceTransaction = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createFinanceTransaction,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'transactions'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'balance', variables.fund_type] })
+    },
+  })
+}
+
+export const useCreateFinanceTransfer = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createFinanceTransfer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'transactions'] })
+    },
+  })
+}
+
+export const useApproveFinanceTransfer = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: approveFinanceTransfer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'transactions'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'balance', 'kas_besar'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'balance', 'kas_kecil'] })
+    },
+  })
+}
+
+export const useRejectFinanceTransfer = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: rejectFinanceTransfer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'finance', 'transactions'] })
+    },
+  })
+}
+
+export const useFinanceTransfers = (params?: GetFinanceTransfersParams) =>
+  useQuery({
+    queryKey: ['admin', 'finance', 'transfers', params],
+    queryFn: () => getFinanceTransfers(params),
+    staleTime: 1000 * 30,
+  })
+
+export const useFinanceMonthlyReport = (params: { fund_type: FinanceFundType; year: number; month: number }) =>
+  useQuery({
+    queryKey: ['admin', 'finance', 'monthly-report', params],
+    queryFn: () => getFinanceMonthlyReport(params),
+    enabled: Boolean(params.fund_type && params.year && params.month),
+    staleTime: 1000 * 30,
+  })
+
+export const useExportFinanceMonthlyCsv = () =>
+  useMutation({
+    mutationFn: exportFinanceMonthlyCsv,
+  })
+
+export const useExportFinanceMonthlyPdf = () =>
+  useMutation({
+    mutationFn: exportFinanceMonthlyPdf,
+  })
+

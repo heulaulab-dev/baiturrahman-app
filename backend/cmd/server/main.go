@@ -199,6 +199,18 @@ func main() {
 			admin.GET("/donations/stats", middleware.RequirePermission(models.PermissionViewDonationStats), h.GetDonationStats)
 			admin.GET("/donations/export", middleware.RequirePermission(models.PermissionExportDonations), h.ExportDonations)
 
+			// Finance
+			admin.GET("/finance/transactions", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceTransactions)
+			admin.POST("/finance/transactions", middleware.RequirePermission(models.PermissionFinanceCreateTx), h.CreateFinanceTransaction)
+			admin.GET("/finance/balance", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceBalance)
+			admin.POST("/finance/transfers", middleware.RequirePermission(models.PermissionFinanceRequestTransfer), h.CreateFinanceTransfer)
+			admin.GET("/finance/transfers", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceTransfers)
+			admin.PUT("/finance/transfers/:id/approve", middleware.RequirePermission(models.PermissionFinanceApproveTransfer), h.ApproveFinanceTransfer)
+			admin.PUT("/finance/transfers/:id/reject", middleware.RequirePermission(models.PermissionFinanceApproveTransfer), h.RejectFinanceTransfer)
+			admin.GET("/finance/reports/monthly", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceMonthlyReport)
+			admin.GET("/finance/reports/monthly/csv", middleware.RequirePermission(models.PermissionFinanceExportReports), h.ExportFinanceMonthlyCSV)
+			admin.GET("/finance/reports/monthly/pdf", middleware.RequirePermission(models.PermissionFinanceExportReports), h.ExportFinanceMonthlyPDF)
+
 			// Payment Methods
 			admin.GET("/payment-methods", h.GetPaymentMethods)
 			admin.POST("/payment-methods", h.CreatePaymentMethod)

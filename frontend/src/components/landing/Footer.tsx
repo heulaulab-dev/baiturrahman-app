@@ -65,6 +65,28 @@ export function Footer() {
 						<p className="text-xs text-sacred-muted">
 							&copy; {new Date().getFullYear()} {mosqueInfo?.name || 'Masjid Baiturrahim'}. All rights reserved.
 						</p>
+						<div className='flex flex-wrap items-center gap-x-2 gap-y-1 pt-1'>
+								<Link href='https://heulaulab.tech' target='_blank' rel='noopener noreferrer'>
+									<div className='flex items-center gap-x-2'>
+										<Image
+									src='/heulaulab.svg'
+									alt='HeulauLab'
+									width={100}
+									height={100}
+									className='dark:invert w-auto h-10'
+								/>
+									<span
+										className='text-muted-foreground/40 select-none'
+										aria-hidden
+									>
+										|
+									</span>
+									<span className='text-[11px] text-muted-foreground/90'>
+										Proudly partnered with heulaulab
+									</span>
+									</div>
+								</Link>
+					</div>
 					</div>
 
 					{/* Center: Quick Links */}

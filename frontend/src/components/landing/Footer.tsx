@@ -27,7 +27,7 @@ const quickLinks: Record<string, QuickLinkItem[]> = {
 	Layanan: [
 		{ label: 'Zakat & Wakaf', href: '/#layanan' },
 		{ label: 'Reservasi', href: '/#layanan' },
-		{ label: 'Donasi', href: '/#donasi' },
+		{ label: 'Tabungan Akhirat', href: '/#donasi' },
 	],
 };
 

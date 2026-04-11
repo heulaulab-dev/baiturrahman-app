@@ -130,10 +130,11 @@ export function DonationSection() {
 					className="text-center mb-12"
 				>
 					<h2 className="font-serif-cormorant font-semibold text-[clamp(2rem,4vw,3rem)] text-sacred-green mb-4">
-						Donasi & Wakaf
+						Tabungan Akhirat & Wakaf
 					</h2>
 					<p className="text-sacred-muted max-w-2xl mx-auto">
-						Sedekah dan wakaf Anda akan disalurkan untuk operasional masjid, program pendidikan, dan bantuan sosial.
+						Yang kita tabung di dunia hanya sementara; yang kita niatkan untuk Allah tetap mengalir. Infak, sedekah, dan
+						wakaf Anda menopang operasional masjid, pendidikan, serta uluran tangan bagi mereka yang membutuhkan.
 					</p>
 				</motion.div>
 
@@ -174,7 +175,7 @@ export function DonationSection() {
 										setShowCalculator(false);
 									}}
 								>
-									Isi Form Donasi
+									Buka Form Tabungan Akhirat
 								</Button>
 							</motion.div>
 						</div>
@@ -200,7 +201,7 @@ export function DonationSection() {
 							) : (
 								<QrCode size={160} className="text-sacred-green mb-4" />
 							)}
-							<span className="text-sm text-sacred-muted">Scan untuk Donasi</span>
+							<span className="text-sm text-sacred-muted">Scan — isi tabungan akhirat Anda</span>
 							<span className="text-xs text-sacred-gold mt-1">QRIS Masjid Baiturrahman</span>
 							{qrisMethods.length > 0 && qrisMethods[0].instructions && (
 								<p className="text-xs text-sacred-muted mt-2 text-center">{qrisMethods[0].instructions}</p>
@@ -272,13 +273,13 @@ export function DonationSection() {
 						className="mt-12 max-w-lg mx-auto"
 					>
 						<div className="p-6 border border-sacred-green">
-							<h4 className="font-serif-cormorant text-lg text-sacred-green mb-4">Formulir Donasi</h4>
+							<h4 className="font-serif-cormorant text-lg text-sacred-green mb-4">Formulir Tabungan Akhirat</h4>
 
 							{donationSuccess ? (
 								<div className="text-center py-8">
 									<Check size={48} className="text-sacred-gold mx-auto mb-2" />
-									<p className="text-sacred-green font-medium">Terima kasih atas donasi Anda!</p>
-									<p className="text-xs text-sacred-muted mt-1">Silakan transfer sesuai nominal yang tertera.</p>
+									<p className="text-sacred-green font-medium">Barakallahu fiikum — ikrar Anda telah tercatat.</p>
+									<p className="text-xs text-sacred-muted mt-1">Lanjutkan transfer sesuai nominal; semoga Allah lipatgandakan pahalanya.</p>
 								</div>
 							) : (
 								<form onSubmit={handleDonationSubmit} className="space-y-4">
@@ -297,14 +298,14 @@ export function DonationSection() {
 									</div>
 									<div>
 										<Label htmlFor="donation-amount" className="block text-sm text-sacred-green mb-1">
-											Jumlah Donasi (Rp)
+											Nominal infak (Rp)
 										</Label>
 										<Input
 											id="donation-amount"
 											type="number"
 											value={donationAmount}
 											onChange={(e) => setDonationAmount(e.target.value)}
-											placeholder="Masukkan jumlah donasi"
+											placeholder="Tuliskan jumlah yang ingin Anda niatkan"
 											min="1"
 											required
 										/>
@@ -359,7 +360,7 @@ export function DonationSection() {
 										className="w-full"
 										disabled={donationMutation.isPending}
 									>
-										{donationMutation.isPending ? 'Memproses...' : 'Kirim Donasi'}
+										{donationMutation.isPending ? 'Memproses...' : 'Kirim & catat ikrar'}
 									</Button>
 									<p className="text-xs text-sacred-muted text-center">
 										Setelah mengirim, silakan transfer ke rekening yang dipilih.

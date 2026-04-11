@@ -45,7 +45,7 @@ function LoginContent() {
 			}
 			title='Masuk ke dashboard admin'
 			description='Masuk ke dashboard admin'
-			imageSrc="/images/login-image.jpg"
+			imageSrc="/images/masjid_baiturrahim.jpeg"
 			imageAlt='Masuk ke dashboard admin'
 			onSubmit={onSubmit}
 			forgotPasswordHref='/forgot-password'

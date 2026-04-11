@@ -1,11 +1,12 @@
 package handlers
 
 import (
-	"net/http"
 	"masjid-baiturrahim-backend/internal/models"
 	"masjid-baiturrahim-backend/internal/utils"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -36,16 +37,32 @@ func (h *Handler) GetUsers(c *gin.Context) {
 
 func (h *Handler) CreateUser(c *gin.Context) {
 	var req struct {
-		Username string          `json:"username" binding:"required"`
-		Email    string          `json:"email" binding:"required,email"`
-		Password string          `json:"password" binding:"required,min=6"`
-		FullName string          `json:"full_name" binding:"required"`
-		Role     models.UserRole `json:"role" binding:"required"`
+		Username   string              `json:"username" binding:"required"`
+		Email      string              `json:"email" binding:"required,email"`
+		Password   string              `json:"password" binding:"required,min=6"`
+		FullName   string              `json:"full_name" binding:"required"`
+		Role       models.UserRole     `json:"role" binding:"required"`
+		OrgRole    models.StrukturRole `json:"org_role"`
+		StrukturID *uuid.UUID          `json:"struktur_id"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
+	}
+	if req.OrgRole == "" {
+		req.OrgRole = models.StrukturRoleLainnya
+	}
+	if !models.IsValidOrgRole(req.OrgRole) {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid org_role")
+		return
+	}
+	if req.StrukturID != nil {
+		var struktur models.Struktur
+		if err := h.DB.Select("id").First(&struktur, "id = ?", *req.StrukturID).Error; err != nil {
+			utils.ErrorResponse(c, http.StatusBadRequest, "Invalid struktur_id")
+			return
+		}
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), 12)
@@ -60,6 +77,8 @@ func (h *Handler) CreateUser(c *gin.Context) {
 		PasswordHash: string(hashedPassword),
 		FullName:     req.FullName,
 		Role:         req.Role,
+		OrgRole:      req.OrgRole,
+		StrukturID:   req.StrukturID,
 		IsActive:     true,
 	}
 
@@ -81,12 +100,14 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 	}
 
 	var req struct {
-		Username  string          `json:"username"`
-		Email     string          `json:"email"`
-		FullName  string          `json:"full_name"`
-		Role      models.UserRole `json:"role"`
-		IsActive  *bool           `json:"is_active"`
-		AvatarURL *string         `json:"avatar_url"`
+		Username   string              `json:"username"`
+		Email      string              `json:"email"`
+		FullName   string              `json:"full_name"`
+		Role       models.UserRole     `json:"role"`
+		OrgRole    models.StrukturRole `json:"org_role"`
+		StrukturID *uuid.UUID          `json:"struktur_id"`
+		IsActive   *bool               `json:"is_active"`
+		AvatarURL  *string             `json:"avatar_url"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -105,6 +126,21 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 	}
 	if req.Role != "" {
 		user.Role = req.Role
+	}
+	if req.OrgRole != "" {
+		if !models.IsValidOrgRole(req.OrgRole) {
+			utils.ErrorResponse(c, http.StatusBadRequest, "Invalid org_role")
+			return
+		}
+		user.OrgRole = req.OrgRole
+	}
+	if req.StrukturID != nil {
+		var struktur models.Struktur
+		if err := h.DB.Select("id").First(&struktur, "id = ?", *req.StrukturID).Error; err != nil {
+			utils.ErrorResponse(c, http.StatusBadRequest, "Invalid struktur_id")
+			return
+		}
+		user.StrukturID = req.StrukturID
 	}
 	if req.IsActive != nil {
 		user.IsActive = *req.IsActive
@@ -130,4 +166,3 @@ func (h *Handler) DeleteUser(c *gin.Context) {
 
 	utils.SuccessResponse(c, http.StatusOK, nil, "User deleted successfully")
 }
-

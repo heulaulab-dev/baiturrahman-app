@@ -3,11 +3,11 @@ package handlers
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"net/http"
-	"time"
 	"masjid-baiturrahim-backend/config"
 	"masjid-baiturrahim-backend/internal/models"
 	"masjid-baiturrahim-backend/internal/utils"
+	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -67,12 +67,14 @@ func (h *Handler) Login(c *gin.Context) {
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 		"user": gin.H{
-			"id":        user.ID,
-			"email":     user.Email,
-			"username":  user.Username,
-			"full_name": user.FullName,
-			"role":      user.Role,
-			"avatar_url": user.AvatarURL,
+			"id":          user.ID,
+			"email":       user.Email,
+			"username":    user.Username,
+			"full_name":   user.FullName,
+			"role":        user.Role,
+			"org_role":    user.OrgRole,
+			"struktur_id": user.StrukturID,
+			"avatar_url":  user.AvatarURL,
 		},
 	}, "Login successful")
 }
@@ -141,16 +143,26 @@ func (h *Handler) GetMe(c *gin.Context) {
 		return
 	}
 
+	permissionMap, err := models.ResolvePermissionMapForOrgRole(h.DB, user.OrgRole)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to resolve permissions")
+		return
+	}
+	permissions := models.PermissionListFromMap(permissionMap)
+
 	utils.SuccessResponse(c, http.StatusOK, gin.H{
-		"id":           user.ID,
-		"username":     user.Username,
-		"email":        user.Email,
-		"full_name":    user.FullName,
-		"role":         user.Role,
+		"id":            user.ID,
+		"username":      user.Username,
+		"email":         user.Email,
+		"full_name":     user.FullName,
+		"role":          user.Role,
+		"org_role":      user.OrgRole,
+		"struktur_id":   user.StrukturID,
+		"permissions":   permissions,
 		"avatar_url":    user.AvatarURL,
 		"is_active":     user.IsActive,
 		"last_login_at": user.LastLoginAt,
-		"created_at":   user.CreatedAt,
+		"created_at":    user.CreatedAt,
 	}, "")
 }
 
@@ -203,9 +215,9 @@ func (h *Handler) Register(c *gin.Context) {
 	}
 
 	utils.SuccessResponse(c, http.StatusCreated, gin.H{
-		"id":       user.ID,
-		"username": user.Username,
-		"email":    user.Email,
+		"id":        user.ID,
+		"username":  user.Username,
+		"email":     user.Email,
 		"is_active": user.IsActive,
 	}, "Registration successful. Please wait for admin approval.")
 }
@@ -308,4 +320,3 @@ func (h *Handler) ResetPassword(c *gin.Context) {
 
 	utils.SuccessResponse(c, http.StatusOK, nil, "Password reset successfully. You can now login with your new password.")
 }
-

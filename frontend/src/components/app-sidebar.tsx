@@ -27,14 +27,28 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useAuth } from "@/context/AuthContext"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { isMobile, setOpen, controlMode } = useSidebar()
+  const { hasPermission } = useAuth()
+  const canAccessDashboard = hasPermission('access_dashboard')
+  const canAccessJamaah = hasPermission('access_jamaah')
+  const canAccessReservasi = hasPermission('access_reservasi')
+  const canAccessDonasiMenu = hasPermission('access_donasi_menu')
+  const canAccessInventaris = hasPermission('access_inventaris')
+  const canAccessLaporanMenu = hasPermission('access_laporan_menu')
+  const canAccessKonten = hasPermission('access_konten')
+  const canAccessPengaturan = hasPermission('access_pengaturan')
+  const canAccessRbacSettings = hasPermission('access_rbac_settings')
+  const canAccessFinanceReports = hasPermission('finance.view_reports')
+
   const navMain = [
     {
       title: "Dashboard",
       url: "/dashboard",
       icon: LayoutDashboard,
+      hidden: !canAccessDashboard,
       isActive: true,
       items: [
         {
@@ -47,6 +61,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: "Jamaah",
       url: "/jamaah",
       icon: Users,
+      hidden: !canAccessJamaah,
       items: [
         {
           title: "Daftar Jamaah",
@@ -58,6 +73,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: "Reservasi",
       url: "/reservasi",
       icon: CalendarDays,
+      hidden: !canAccessReservasi,
       items: [
         {
           title: "Manajemen Reservasi",
@@ -69,6 +85,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: "Donasi",
       url: "/donasi",
       icon: User,
+      hidden: !canAccessDonasiMenu,
       items: [
         {
           title: "Manajemen Donasi",
@@ -80,6 +97,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: "Inventaris",
       url: "/inventaris",
       icon: Boxes,
+      hidden: !canAccessInventaris,
       items: [
         {
           title: "Manajemen Inventaris",
@@ -88,9 +106,34 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       ],
     },
     {
+      title: "Keuangan",
+      url: "/keuangan/kas-besar",
+      icon: FileText,
+      hidden: !canAccessFinanceReports,
+      items: [
+        {
+          title: "Kas Besar",
+          url: "/keuangan/kas-besar",
+        },
+        {
+          title: "Kas Kecil",
+          url: "/keuangan/kas-kecil",
+        },
+        {
+          title: "Transfer Kas",
+          url: "/keuangan/transfer",
+        },
+        {
+          title: "Laporan Bulanan",
+          url: "/keuangan/laporan",
+        },
+      ],
+    },
+    {
       title: "Laporan",
       url: "/laporan",
       icon: FileText,
+      hidden: !canAccessLaporanMenu,
       items: [
         {
           title: "Ringkasan Laporan",
@@ -102,6 +145,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: "Konten",
       url: "/konten",
       icon: Building2,
+      hidden: !canAccessKonten,
       items: [
         {
           title: "Manajemen Konten",
@@ -113,14 +157,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: "Pengaturan",
       url: "/pengaturan",
       icon: Settings,
+      hidden: !canAccessPengaturan,
       items: [
         {
           title: "Pengaturan Umum",
           url: "/pengaturan",
         },
+        {
+          title: "Akses & RBAC",
+          url: "/pengaturan/rbac",
+          hidden: !canAccessRbacSettings,
+        },
       ],
     },
   ]
+    .map((item) => ({
+      ...item,
+      items: item.items?.filter((subItem: any) => !subItem.hidden),
+    }))
+    .filter((item) => !item.hidden)
 
   const navSecondary = [
     {

@@ -1,4 +1,14 @@
 export type UserRole = 'super_admin' | 'admin' | 'editor'
+export type OrgRole =
+  | 'ketua'
+  | 'sekretaris'
+  | 'bendahara'
+  | 'humas'
+  | 'imam_syah'
+  | 'muadzin'
+  | 'dai_amil'
+  | 'marbot'
+  | 'lainnya'
 
 export interface User {
   id: string
@@ -6,6 +16,9 @@ export interface User {
   username: string
   full_name: string
   role: UserRole
+  org_role: OrgRole
+  struktur_id?: string | null
+  permissions?: string[]
   avatar_url?: string
   is_active: boolean
   last_login_at?: string
@@ -319,4 +332,38 @@ export interface Struktur {
     full_name: string
     avatar_url?: string
   }
+}
+
+export type FinanceFundType = 'kas_besar' | 'kas_kecil'
+export type FinanceTxType =
+  | 'pemasukan'
+  | 'pengeluaran'
+  | 'transfer_out'
+  | 'transfer_in'
+  | 'opening_balance'
+  | 'adjustment'
+export type FinanceApprovalStatus = 'pending' | 'approved' | 'rejected'
+
+export interface FinanceTransaction {
+  id: string
+  fund_type: FinanceFundType
+  tx_type: FinanceTxType
+  tx_date: string
+  amount: number
+  category: string
+  description: string
+  reference_no?: string | null
+  display_below: boolean
+  approval_status: FinanceApprovalStatus
+  linked_transfer_id?: string | null
+  created_by: string
+  approved_by?: string | null
+  approved_at?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface FinanceBalanceResponse {
+  fund_type: FinanceFundType
+  balance: number
 }

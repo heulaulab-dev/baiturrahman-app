@@ -19,9 +19,9 @@ import type {
 } from '@/types'
 
 // Mosque Info
-export const getMosqueInfo = async (): Promise<MosqueInfo> => {
-  const response = await api.get<ApiResponse<MosqueInfo>>('/v1/mosque')
-  return response.data.data
+export const getMosqueInfo = async (): Promise<MosqueInfo | null> => {
+  const response = await api.get<ApiResponse<MosqueInfo | null>>('/v1/mosque')
+  return response.data.data ?? null
 }
 
 // Prayer Times
@@ -100,9 +100,9 @@ export const getStructures = async (): Promise<StructureMember[]> => {
 }
 
 // Khutbah
-export const getLatestKhutbah = async (): Promise<Khutbah> => {
-  const response = await api.get<ApiResponse<Khutbah>>('/v1/khutbahs/latest')
-  return response.data.data
+export const getLatestKhutbah = async (): Promise<Khutbah | null> => {
+  const response = await api.get<ApiResponse<Khutbah | null>>('/v1/khutbahs/latest')
+  return response.data.data ?? null
 }
 
 export const getKhutbahArchive = async (): Promise<Khutbah[]> => {

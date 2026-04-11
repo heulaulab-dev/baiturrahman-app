@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
@@ -72,8 +72,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from '@/components/ui/form';
-import { useAdminUsers, useCreateUser } from '@/services/adminHooks';
-import type { UserRole } from '@/types';
+import { useAdminStrukturs, useAdminUsers, useCreateUser } from '@/services/adminHooks';
+import type { OrgRole, UserRole } from '@/types';
 
 const filterOptions = ['Semua', 'Aktif', 'Tidak Aktif', 'Muallaf'];
 
@@ -81,6 +81,18 @@ const roleOptions: { value: UserRole; label: string }[] = [
 	{ value: 'editor', label: 'Editor' },
 	{ value: 'admin', label: 'Admin' },
 	{ value: 'super_admin', label: 'Super Admin' },
+];
+
+const orgRoleOptions: { value: OrgRole; label: string }[] = [
+	{ value: 'ketua', label: 'Ketua' },
+	{ value: 'sekretaris', label: 'Sekretaris' },
+	{ value: 'bendahara', label: 'Bendahara' },
+	{ value: 'humas', label: 'Humas' },
+	{ value: 'imam_syah', label: 'Imam Syah' },
+	{ value: 'muadzin', label: 'Muadzin' },
+	{ value: 'dai_amil', label: 'Dai Amil' },
+	{ value: 'marbot', label: 'Marbot' },
+	{ value: 'lainnya', label: 'Lainnya' },
 ];
 
 const addMemberSchema = z
@@ -91,6 +103,8 @@ const addMemberSchema = z
 		password: z.string().min(6, 'Password minimal 6 karakter'),
 		confirm_password: z.string().min(6, 'Konfirmasi password wajib diisi'),
 		role: z.enum(['super_admin', 'admin', 'editor']),
+		org_role: z.enum(['ketua', 'sekretaris', 'bendahara', 'humas', 'imam_syah', 'muadzin', 'dai_amil', 'marbot', 'lainnya']),
+		struktur_id: z.string().optional(),
 	})
 	.refine((data) => data.password === data.confirm_password, {
 		message: 'Password tidak cocok',
@@ -106,14 +120,45 @@ const defaultAddMemberValues: AddMemberFormValues = {
 	password: '',
 	confirm_password: '',
 	role: 'editor',
+	org_role: 'lainnya',
+	struktur_id: '',
 };
 
 function getInitials(nama: string) {
 	return nama.split(' ').slice(0, 2).map((n) => n[0]).join('');
 }
 
+function getUserRoleLabel(role: UserRole) {
+	switch (role) {
+		case 'super_admin':
+			return 'Super Admin';
+		case 'admin':
+			return 'Admin';
+		case 'editor':
+			return 'Editor';
+		default:
+			return role;
+	}
+}
+
+function getOrgRoleLabel(role: OrgRole) {
+	const labels: Record<OrgRole, string> = {
+		ketua: 'Ketua',
+		sekretaris: 'Sekretaris',
+		bendahara: 'Bendahara',
+		humas: 'Humas',
+		imam_syah: 'Imam Syah',
+		muadzin: 'Muadzin',
+		dai_amil: 'Dai Amil',
+		marbot: 'Marbot',
+		lainnya: 'Lainnya',
+	};
+	return labels[role] ?? role;
+}
+
 export default function JamaahPage() {
 	const { data: usersResponse } = useAdminUsers();
+	const { data: struktursResponse } = useAdminStrukturs({ page: 1, limit: 200 });
 	const createUserMutation = useCreateUser();
 	const addMemberForm = useForm<AddMemberFormValues>({
 		resolver: zodResolver(addMemberSchema),
@@ -124,11 +169,20 @@ export default function JamaahPage() {
 		id: user.id,
 		nama: user.full_name,
 		nik: user.username,
+		email: user.email,
+		role: user.role,
+		org_role: user.org_role,
+		struktur_id: user.struktur_id ?? null,
+		permissions: user.permissions ?? [],
 		status: user.is_active ? 'aktif' : 'tidak-aktif',
 		bergabung: new Date(user.created_at).toLocaleDateString('id-ID'),
 		foto: user.avatar_url ?? null,
 		muallaf: false,
 	}));
+	const activeStrukturs = useMemo(
+		() => (struktursResponse?.data ?? []).filter((item) => item.is_active),
+		[struktursResponse?.data]
+	);
 
 	const [filter, setFilter] = useState('Semua');
 	const [searchQuery, setSearchQuery] = useState('');
@@ -179,6 +233,8 @@ export default function JamaahPage() {
 				email: values.email,
 				password: values.password,
 				role: values.role,
+				org_role: values.org_role,
+				struktur_id: values.struktur_id || undefined,
 			});
 			toast.success('Anggota berhasil ditambahkan');
 			onAddMemberOpenChange(false);
@@ -212,7 +268,10 @@ export default function JamaahPage() {
 						</DialogDescription>
 					</DialogHeader>
 					<Form {...addMemberForm}>
-						<form onSubmit={addMemberForm.handleSubmit(onSubmitAddMember)} className="space-y-4">
+						<form
+							onSubmit={addMemberForm.handleSubmit(onSubmitAddMember)}
+							className="space-y-4 max-h-[60vh] overflow-y-auto pr-1"
+						>
 							<FormField
 								control={addMemberForm.control}
 								name="full_name"
@@ -273,6 +332,68 @@ export default function JamaahPage() {
 												))}
 											</SelectContent>
 										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={addMemberForm.control}
+								name="struktur_id"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Link anggota struktur (opsional)</FormLabel>
+										<Select
+											onValueChange={(value) => {
+												field.onChange(value === 'none' ? '' : value);
+												const selected = activeStrukturs.find((item) => item.id === value);
+												if (selected) {
+													addMemberForm.setValue('org_role', selected.role, { shouldDirty: true });
+												}
+											}}
+											value={field.value || 'none'}
+										>
+											<FormControl>
+												<SelectTrigger aria-label="Pilih anggota struktur">
+													<SelectValue placeholder="Tidak ditautkan" />
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												<SelectItem value="none">Tidak ditautkan</SelectItem>
+												{activeStrukturs.map((item) => (
+													<SelectItem key={item.id} value={item.id}>
+														{item.name} — {orgRoleOptions.find((opt) => opt.value === item.role)?.label ?? item.role}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormDescription>
+											Jika dipilih, peran organisasi otomatis mengikuti data struktur dan tetap bisa diubah manual.
+										</FormDescription>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={addMemberForm.control}
+								name="org_role"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Peran organisasi</FormLabel>
+										<Select onValueChange={field.onChange} value={field.value}>
+											<FormControl>
+												<SelectTrigger aria-label="Peran organisasi">
+													<SelectValue placeholder="Pilih peran organisasi" />
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{orgRoleOptions.map((opt) => (
+													<SelectItem key={opt.value} value={opt.value}>
+														{opt.label}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormDescription>Dipakai untuk pembatasan akses fitur (RBAC).</FormDescription>
 										<FormMessage />
 									</FormItem>
 								)}
@@ -515,12 +636,40 @@ export default function JamaahPage() {
 								<Separator />
 								<div className="grid grid-cols-2 gap-4 text-sm">
 									<div className="space-y-1.5">
+										<Label className="text-muted-foreground">Username</Label>
+										<p className="text-foreground">{selectedMember.nik}</p>
+									</div>
+									<div className="space-y-1.5">
+										<Label className="text-muted-foreground">Email</Label>
+										<p className="break-all text-foreground">{selectedMember.email}</p>
+									</div>
+									<div className="space-y-1.5">
+										<Label className="text-muted-foreground">Role teknis</Label>
+										<p className="text-foreground">{getUserRoleLabel(selectedMember.role)}</p>
+									</div>
+									<div className="space-y-1.5">
+										<Label className="text-muted-foreground">Peran organisasi</Label>
+										<p className="text-foreground">{getOrgRoleLabel(selectedMember.org_role)}</p>
+									</div>
+									<div className="space-y-1.5">
 										<Label className="text-muted-foreground">Bergabung</Label>
 										<p className="text-foreground">{selectedMember.bergabung}</p>
 									</div>
 									<div className="space-y-1.5">
 										<Label className="text-muted-foreground">Muallaf</Label>
 										<p className="text-foreground">{selectedMember.muallaf ? 'Ya' : 'Tidak'}</p>
+									</div>
+									<div className="col-span-2 space-y-1.5">
+										<Label className="text-muted-foreground">Tautan struktur</Label>
+										<p className="text-foreground">{selectedMember.struktur_id ?? 'Tidak ditautkan'}</p>
+									</div>
+									<div className="col-span-2 space-y-1.5">
+										<Label className="text-muted-foreground">Permissions efektif</Label>
+										<p className="text-foreground">
+											{selectedMember.permissions.length > 0
+												? selectedMember.permissions.join(', ')
+												: 'Tidak ada permission khusus'}
+										</p>
 									</div>
 								</div>
 							</div>

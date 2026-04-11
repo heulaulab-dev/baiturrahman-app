@@ -15,6 +15,16 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
 	useAdminPaymentMethods,
 	useCreatePaymentMethod,
 	useUpdatePaymentMethod,
@@ -54,6 +64,7 @@ export default function DonasiPaymentMethodsTab() {
 	const [editMethodAccountName, setEditMethodAccountName] = useState('');
 	const [editMethodQrStorageUrl, setEditMethodQrStorageUrl] = useState('');
 	const [editQrUploading, setEditQrUploading] = useState(false);
+	const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
 	const { data: paymentMethods = [], isLoading: paymentMethodsLoading } = useAdminPaymentMethods();
 	const createPaymentMethod = useCreatePaymentMethod();
@@ -151,12 +162,11 @@ export default function DonasiPaymentMethodsTab() {
 	};
 
 	const handleDeletePaymentMethod = async (id: string) => {
-		const confirmDelete = globalThis.confirm('Hapus metode pembayaran ini?');
-		if (!confirmDelete) return;
 		await deletePaymentMethod.mutateAsync(id);
 		if (editingMethodId === id) {
 			handleCancelEditPaymentMethod();
 		}
+		setPendingDeleteId(null);
 	};
 
 	const renderQrUploadControls = (
@@ -339,7 +349,7 @@ export default function DonasiPaymentMethodsTab() {
 							type="button"
 							variant="destructive"
 							size="sm"
-							onClick={() => handleDeletePaymentMethod(method.id)}
+							onClick={() => setPendingDeleteId(method.id)}
 							disabled={deletePaymentMethod.isPending || updatePaymentMethod.isPending}
 							className="gap-1.5"
 						>
@@ -426,6 +436,25 @@ export default function DonasiPaymentMethodsTab() {
 				</div>
 				<div className="space-y-2">{paymentMethodContent}</div>
 			</CardContent>
+			<AlertDialog open={pendingDeleteId !== null} onOpenChange={(open) => !open && setPendingDeleteId(null)}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Hapus metode pembayaran?</AlertDialogTitle>
+						<AlertDialogDescription>
+							Tindakan ini tidak dapat dibatalkan. Metode pembayaran akan dihapus permanen.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel disabled={deletePaymentMethod.isPending}>Batal</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={() => pendingDeleteId && handleDeletePaymentMethod(pendingDeleteId)}
+							disabled={deletePaymentMethod.isPending}
+						>
+							{deletePaymentMethod.isPending ? 'Menghapus...' : 'Hapus'}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</Card>
 	);
 }

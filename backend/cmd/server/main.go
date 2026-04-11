@@ -7,6 +7,7 @@ import (
 	"masjid-baiturrahim-backend/internal/database"
 	"masjid-baiturrahim-backend/internal/handlers"
 	"masjid-baiturrahim-backend/internal/middleware"
+	"masjid-baiturrahim-backend/internal/models"
 	"masjid-baiturrahim-backend/internal/services"
 
 	"github.com/gin-contrib/cors"
@@ -36,6 +37,9 @@ func main() {
 	// Seed default admin user if not exists
 	if err := database.SeedDefaultAdmin(db); err != nil {
 		log.Printf("Warning: Failed to seed default admin: %v", err)
+	}
+	if err := database.SeedDefaultPermissions(db); err != nil {
+		log.Printf("Warning: Failed to seed default permissions: %v", err)
 	}
 
 	minioSvc, err := services.NewMinioService(cfg)
@@ -190,10 +194,22 @@ func main() {
 			admin.DELETE("/reservations/:id", h.DeleteReservation)
 
 			// Donations
-			admin.GET("/donations", h.GetDonations)
+			admin.GET("/donations", middleware.RequirePermission(models.PermissionViewDonationReports), h.GetDonations)
 			admin.PUT("/donations/:id/confirm", h.ConfirmDonation)
-			admin.GET("/donations/stats", h.GetDonationStats)
-			admin.GET("/donations/export", h.ExportDonations)
+			admin.GET("/donations/stats", middleware.RequirePermission(models.PermissionViewDonationStats), h.GetDonationStats)
+			admin.GET("/donations/export", middleware.RequirePermission(models.PermissionExportDonations), h.ExportDonations)
+
+			// Finance
+			admin.GET("/finance/transactions", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceTransactions)
+			admin.POST("/finance/transactions", middleware.RequireAnyPermission(models.PermissionFinanceCreateTx, models.PermissionFinanceAdjustOpening), h.CreateFinanceTransaction)
+			admin.GET("/finance/balance", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceBalance)
+			admin.POST("/finance/transfers", middleware.RequirePermission(models.PermissionFinanceRequestTransfer), h.CreateFinanceTransfer)
+			admin.GET("/finance/transfers", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceTransfers)
+			admin.PUT("/finance/transfers/:id/approve", middleware.RequirePermission(models.PermissionFinanceApproveTransfer), h.ApproveFinanceTransfer)
+			admin.PUT("/finance/transfers/:id/reject", middleware.RequirePermission(models.PermissionFinanceApproveTransfer), h.RejectFinanceTransfer)
+			admin.GET("/finance/reports/monthly", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceMonthlyReport)
+			admin.GET("/finance/reports/monthly/csv", middleware.RequirePermission(models.PermissionFinanceExportReports), h.ExportFinanceMonthlyCSV)
+			admin.GET("/finance/reports/monthly/pdf", middleware.RequirePermission(models.PermissionFinanceExportReports), h.ExportFinanceMonthlyPDF)
 
 			// Payment Methods
 			admin.GET("/payment-methods", h.GetPaymentMethods)
@@ -217,6 +233,12 @@ func main() {
 			// Settings
 			admin.GET("/settings", h.GetSettings)
 			admin.PUT("/settings/:key", h.UpdateSetting)
+
+			// RBAC config
+			admin.GET("/rbac/permissions", h.GetRBACPermissions)
+			admin.GET("/rbac/roles", h.GetRBACRoles)
+			admin.GET("/rbac/roles/:orgRole/permissions", h.GetRBACRolePermissions)
+			admin.PUT("/rbac/roles/:orgRole/permissions", h.UpdateRBACRolePermissions)
 
 			// Users
 			admin.GET("/users", h.GetUsers)

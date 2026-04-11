@@ -16,6 +16,18 @@ import {
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 
+const orgRoleLabelMap: Record<string, string> = {
+  ketua: 'Ketua',
+  sekretaris: 'Sekretaris',
+  bendahara: 'Bendahara',
+  humas: 'Humas',
+  imam_syah: 'Imam Syah',
+  muadzin: 'Muadzin',
+  dai_amil: 'Dai Amil',
+  marbot: 'Marbot',
+  lainnya: 'Lainnya',
+}
+
 export function UserMenu() {
   const { user, logout } = useAuth()
 
@@ -51,6 +63,8 @@ export function UserMenu() {
     }
   }
 
+  const getOrgRoleLabel = () => orgRoleLabelMap[user.org_role] ?? user.org_role
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -72,7 +86,7 @@ export function UserMenu() {
             </p>
             <div className="mt-1">
               <Badge variant="outline" className="text-xs">
-                {getRoleLabel()}
+                {`${getRoleLabel()} • ${getOrgRoleLabel()}`}
               </Badge>
             </div>
           </div>

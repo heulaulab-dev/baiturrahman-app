@@ -30,6 +30,7 @@ export type AdminUploadModule =
 	| 'mosque'
 	| 'khutbah'
 	| 'gallery'
+	| 'hero'
 
 /** POST multipart `file` + optional `module` to admin upload; returns public object URL. */
 export async function uploadAdminImage(file: File, module: AdminUploadModule = 'general'): Promise<string> {

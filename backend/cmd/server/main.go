@@ -109,6 +109,7 @@ func main() {
 			public.GET("/history-entries", h.GetPublishedEntries)
 			public.GET("/history-entries/date-range", h.GetHistoryEntriesByDateRange)
 			public.GET("/gallery/items", h.GetPublicGalleryItems)
+			public.GET("/hero/slides", h.GetPublicHeroSlides)
 			public.POST("/reservations", h.CreateReservation)
 		}
 
@@ -229,6 +230,14 @@ func main() {
 			admin.DELETE("/gallery/items/:id", h.DeleteGalleryItem)
 			admin.PUT("/gallery/items/reorder", h.ReorderGalleryItems)
 			admin.PUT("/gallery/items/:id/toggle", h.ToggleGalleryItemPublished)
+
+			// Hero slides (landing banner)
+			admin.GET("/hero/slides", h.GetAdminHeroSlides)
+			admin.POST("/hero/slides", h.CreateHeroSlide)
+			admin.PUT("/hero/slides/:id", h.UpdateHeroSlide)
+			admin.DELETE("/hero/slides/:id", h.DeleteHeroSlide)
+			admin.PUT("/hero/slides/reorder", h.ReorderHeroSlides)
+			admin.PUT("/hero/slides/:id/toggle", h.ToggleHeroSlidePublished)
 
 			// Settings
 			admin.GET("/settings", h.GetSettings)

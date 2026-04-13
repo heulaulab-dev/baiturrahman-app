@@ -311,6 +311,17 @@ export interface GalleryItem {
   updated_at: string
 }
 
+/** Landing hero background slides (Konten → Banner), separate from gallery. */
+export interface HeroSlide {
+  id: string
+  image_url: string
+  alt_text: string
+  sort_order: number
+  is_published: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface Struktur {
   id: string
   name: string

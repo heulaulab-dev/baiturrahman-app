@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Download, Image } from 'lucide-react'
+import { Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { AnnouncementsManagement } from '@/components/dashboard/AnnouncementsManagement'
 import { EventsManagement } from '@/components/dashboard/EventsManagement'
@@ -9,6 +9,7 @@ import { HistoryManagement } from '@/components/dashboard/HistoryManagement'
 import { KhutbahManagement } from '@/components/dashboard/KhutbahManagement'
 import { StrukturManagement } from '@/components/dashboard/StrukturManagement'
 import { GalleryManagement } from '@/components/dashboard/GalleryManagement'
+import { HeroBannerManagement } from '@/components/dashboard/HeroBannerManagement'
 import { TentangKami } from '@/components/dashboard/TentangKami'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -142,12 +143,13 @@ export default function KontenPage() {
         <TabsContent value="banner" className="outline-none">
           <Card>
             <CardHeader>
-              <CardTitle>Banner</CardTitle>
-              <CardDescription>Pengelolaan banner hero akan ditambahkan pada pembaruan berikutnya.</CardDescription>
+              <CardTitle>Banner hero</CardTitle>
+              <CardDescription>
+                Gambar latar karusel di bagian atas beranda. Terpisah dari galeri kegiatan.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-              <Image className="mb-3 size-12 text-primary/35" aria-hidden />
-              <p className="text-sm">Belum tersedia</p>
+            <CardContent>
+              <HeroBannerManagement />
             </CardContent>
           </Card>
         </TabsContent>

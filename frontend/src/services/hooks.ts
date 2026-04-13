@@ -18,6 +18,7 @@ import {
 	getPublicStrukturs,
 	getTentangKami,
 	getGalleryItems,
+	getHeroSlides,
 } from './apiService';
 
 // Mosque Info
@@ -176,6 +177,14 @@ export const useGalleryItems = () => {
 	return useQuery({
 		queryKey: ['gallery', 'items'],
 		queryFn: getGalleryItems,
+		staleTime: 1000 * 60 * 5,
+	});
+};
+
+export const useHeroSlides = () => {
+	return useQuery({
+		queryKey: ['hero', 'slides'],
+		queryFn: getHeroSlides,
 		staleTime: 1000 * 60 * 5,
 	});
 };

@@ -52,6 +52,12 @@ import {
   deleteGalleryItem,
   reorderGalleryItems,
   toggleGalleryItemPublished,
+  getAdminHeroSlides,
+  createHeroSlide,
+  updateHeroSlide,
+  deleteHeroSlide,
+  reorderHeroSlides,
+  toggleHeroSlidePublished,
   type GetReservationsParams,
   type UpdateReservationRequest,
   type CreateEventPayload,
@@ -619,6 +625,71 @@ export const useToggleGalleryItemPublished = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'gallery', 'items'] })
       queryClient.invalidateQueries({ queryKey: ['gallery', 'items'] })
+    },
+  })
+}
+
+// Hero slides (landing banner)
+export const useAdminHeroSlides = () => {
+  return useQuery({
+    queryKey: ['admin', 'hero', 'slides'],
+    queryFn: getAdminHeroSlides,
+    staleTime: 1000 * 30,
+  })
+}
+
+export const useCreateHeroSlide = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createHeroSlide,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'hero', 'slides'] })
+      queryClient.invalidateQueries({ queryKey: ['hero', 'slides'] })
+    },
+  })
+}
+
+export const useUpdateHeroSlide = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof updateHeroSlide>[1] }) =>
+      updateHeroSlide(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'hero', 'slides'] })
+      queryClient.invalidateQueries({ queryKey: ['hero', 'slides'] })
+    },
+  })
+}
+
+export const useDeleteHeroSlide = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteHeroSlide,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'hero', 'slides'] })
+      queryClient.invalidateQueries({ queryKey: ['hero', 'slides'] })
+    },
+  })
+}
+
+export const useReorderHeroSlides = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: reorderHeroSlides,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'hero', 'slides'] })
+      queryClient.invalidateQueries({ queryKey: ['hero', 'slides'] })
+    },
+  })
+}
+
+export const useToggleHeroSlidePublished = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: toggleHeroSlidePublished,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'hero', 'slides'] })
+      queryClient.invalidateQueries({ queryKey: ['hero', 'slides'] })
     },
   })
 }

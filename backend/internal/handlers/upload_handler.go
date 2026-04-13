@@ -41,7 +41,7 @@ var uploadModuleAliases = map[string]string{
 
 var allowedUploadModules = map[string]struct{}{
 	"general": {}, "donate": {}, "content": {}, "berita": {}, "events": {},
-	"announcements": {}, "structure": {}, "mosque": {}, "khutbah": {}, "gallery": {},
+	"announcements": {}, "structure": {}, "mosque": {}, "khutbah": {}, "gallery": {}, "hero": {},
 }
 
 func normalizeUploadModule(raw string) string {

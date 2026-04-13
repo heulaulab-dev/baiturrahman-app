@@ -18,6 +18,7 @@ import type {
   PaginatedResponse,
   HistoryEntry,
   GalleryItem,
+  HeroSlide,
   Struktur,
   ContentSection,
   MosqueInfo,
@@ -560,5 +561,47 @@ export const reorderGalleryItems = async (
 
 export const toggleGalleryItemPublished = async (id: string): Promise<GalleryItem> => {
   const response = await api.put<ApiResponse<GalleryItem>>(`/v1/admin/gallery/items/${id}/toggle`)
+  return response.data.data
+}
+
+// Hero slides — admin
+export const getAdminHeroSlides = async (): Promise<HeroSlide[]> => {
+  const response = await api.get<ApiResponse<HeroSlide[]>>('/v1/admin/hero/slides')
+  return response.data.data ?? []
+}
+
+export const createHeroSlide = async (data: {
+  image_url: string
+  alt_text?: string
+  sort_order?: number
+  is_published?: boolean
+}): Promise<HeroSlide> => {
+  const response = await api.post<ApiResponse<HeroSlide>>('/v1/admin/hero/slides', data)
+  return response.data.data
+}
+
+export const updateHeroSlide = async (
+  id: string,
+  data: Partial<{
+    image_url: string
+    alt_text: string
+    sort_order: number
+    is_published: boolean
+  }>
+): Promise<HeroSlide> => {
+  const response = await api.put<ApiResponse<HeroSlide>>(`/v1/admin/hero/slides/${id}`, data)
+  return response.data.data
+}
+
+export const deleteHeroSlide = async (id: string): Promise<void> => {
+  await api.delete(`/v1/admin/hero/slides/${id}`)
+}
+
+export const reorderHeroSlides = async (items: { id: string; sort_order: number }[]): Promise<void> => {
+  await api.put('/v1/admin/hero/slides/reorder', { items })
+}
+
+export const toggleHeroSlidePublished = async (id: string): Promise<HeroSlide> => {
+  const response = await api.put<ApiResponse<HeroSlide>>(`/v1/admin/hero/slides/${id}/toggle`)
   return response.data.data
 }

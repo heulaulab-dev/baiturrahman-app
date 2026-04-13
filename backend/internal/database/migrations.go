@@ -29,6 +29,7 @@ func Migrate(db *gorm.DB) error {
 		&models.BarangTidakTetap{},
 		&models.Reservation{},
 		&models.GalleryItem{},
+		&models.HeroSlide{},
 		&models.FinanceTransaction{},
 	)
 }

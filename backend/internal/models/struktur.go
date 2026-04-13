@@ -24,7 +24,7 @@ const (
 type Struktur struct {
 	ID           uuid.UUID     `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
 	Name         string       `gorm:"type:varchar(255);not null" json:"name"`
-	Role         StrukturRole   `gorm:"type:varchar(50);not null;json:"role"`
+	Role         StrukturRole   `gorm:"type:varchar(50);not null" json:"role"`
 	PhotoURL     *string       `gorm:"type:varchar(500)" json:"photo_url,omitempty"`
 	Email        *string       `gorm:"type:varchar(255)" json:"email,omitempty"`
 	Phone        *string       `gorm:"type:varchar(20)" json:"phone,omitempty"`

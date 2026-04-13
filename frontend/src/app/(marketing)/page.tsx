@@ -20,6 +20,7 @@ export default function HomePage() {
 		<div className="min-h-screen bg-white">
 			<HeroSection />
 			<PrayerTimesSection />
+			<SponsorsLandingSection />
 			<TentangKamiSection />
 			<VisiMisiSection />
 			<ServicesSection />
@@ -29,7 +30,6 @@ export default function HomePage() {
 			<StrukturSection />
 			<BeritaSection />
 			<GallerySection />
-			<SponsorsLandingSection />
 			<DonationSection />
 			<ContactSection />
 		</div>

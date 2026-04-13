@@ -184,7 +184,8 @@ func (h *Handler) ExportDonationsXLSX(c *gin.Context) {
 		})
 	}
 
-	buf, err := exportxlsx.BuildDonationsDetailXLSX(rows)
+	excelCfg := h.getExcelExportSettings()
+	buf, err := exportxlsx.BuildDonationsDetailXLSX(rows, excelCfg.SignerLeftName, excelCfg.SignerRightName)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -265,7 +266,8 @@ func (h *Handler) ExportDonationSummaryXLSX(c *gin.Context) {
 		ByCategory:     byCategory,
 	}
 
-	buf, err := exportxlsx.BuildDonationSummaryXLSX(params)
+	excelCfg := h.getExcelExportSettings()
+	buf, err := exportxlsx.BuildDonationSummaryXLSX(params, excelCfg.SignerLeftName, excelCfg.SignerRightName)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

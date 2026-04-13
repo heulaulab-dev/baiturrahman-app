@@ -29,7 +29,8 @@ func (h *Handler) ExportContentSummaryXLSX(c *gin.Context) {
 		return
 	}
 
-	buf, err := exportxlsx.BuildContentSummaryXLSX(events, announcements, khutbahs)
+	excelCfg := h.getExcelExportSettings()
+	buf, err := exportxlsx.BuildContentSummaryXLSX(events, announcements, khutbahs, excelCfg.SignerLeftName, excelCfg.SignerRightName)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

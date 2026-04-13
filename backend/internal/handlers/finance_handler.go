@@ -546,14 +546,15 @@ func (h *Handler) ExportFinanceMonthlyXLSX(c *gin.Context) {
 	var mosque models.MosqueInfo
 	_ = h.DB.First(&mosque).Error
 
-	bankLine := ""
-	if h.Cfg != nil {
-		bankLine = h.Cfg.FinanceReportBankLine
-	}
+	excelCfg := h.getExcelExportSettings()
 
 	var logoBytes []byte
-	if mosque.LogoURL != nil && strings.TrimSpace(*mosque.LogoURL) != "" {
-		b, _ := exportxlsx.FetchLogoBytes(context.Background(), strings.TrimSpace(*mosque.LogoURL))
+	headerImageURL := strings.TrimSpace(excelCfg.HeaderImageURL)
+	if headerImageURL == "" && mosque.LogoURL != nil {
+		headerImageURL = strings.TrimSpace(*mosque.LogoURL)
+	}
+	if headerImageURL != "" {
+		b, _ := exportxlsx.FetchLogoBytes(context.Background(), headerImageURL)
 		logoBytes = b
 	}
 	if len(logoBytes) == 0 {
@@ -562,7 +563,8 @@ func (h *Handler) ExportFinanceMonthlyXLSX(c *gin.Context) {
 
 	buf, err := exportxlsx.BuildFinanceMonthlyDKIXLSX(
 		fundType, start.Year(), int(start.Month()),
-		opening, approvedRows, mosque, bankLine, logoBytes,
+		opening, approvedRows, mosque, excelCfg.BankLine, logoBytes,
+		excelCfg.SignerLeftName, excelCfg.SignerRightName,
 	)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())

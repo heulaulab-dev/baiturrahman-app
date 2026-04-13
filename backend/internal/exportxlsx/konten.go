@@ -24,7 +24,7 @@ func clipRunes(s string, max int) string {
 }
 
 // BuildContentSummaryXLSX exports events, announcements, khutbahs on separate sheets.
-func BuildContentSummaryXLSX(events []models.Event, announcements []models.Announcement, khutbahs []models.Khutbah) ([]byte, error) {
+func BuildContentSummaryXLSX(events []models.Event, announcements []models.Announcement, khutbahs []models.Khutbah, leftSigner, rightSigner string) ([]byte, error) {
 	f := excelize.NewFile()
 	defer func() { _ = f.Close() }()
 	defaultName := f.GetSheetName(0)
@@ -60,6 +60,7 @@ func BuildContentSummaryXLSX(events []models.Event, announcements []models.Annou
 			last = 2
 		}
 		_ = f.AutoFilter(sh, fmt.Sprintf("A1:E%d", last), []excelize.AutoFilterOptions{})
+		AppendStandardFooter(f, sh, last+2, "E", leftSigner, rightSigner)
 		return ApplyFreezeTopRow(f, sh)
 	}
 
@@ -88,6 +89,7 @@ func BuildContentSummaryXLSX(events []models.Event, announcements []models.Annou
 			last = 2
 		}
 		_ = f.AutoFilter(sh, fmt.Sprintf("A1:E%d", last), []excelize.AutoFilterOptions{})
+		AppendStandardFooter(f, sh, last+2, "E", leftSigner, rightSigner)
 		return ApplyFreezeTopRow(f, sh)
 	}
 
@@ -117,6 +119,7 @@ func BuildContentSummaryXLSX(events []models.Event, announcements []models.Annou
 			last = 2
 		}
 		_ = f.AutoFilter(sh, fmt.Sprintf("A1:F%d", last), []excelize.AutoFilterOptions{})
+		AppendStandardFooter(f, sh, last+2, "F", leftSigner, rightSigner)
 		return ApplyFreezeTopRow(f, sh)
 	}
 

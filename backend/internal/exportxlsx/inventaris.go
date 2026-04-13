@@ -9,7 +9,7 @@ import (
 )
 
 // BuildInventarisXLSX writes aset tetap and barang tidak tetap sheets.
-func BuildInventarisXLSX(aset []models.AsetTetap, barang []models.BarangTidakTetap) ([]byte, error) {
+func BuildInventarisXLSX(aset []models.AsetTetap, barang []models.BarangTidakTetap, leftSigner, rightSigner string) ([]byte, error) {
 	f := excelize.NewFile()
 	defer func() { _ = f.Close() }()
 	defaultName := f.GetSheetName(0)
@@ -43,6 +43,7 @@ func BuildInventarisXLSX(aset []models.AsetTetap, barang []models.BarangTidakTet
 		lastA = 2
 	}
 	_ = f.AutoFilter(shA, fmt.Sprintf("A1:D%d", lastA), []excelize.AutoFilterOptions{})
+	AppendStandardFooter(f, shA, lastA+2, "D", leftSigner, rightSigner)
 	_ = ApplyFreezeTopRow(f, shA)
 
 	shB := "Barang"
@@ -82,6 +83,7 @@ func BuildInventarisXLSX(aset []models.AsetTetap, barang []models.BarangTidakTet
 		lastB = 2
 	}
 	_ = f.AutoFilter(shB, fmt.Sprintf("A1:H%d", lastB), []excelize.AutoFilterOptions{})
+	AppendStandardFooter(f, shB, lastB+2, "H", leftSigner, rightSigner)
 	_ = ApplyFreezeTopRow(f, shB)
 
 	buf, err := f.WriteToBuffer()

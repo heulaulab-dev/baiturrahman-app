@@ -28,6 +28,8 @@ type Config struct {
 
 	// Optional line on finance monthly Excel header (rekening bank, dll.)
 	FinanceReportBankLine string
+	ExcelSignerLeftName   string
+	ExcelSignerRightName  string
 }
 
 func Load() *Config {
@@ -55,6 +57,8 @@ func Load() *Config {
 		DefaultAdminFullName: getEnv("DEFAULT_ADMIN_FULL_NAME", "Administrator"),
 
 		FinanceReportBankLine: getEnv("FINANCE_REPORT_BANK_LINE", ""),
+		ExcelSignerLeftName:   getEnv("EXCEL_SIGNER_LEFT_NAME", "H. MUHAMMAD YAHYA ZUBIR"),
+		ExcelSignerRightName:  getEnv("EXCEL_SIGNER_RIGHT_NAME", "MOHAMAD DJOKO SANTOSO"),
 	}
 }
 

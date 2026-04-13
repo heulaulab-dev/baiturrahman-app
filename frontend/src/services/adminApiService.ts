@@ -679,3 +679,17 @@ export const deleteAdminSponsor = async (id: string): Promise<void> => {
 export const reorderAdminSponsors = async (items: { id: string; sort_order: number }[]): Promise<void> => {
   await api.put('/v1/admin/sponsors/reorder', { items })
 }
+
+export type AdminSettingsMap = Record<string, string>
+
+export const getAdminSettings = async (): Promise<AdminSettingsMap> => {
+  const response = await api.get<ApiResponse<AdminSettingsMap>>('/v1/admin/settings')
+  return response.data.data ?? {}
+}
+
+export const updateAdminSetting = async (
+  key: string,
+  payload: { value: string; description?: string; data_type?: 'string' | 'json' | 'int' | 'bool' }
+): Promise<void> => {
+  await api.put(`/v1/admin/settings/${encodeURIComponent(key)}`, payload)
+}

@@ -63,6 +63,8 @@ import {
   updateAdminSponsor,
   deleteAdminSponsor,
   reorderAdminSponsors,
+  getAdminSettings,
+  updateAdminSetting,
   type GetReservationsParams,
   type UpdateReservationRequest,
   type CreateEventPayload,
@@ -755,6 +757,24 @@ export const useReorderAdminSponsors = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'sponsors'] })
       invalidatePublicSponsors(queryClient)
+    },
+  })
+}
+
+export const useAdminSettings = () =>
+  useQuery({
+    queryKey: ['admin', 'settings'],
+    queryFn: getAdminSettings,
+    staleTime: 1000 * 30,
+  })
+
+export const useUpdateAdminSetting = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ key, value, description }: { key: string; value: string; description?: string }) =>
+      updateAdminSetting(key, { value, description, data_type: 'string' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'settings'] })
     },
   })
 }

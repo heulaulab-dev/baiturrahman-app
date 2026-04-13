@@ -173,7 +173,8 @@ func (h *Handler) ExportInventarisXLSX(c *gin.Context) {
 		return
 	}
 
-	buf, err := exportxlsx.BuildInventarisXLSX(aset, barang)
+	excelCfg := h.getExcelExportSettings()
+	buf, err := exportxlsx.BuildInventarisXLSX(aset, barang, excelCfg.SignerLeftName, excelCfg.SignerRightName)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

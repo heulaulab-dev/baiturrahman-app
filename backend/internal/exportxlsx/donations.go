@@ -21,7 +21,7 @@ type DonationDetailRow struct {
 }
 
 // BuildDonationsDetailXLSX writes the admin donations export workbook.
-func BuildDonationsDetailXLSX(rows []DonationDetailRow) ([]byte, error) {
+func BuildDonationsDetailXLSX(rows []DonationDetailRow, leftSigner, rightSigner string) ([]byte, error) {
 	f := excelize.NewFile()
 	defer func() { _ = f.Close() }()
 	defaultSheet := f.GetSheetName(0)
@@ -89,6 +89,7 @@ func BuildDonationsDetailXLSX(rows []DonationDetailRow) ([]byte, error) {
 	if err := ApplyFreezeTopRow(f, sheet); err != nil {
 		return nil, err
 	}
+	AppendStandardFooter(f, sheet, max(2, lastRow)+2, "L", leftSigner, rightSigner)
 
 	buf, err := f.WriteToBuffer()
 	if err != nil {
@@ -119,27 +120,52 @@ type DonationSummaryParams struct {
 }
 
 // BuildDonationSummaryXLSX builds donation stats summary for selected period.
-func BuildDonationSummaryXLSX(p DonationSummaryParams) ([]byte, error) {
+func BuildDonationSummaryXLSX(p DonationSummaryParams, leftSigner, rightSigner string) ([]byte, error) {
 	f := excelize.NewFile()
 	defer func() { _ = f.Close() }()
 	defaultSheet := f.GetSheetName(0)
 	sheet := "Ringkasan"
 	_ = f.SetSheetName(defaultSheet, sheet)
 
-	boldID, _ := f.NewStyle(&excelize.Style{Font: &excelize.Font{Bold: true, Size: 14}})
+	boldID, _ := f.NewStyle(&excelize.Style{Font: &excelize.Font{Bold: true, Size: 14}, Alignment: &excelize.Alignment{Horizontal: "center"}})
 	hdrID, _ := NewHeaderRowStyleID(f)
-	idrID, _ := NewIDRStyleID(f)
+	sectionID, _ := f.NewStyle(&excelize.Style{
+		Font:      &excelize.Font{Bold: true},
+		Fill:      excelize.Fill{Type: "pattern", Color: []string{"#E2EFDA"}, Pattern: 1},
+		Alignment: &excelize.Alignment{Horizontal: "left", Vertical: "center"},
+	})
+	tableCellID, _ := f.NewStyle(&excelize.Style{
+		Border: []excelize.Border{
+			{Type: "left", Color: "D9D9D9", Style: 1},
+			{Type: "right", Color: "D9D9D9", Style: 1},
+			{Type: "top", Color: "D9D9D9", Style: 1},
+			{Type: "bottom", Color: "D9D9D9", Style: 1},
+		},
+	})
+	tableCellIDR, _ := f.NewStyle(&excelize.Style{
+		CustomNumFmt: func() *string { s := `"Rp" #,##0`; return &s }(),
+		Alignment:    &excelize.Alignment{Horizontal: "right", Vertical: "center"},
+		Border: []excelize.Border{
+			{Type: "left", Color: "D9D9D9", Style: 1},
+			{Type: "right", Color: "D9D9D9", Style: 1},
+			{Type: "top", Color: "D9D9D9", Style: 1},
+			{Type: "bottom", Color: "D9D9D9", Style: 1},
+		},
+	})
 
 	r := 1
+	_ = f.MergeCell(sheet, "A1", "E1")
 	_ = f.SetCellValue(sheet, fmt.Sprintf("A%d", r), "LAPORAN KEUANGAN — DONASI")
-	_ = f.SetCellStyle(sheet, fmt.Sprintf("A%d", r), fmt.Sprintf("A%d", r), boldID)
+	_ = f.SetCellStyle(sheet, "A1", "E1", boldID)
 	r++
 	_ = f.SetCellValue(sheet, fmt.Sprintf("A%d", r), "periode_filter")
+	_ = f.MergeCell(sheet, fmt.Sprintf("B%d", r), fmt.Sprintf("E%d", r))
 	_ = f.SetCellValue(sheet, fmt.Sprintf("B%d", r), p.PeriodLabel)
 	r += 2
 
 	_ = f.SetCellValue(sheet, fmt.Sprintf("A%d", r), "RINGKASAN")
-	_ = f.SetCellStyle(sheet, fmt.Sprintf("A%d", r), fmt.Sprintf("A%d", r), boldID)
+	_ = f.MergeCell(sheet, fmt.Sprintf("A%d", r), fmt.Sprintf("E%d", r))
+	_ = f.SetCellStyle(sheet, fmt.Sprintf("A%d", r), fmt.Sprintf("E%d", r), sectionID)
 	r++
 	h1 := []string{"total_pemasukan_periode", "jumlah_transaksi_periode", "pending", "confirmed", "cancelled"}
 	for i, h := range h1 {
@@ -153,13 +179,16 @@ func BuildDonationSummaryXLSX(p DonationSummaryParams) ([]byte, error) {
 		c, _ := excelize.CoordinatesToCellName(i+1, r)
 		_ = f.SetCellValue(sheet, c, v)
 		if i == 0 {
-			_ = f.SetCellStyle(sheet, c, c, idrID)
+			_ = f.SetCellStyle(sheet, c, c, tableCellIDR)
+		} else {
+			_ = f.SetCellStyle(sheet, c, c, tableCellID)
 		}
 	}
 	r += 2
 
 	_ = f.SetCellValue(sheet, fmt.Sprintf("A%d", r), "PER BULAN (DALAM PERIODE)")
-	_ = f.SetCellStyle(sheet, fmt.Sprintf("A%d", r), fmt.Sprintf("A%d", r), boldID)
+	_ = f.MergeCell(sheet, fmt.Sprintf("A%d", r), fmt.Sprintf("E%d", r))
+	_ = f.SetCellStyle(sheet, fmt.Sprintf("A%d", r), fmt.Sprintf("E%d", r), sectionID)
 	r++
 	h2 := []string{"bulan_key", "label", "total", "jumlah_transaksi"}
 	for i, h := range h2 {
@@ -178,14 +207,17 @@ func BuildDonationSummaryXLSX(p DonationSummaryParams) ([]byte, error) {
 		_ = f.SetCellValue(sheet, fmt.Sprintf("B%d", r), label)
 		tc := fmt.Sprintf("C%d", r)
 		_ = f.SetCellValue(sheet, tc, bm.Total)
-		_ = f.SetCellStyle(sheet, tc, tc, idrID)
+		_ = f.SetCellStyle(sheet, tc, tc, tableCellIDR)
 		_ = f.SetCellValue(sheet, fmt.Sprintf("D%d", r), bm.Count)
+		_ = f.SetCellStyle(sheet, fmt.Sprintf("A%d", r), fmt.Sprintf("B%d", r), tableCellID)
+		_ = f.SetCellStyle(sheet, fmt.Sprintf("D%d", r), fmt.Sprintf("D%d", r), tableCellID)
 		r++
 	}
 	r++
 
 	_ = f.SetCellValue(sheet, fmt.Sprintf("A%d", r), "PER KATEGORI (TERKONFIRMASI, AKUMULASI)")
-	_ = f.SetCellStyle(sheet, fmt.Sprintf("A%d", r), fmt.Sprintf("A%d", r), boldID)
+	_ = f.MergeCell(sheet, fmt.Sprintf("A%d", r), fmt.Sprintf("E%d", r))
+	_ = f.SetCellStyle(sheet, fmt.Sprintf("A%d", r), fmt.Sprintf("E%d", r), sectionID)
 	r++
 	h3 := []string{"kategori", "total", "jumlah_transaksi"}
 	for i, h := range h3 {
@@ -198,13 +230,22 @@ func BuildDonationSummaryXLSX(p DonationSummaryParams) ([]byte, error) {
 		_ = f.SetCellValue(sheet, fmt.Sprintf("A%d", r), cat)
 		tc := fmt.Sprintf("B%d", r)
 		_ = f.SetCellValue(sheet, tc, v.Total)
-		_ = f.SetCellStyle(sheet, tc, tc, idrID)
+		_ = f.SetCellStyle(sheet, tc, tc, tableCellIDR)
 		_ = f.SetCellValue(sheet, fmt.Sprintf("C%d", r), v.Count)
+		_ = f.SetCellStyle(sheet, fmt.Sprintf("A%d", r), fmt.Sprintf("A%d", r), tableCellID)
+		_ = f.SetCellStyle(sheet, fmt.Sprintf("C%d", r), fmt.Sprintf("C%d", r), tableCellID)
 		r++
 	}
 
 	_ = f.SetCellValue(sheet, fmt.Sprintf("A%d", r), "diekspor")
 	_ = f.SetCellValue(sheet, fmt.Sprintf("B%d", r), time.Now().Format(time.RFC3339))
+	_ = f.SetColWidth(sheet, "A", "A", 22)
+	_ = f.SetColWidth(sheet, "B", "B", 24)
+	_ = f.SetColWidth(sheet, "C", "C", 16)
+	_ = f.SetColWidth(sheet, "D", "D", 18)
+	_ = f.SetColWidth(sheet, "E", "E", 16)
+	_ = f.SetColWidth(sheet, "F", "F", 4)
+	AppendStandardFooter(f, sheet, r+2, "E", leftSigner, rightSigner)
 
 	buf, err := f.WriteToBuffer()
 	if err != nil {

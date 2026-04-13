@@ -179,6 +179,8 @@ func BuildFinanceMonthlyDKIXLSX(
 	mosque models.MosqueInfo,
 	bankLine string,
 	logoBytes []byte,
+	leftSigner string,
+	rightSigner string,
 ) ([]byte, error) {
 	f := excelize.NewFile()
 	defer func() { _ = f.Close() }()
@@ -359,6 +361,24 @@ func BuildFinanceMonthlyDKIXLSX(
 			_ = f.SetCellStyle(sheet, c, c, st.rowEmptyMoney)
 		}
 	}
+	curRow++
+	totalStyle, _ := f.NewStyle(&excelize.Style{
+		Font:      &excelize.Font{Bold: true},
+		Fill:      excelize.Fill{Type: "pattern", Color: []string{"#FFD966"}, Pattern: 1},
+		Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center"},
+		Border: []excelize.Border{
+			{Type: "left", Color: "000000", Style: 1},
+			{Type: "right", Color: "000000", Style: 1},
+			{Type: "top", Color: "000000", Style: 1},
+			{Type: "bottom", Color: "000000", Style: 1},
+		},
+	})
+	_ = f.MergeCell(sheet, fmt.Sprintf("A%d", curRow), fmt.Sprintf("C%d", curRow))
+	_ = f.SetCellValue(sheet, fmt.Sprintf("A%d", curRow), "TOTAL SALDO KAS ATM DKI")
+	_ = f.SetCellStyle(sheet, fmt.Sprintf("A%d", curRow), fmt.Sprintf("F%d", curRow), totalStyle)
+	_ = f.SetCellValue(sheet, fmt.Sprintf("F%d", curRow), running)
+
+	AppendStandardFooter(f, sheet, curRow+2, "F", leftSigner, rightSigner)
 
 	_ = f.SetColWidth(sheet, "A", "A", 6)
 	_ = f.SetColWidth(sheet, "B", "B", 12)

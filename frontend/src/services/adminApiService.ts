@@ -19,6 +19,7 @@ import type {
   HistoryEntry,
   GalleryItem,
   HeroSlide,
+  Sponsor,
   Struktur,
   ContentSection,
   MosqueInfo,
@@ -604,4 +605,44 @@ export const reorderHeroSlides = async (items: { id: string; sort_order: number 
 export const toggleHeroSlidePublished = async (id: string): Promise<HeroSlide> => {
   const response = await api.put<ApiResponse<HeroSlide>>(`/v1/admin/hero/slides/${id}/toggle`)
   return response.data.data
+}
+
+// Sponsors (mitra) — admin
+export type CreateSponsorPayload = {
+  name: string
+  logo_url?: string
+  website_url?: string
+  description?: string
+  visibility_start?: string
+  visibility_end?: string
+  contract_start?: string
+  contract_end?: string
+  show_on_landing?: boolean
+  sort_order?: number
+}
+
+export const getAdminSponsors = async (): Promise<Sponsor[]> => {
+  const response = await api.get<ApiResponse<Sponsor[]>>('/v1/admin/sponsors')
+  return response.data.data ?? []
+}
+
+export const createAdminSponsor = async (data: CreateSponsorPayload): Promise<Sponsor> => {
+  const response = await api.post<ApiResponse<Sponsor>>('/v1/admin/sponsors', data)
+  return response.data.data
+}
+
+export const updateAdminSponsor = async (
+  id: string,
+  data: Partial<CreateSponsorPayload>
+): Promise<Sponsor> => {
+  const response = await api.put<ApiResponse<Sponsor>>(`/v1/admin/sponsors/${id}`, data)
+  return response.data.data
+}
+
+export const deleteAdminSponsor = async (id: string): Promise<void> => {
+  await api.delete(`/v1/admin/sponsors/${id}`)
+}
+
+export const reorderAdminSponsors = async (items: { id: string; sort_order: number }[]): Promise<void> => {
+  await api.put('/v1/admin/sponsors/reorder', { items })
 }

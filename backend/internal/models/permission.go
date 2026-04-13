@@ -14,6 +14,7 @@ const (
 	PermissionAccessInventaris   = "access_inventaris"
 	PermissionAccessLaporanMenu  = "access_laporan_menu"
 	PermissionAccessKonten       = "access_konten"
+	PermissionAccessSponsors     = "access_sponsors"
 	PermissionAccessPengaturan   = "access_pengaturan"
 	PermissionAccessRbacSettings = "access_rbac_settings"
 
@@ -84,6 +85,13 @@ func DefaultPermissionsCatalog() []Permission {
 			Key:         PermissionAccessKonten,
 			Name:        "Akses Konten",
 			Description: "Dapat mengakses menu Konten",
+			Module:      "menu",
+			IsActive:    true,
+		},
+		{
+			Key:         PermissionAccessSponsors,
+			Name:        "Akses Mitra & Sponsor",
+			Description: "Dapat mengelola mitra dan sponsor di menu Konten",
 			Module:      "menu",
 			IsActive:    true,
 		},
@@ -216,6 +224,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 		PermissionAccessInventaris:   true,
 		PermissionAccessLaporanMenu:  true,
 		PermissionAccessKonten:       true,
+		PermissionAccessSponsors:     true,
 		PermissionAccessPengaturan:   true,
 		PermissionAccessRbacSettings: false,
 	}
@@ -229,6 +238,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:       baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:      baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:           baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:           baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:       baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings:     baseMenuPermissions[PermissionAccessRbacSettings],
 			PermissionViewDonationReports:    true,
@@ -249,6 +259,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:     baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:    baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:         baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:       baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:     baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings:   true,
 			PermissionFinanceViewReports:   true,
@@ -262,6 +273,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:   baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:  baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:       baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:     baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:   baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings: baseMenuPermissions[PermissionAccessRbacSettings],
 		},
@@ -273,6 +285,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:   baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:  baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:       baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:     baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:   baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings: baseMenuPermissions[PermissionAccessRbacSettings],
 		},
@@ -284,6 +297,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:   baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:  baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:       baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:     baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:   baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings: baseMenuPermissions[PermissionAccessRbacSettings],
 		},
@@ -295,6 +309,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:   baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:  baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:       baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:     baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:   baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings: baseMenuPermissions[PermissionAccessRbacSettings],
 		},
@@ -306,6 +321,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:   baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:  baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:       baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:     baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:   baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings: baseMenuPermissions[PermissionAccessRbacSettings],
 		},
@@ -317,6 +333,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:   baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:  baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:       baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:     baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:   baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings: baseMenuPermissions[PermissionAccessRbacSettings],
 		},
@@ -328,6 +345,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:   baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:  baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:       baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:     baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:   baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings: baseMenuPermissions[PermissionAccessRbacSettings],
 		},

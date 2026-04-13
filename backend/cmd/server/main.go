@@ -110,6 +110,7 @@ func main() {
 			public.GET("/history-entries/date-range", h.GetHistoryEntriesByDateRange)
 			public.GET("/gallery/items", h.GetPublicGalleryItems)
 			public.GET("/hero/slides", h.GetPublicHeroSlides)
+			public.GET("/sponsors", h.GetPublicSponsors)
 			public.POST("/reservations", h.CreateReservation)
 		}
 
@@ -238,6 +239,13 @@ func main() {
 			admin.DELETE("/hero/slides/:id", h.DeleteHeroSlide)
 			admin.PUT("/hero/slides/reorder", h.ReorderHeroSlides)
 			admin.PUT("/hero/slides/:id/toggle", h.ToggleHeroSlidePublished)
+
+			// Sponsors (mitra)
+			admin.GET("/sponsors", middleware.RequirePermission(models.PermissionAccessSponsors), h.GetAdminSponsors)
+			admin.POST("/sponsors", middleware.RequirePermission(models.PermissionAccessSponsors), h.CreateSponsor)
+			admin.PUT("/sponsors/:id", middleware.RequirePermission(models.PermissionAccessSponsors), h.UpdateSponsor)
+			admin.DELETE("/sponsors/:id", middleware.RequirePermission(models.PermissionAccessSponsors), h.DeleteSponsor)
+			admin.PUT("/sponsors/reorder", middleware.RequirePermission(models.PermissionAccessSponsors), h.ReorderSponsors)
 
 			// Settings
 			admin.GET("/settings", h.GetSettings)

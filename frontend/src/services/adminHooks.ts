@@ -58,6 +58,11 @@ import {
   deleteHeroSlide,
   reorderHeroSlides,
   toggleHeroSlidePublished,
+  getAdminSponsors,
+  createAdminSponsor,
+  updateAdminSponsor,
+  deleteAdminSponsor,
+  reorderAdminSponsors,
   type GetReservationsParams,
   type UpdateReservationRequest,
   type CreateEventPayload,
@@ -690,6 +695,66 @@ export const useToggleHeroSlidePublished = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'hero', 'slides'] })
       queryClient.invalidateQueries({ queryKey: ['hero', 'slides'] })
+    },
+  })
+}
+
+function invalidatePublicSponsors(queryClient: QueryClient) {
+  queryClient.invalidateQueries({ queryKey: ['sponsors', 'public'] })
+  queryClient.invalidateQueries({ queryKey: ['sponsors', 'landing'] })
+}
+
+// Sponsors (mitra)
+export const useAdminSponsors = (enabled = true) => {
+  return useQuery({
+    queryKey: ['admin', 'sponsors'],
+    queryFn: getAdminSponsors,
+    enabled,
+    staleTime: 1000 * 30,
+  })
+}
+
+export const useCreateAdminSponsor = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createAdminSponsor,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'sponsors'] })
+      invalidatePublicSponsors(queryClient)
+    },
+  })
+}
+
+export const useUpdateAdminSponsor = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof updateAdminSponsor>[1] }) =>
+      updateAdminSponsor(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'sponsors'] })
+      invalidatePublicSponsors(queryClient)
+    },
+  })
+}
+
+export const useDeleteAdminSponsor = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteAdminSponsor,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'sponsors'] })
+      invalidatePublicSponsors(queryClient)
+    },
+  })
+}
+
+export const useReorderAdminSponsors = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: reorderAdminSponsors,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'sponsors'] })
+      invalidatePublicSponsors(queryClient)
     },
   })
 }

@@ -19,6 +19,8 @@ import {
 	getTentangKami,
 	getGalleryItems,
 	getHeroSlides,
+	getSponsors,
+	getSponsorsForLanding,
 } from './apiService';
 
 // Mosque Info
@@ -185,6 +187,22 @@ export const useHeroSlides = () => {
 	return useQuery({
 		queryKey: ['hero', 'slides'],
 		queryFn: getHeroSlides,
+		staleTime: 1000 * 60 * 5,
+	});
+};
+
+export const useSponsors = () => {
+	return useQuery({
+		queryKey: ['sponsors', 'public'],
+		queryFn: getSponsors,
+		staleTime: 1000 * 60 * 5,
+	});
+};
+
+export const useSponsorsForLanding = () => {
+	return useQuery({
+		queryKey: ['sponsors', 'landing'],
+		queryFn: getSponsorsForLanding,
 		staleTime: 1000 * 60 * 5,
 	});
 };

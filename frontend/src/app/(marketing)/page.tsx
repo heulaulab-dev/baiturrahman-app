@@ -7,6 +7,7 @@ import { KajianSection } from '@/components/landing/KajianSection';
 import { MimbarJumatSection } from '@/components/landing/MimbarJumatSection';
 import { BeritaSection } from '@/components/landing/BeritaSection';
 import { GallerySection } from '@/components/landing/GallerySection';
+import { SponsorsLandingSection } from '@/components/landing/SponsorsLandingSection';
 import { DonationSection } from '@/components/landing/DonationSection';
 import { ContactSection } from '@/components/landing/ContactSection';
 import { TentangKamiSection } from '@/components/landing/TentangKamiSection';
@@ -28,6 +29,7 @@ export default function HomePage() {
 			<StrukturSection />
 			<BeritaSection />
 			<GallerySection />
+			<SponsorsLandingSection />
 			<DonationSection />
 			<ContactSection />
 		</div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { AnnouncementsManagement } from '@/components/dashboard/AnnouncementsManagement'
@@ -10,12 +10,14 @@ import { KhutbahManagement } from '@/components/dashboard/KhutbahManagement'
 import { StrukturManagement } from '@/components/dashboard/StrukturManagement'
 import { GalleryManagement } from '@/components/dashboard/GalleryManagement'
 import { HeroBannerManagement } from '@/components/dashboard/HeroBannerManagement'
+import { SponsorManagement } from '@/components/dashboard/SponsorManagement'
 import { TentangKami } from '@/components/dashboard/TentangKami'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { downloadKontenRingkasanCsv } from '@/lib/konten-csv'
 import { useAdminAnnouncements, useAdminEvents, useAdminKhutbahs } from '@/services/adminHooks'
+import { useAuth } from '@/context/AuthContext'
 
 type TabType =
   | 'tentang-kami'
@@ -26,8 +28,11 @@ type TabType =
   | 'struktur'
   | 'banner'
   | 'gallery'
+  | 'mitra'
 
 export default function KontenPage() {
+  const { hasPermission } = useAuth()
+  const canSponsors = hasPermission('access_sponsors')
   const [activeTab, setActiveTab] = useState<TabType>('tentang-kami')
   const { data: eventsResponse, isLoading: eventsLoading } = useAdminEvents(100)
   const { data: announcementsResponse, isLoading: announcementsLoading } = useAdminAnnouncements(100)
@@ -37,6 +42,12 @@ export default function KontenPage() {
   const khutbahs = khutbahsResponse?.data ?? []
 
   const listsLoading = eventsLoading || announcementsLoading || khutbahsLoading
+
+  useEffect(() => {
+    if (!canSponsors && activeTab === 'mitra') {
+      setActiveTab('tentang-kami')
+    }
+  }, [canSponsors, activeTab])
 
   const handleExportCsv = () => {
     if (listsLoading) {
@@ -60,6 +71,7 @@ export default function KontenPage() {
     { key: 'struktur', label: 'Struktur' },
     { key: 'banner', label: 'Banner' },
     { key: 'gallery', label: 'Galeri' },
+    ...(canSponsors ? [{ key: 'mitra' as const, label: 'Mitra' }] : []),
   ]
 
   return (
@@ -167,6 +179,22 @@ export default function KontenPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {canSponsors ? (
+          <TabsContent value="mitra" className="outline-none">
+            <Card>
+              <CardHeader>
+                <CardTitle>Mitra &amp; sponsor</CardTitle>
+                <CardDescription>
+                  Logo, tautan, dan jadwal tampil di situs publik (halaman /mitra dan blok beranda).
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SponsorManagement />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        ) : null}
       </Tabs>
     </div>
   )

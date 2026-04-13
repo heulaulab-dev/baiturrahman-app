@@ -1,13 +1,12 @@
 package handlers
 
 import (
-	"encoding/csv"
 	"fmt"
+	"masjid-baiturrahim-backend/internal/exportxlsx"
 	"masjid-baiturrahim-backend/internal/models"
 	"masjid-baiturrahim-backend/internal/services"
 	"masjid-baiturrahim-backend/internal/utils"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -152,39 +151,14 @@ func statusCSVLabel(s models.DonationStatus) string {
 	}
 }
 
-func (h *Handler) ExportDonations(c *gin.Context) {
+func (h *Handler) ExportDonationsXLSX(c *gin.Context) {
 	var donations []models.Donation
 	if err := h.donationsFilteredQuery(c).Preload("PaymentMethod").Order("created_at DESC").Find(&donations).Error; err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengekspor data donasi")
 		return
 	}
 
-	filename := fmt.Sprintf("donasi-%s.csv", time.Now().Format("2006-01-02-150405"))
-	c.Header("Content-Type", "text/csv; charset=utf-8")
-	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
-
-	w := csv.NewWriter(c.Writer)
-	// UTF-8 BOM for Excel
-	_, _ = c.Writer.Write([]byte{0xEF, 0xBB, 0xBF})
-
-	header := []string{
-		"kode",
-		"nama_donatur",
-		"email",
-		"telepon",
-		"nominal",
-		"kategori",
-		"metode_pembayaran",
-		"status",
-		"catatan",
-		"url_bukti",
-		"tanggal_dibuat",
-		"tanggal_dikonfirmasi",
-	}
-	if err := w.Write(header); err != nil {
-		return
-	}
-
+	rows := make([]exportxlsx.DonationDetailRow, 0, len(donations))
 	for _, d := range donations {
 		pmName := ""
 		if d.PaymentMethodID != nil && d.PaymentMethod.Name != "" {
@@ -194,23 +168,120 @@ func (h *Handler) ExportDonations(c *gin.Context) {
 		if d.ConfirmedAt != nil {
 			confirmedAt = d.ConfirmedAt.In(time.Local).Format(time.RFC3339)
 		}
-		row := []string{
-			d.DonationCode,
-			d.DonorName,
-			strPtr(d.DonorEmail),
-			strPtr(d.DonorPhone),
-			strconv.FormatFloat(d.Amount, 'f', 2, 64),
-			categoryCSVLabel(d.Category),
-			pmName,
-			statusCSVLabel(d.Status),
-			d.Notes,
-			strPtr(d.ProofURL),
-			d.CreatedAt.In(time.Local).Format(time.RFC3339),
-			confirmedAt,
-		}
-		if err := w.Write(row); err != nil {
-			return
-		}
+		rows = append(rows, exportxlsx.DonationDetailRow{
+			Kode:              d.DonationCode,
+			Nama:              d.DonorName,
+			Email:             strPtr(d.DonorEmail),
+			Telepon:           strPtr(d.DonorPhone),
+			Nominal:           d.Amount,
+			Kategori:          categoryCSVLabel(d.Category),
+			Metode:            pmName,
+			Status:            statusCSVLabel(d.Status),
+			Catatan:           d.Notes,
+			URLBukti:          strPtr(d.ProofURL),
+			TanggalDibuat:     d.CreatedAt.In(time.Local).Format(time.RFC3339),
+			TanggalKonfirmasi: confirmedAt,
+		})
 	}
-	w.Flush()
+
+	buf, err := exportxlsx.BuildDonationsDetailXLSX(rows)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	filename := fmt.Sprintf("donasi-%s.xlsx", time.Now().Format("2006-01-02-150405"))
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
+	c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", buf)
+}
+
+func donationAggFromMap(v interface{}) (total float64, count int64) {
+	m, ok := v.(map[string]interface{})
+	if !ok {
+		return 0, 0
+	}
+	switch t := m["total"].(type) {
+	case float64:
+		total = t
+	}
+	switch n := m["count"].(type) {
+	case float64:
+		count = int64(n)
+	case int64:
+		count = n
+	case int:
+		count = int64(n)
+	}
+	return total, count
+}
+
+func (h *Handler) ExportDonationSummaryXLSX(c *gin.Context) {
+	period := c.DefaultQuery("period", "bulan-ini")
+	now := time.Now()
+	label, keys, err := exportxlsx.ParseDonationSummaryPeriod(period, now)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "period must be bulan-ini, 3-bulan, or tahun-ini")
+		return
+	}
+
+	stats, err := services.GetDonationStats(h.DB)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to get donation statistics")
+		return
+	}
+
+	byMonth := make(map[string]struct{ Total float64; Count int64 })
+	for k, v := range stats.ByMonth {
+		t, n := donationAggFromMap(v)
+		byMonth[k] = struct{ Total float64; Count int64 }{Total: t, Count: n}
+	}
+	byCategory := make(map[string]struct{ Total float64; Count int64 })
+	for k, v := range stats.ByCategory {
+		t, n := donationAggFromMap(v)
+		byCategory[k] = struct{ Total float64; Count int64 }{Total: t, Count: n}
+	}
+
+	var periodIncome float64
+	var periodCount int64
+	monthLabels := make([]string, len(keys))
+	for i, k := range keys {
+		e := byMonth[k]
+		periodIncome += e.Total
+		periodCount += e.Count
+		monthLabels[i] = exportxlsx.MonthKeyToIDLabel(k)
+	}
+
+	params := exportxlsx.DonationSummaryParams{
+		PeriodLabel:    label,
+		PeriodKeys:     keys,
+		MonthLabels:    monthLabels,
+		PeriodIncome:   periodIncome,
+		PeriodCount:    periodCount,
+		PendingCount:   stats.PendingCount,
+		ConfirmedCount: stats.ConfirmedCount,
+		CancelledCount: stats.CancelledCount,
+		ByMonth:        byMonth,
+		ByCategory:     byCategory,
+	}
+
+	buf, err := exportxlsx.BuildDonationSummaryXLSX(params)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	safe := strings.Map(func(r rune) rune {
+		if r == ' ' {
+			return '_'
+		}
+		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '-' {
+			return r
+		}
+		return -1
+	}, label)
+	filename := fmt.Sprintf("laporan-donasi-ringkasan_%s_%s.xlsx", safe, now.Format("2006-01-02"))
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
+	c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", buf)
 }

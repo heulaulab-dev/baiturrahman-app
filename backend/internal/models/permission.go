@@ -126,7 +126,7 @@ func DefaultPermissionsCatalog() []Permission {
 		{
 			Key:         PermissionExportDonations,
 			Name:        "Ekspor Donasi",
-			Description: "Dapat mengekspor data donasi ke CSV",
+			Description: "Dapat mengekspor data donasi ke Excel (.xlsx)",
 			Module:      "donations",
 			IsActive:    true,
 		},
@@ -161,7 +161,7 @@ func DefaultPermissionsCatalog() []Permission {
 		{
 			Key:         PermissionFinanceExportReports,
 			Name:        "Ekspor Laporan Keuangan",
-			Description: "Dapat mengunduh laporan keuangan PDF dan CSV",
+			Description: "Dapat mengunduh laporan keuangan PDF dan Excel (.xlsx)",
 			Module:      "finance",
 			IsActive:    true,
 		},

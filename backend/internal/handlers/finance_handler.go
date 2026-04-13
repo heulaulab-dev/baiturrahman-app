@@ -2,13 +2,15 @@ package handlers
 
 import (
 	"bytes"
-	"encoding/csv"
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
+	"masjid-baiturrahim-backend/internal/exportxlsx"
 	"masjid-baiturrahim-backend/internal/models"
 	"masjid-baiturrahim-backend/internal/services"
 	"masjid-baiturrahim-backend/internal/utils"
@@ -504,7 +506,7 @@ func (h *Handler) GetFinanceMonthlyReport(c *gin.Context) {
 	}, "")
 }
 
-func (h *Handler) ExportFinanceMonthlyCSV(c *gin.Context) {
+func (h *Handler) ExportFinanceMonthlyXLSX(c *gin.Context) {
 	fundType := models.FinanceFundType(c.Query("fund_type"))
 	if fundType != models.FinanceFundKasBesar && fundType != models.FinanceFundKasKecil {
 		utils.ErrorResponse(c, http.StatusBadRequest, "fund_type must be kas_besar or kas_kecil")
@@ -541,43 +543,36 @@ func (h *Handler) ExportFinanceMonthlyCSV(c *gin.Context) {
 		return
 	}
 
-	filename := fmt.Sprintf("laporan-%s-%04d-%02d.csv", fundType, start.Year(), int(start.Month()))
-	c.Header("Content-Type", "text/csv; charset=utf-8")
-	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
-	_, _ = c.Writer.Write([]byte{0xEF, 0xBB, 0xBF})
+	var mosque models.MosqueInfo
+	_ = h.DB.First(&mosque).Error
 
-	w := csv.NewWriter(c.Writer)
-	_ = w.Write([]string{"fund_type", "periode", string(fundType), start.Format("2006-01")})
-	_ = w.Write([]string{"saldo_awal", strconv.FormatFloat(opening, 'f', 0, 64)})
-	_ = w.Write([]string{})
-	_ = w.Write([]string{"no", "tanggal", "tipe", "kategori", "uraian", "pemasukan", "pengeluaran", "saldo_berjalan", "display_below"})
-
-	running := opening
-	for i, row := range approvedRows {
-		var income, expense float64
-		switch row.TxType {
-		case models.FinanceTxPemasukan, models.FinanceTxTransferIn, models.FinanceTxOpening, models.FinanceTxAdjustment:
-			income = row.Amount
-			running += row.Amount
-		case models.FinanceTxPengeluaran, models.FinanceTxTransferOut:
-			expense = row.Amount
-			running -= row.Amount
-		}
-		_ = w.Write([]string{
-			strconv.Itoa(i + 1),
-			row.TxDate.Format("2006-01-02"),
-			string(row.TxType),
-			row.Category,
-			row.Description,
-			strconv.FormatFloat(income, 'f', 0, 64),
-			strconv.FormatFloat(expense, 'f', 0, 64),
-			strconv.FormatFloat(running, 'f', 0, 64),
-			strconv.FormatBool(row.DisplayBelow),
-		})
+	bankLine := ""
+	if h.Cfg != nil {
+		bankLine = h.Cfg.FinanceReportBankLine
 	}
-	_ = w.Write([]string{})
-	_ = w.Write([]string{"saldo_akhir", strconv.FormatFloat(running, 'f', 0, 64)})
-	w.Flush()
+
+	var logoBytes []byte
+	if mosque.LogoURL != nil && strings.TrimSpace(*mosque.LogoURL) != "" {
+		b, _ := exportxlsx.FetchLogoBytes(context.Background(), strings.TrimSpace(*mosque.LogoURL))
+		logoBytes = b
+	}
+	if len(logoBytes) == 0 {
+		logoBytes = exportxlsx.FallbackLogoPNG()
+	}
+
+	buf, err := exportxlsx.BuildFinanceMonthlyDKIXLSX(
+		fundType, start.Year(), int(start.Month()),
+		opening, approvedRows, mosque, bankLine, logoBytes,
+	)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	filename := fmt.Sprintf("laporan-%s-%04d-%02d.xlsx", fundType, start.Year(), int(start.Month()))
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
+	c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", buf)
 }
 
 func (h *Handler) ExportFinanceMonthlyPDF(c *gin.Context) {

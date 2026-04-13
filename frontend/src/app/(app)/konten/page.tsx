@@ -15,7 +15,8 @@ import { TentangKami } from '@/components/dashboard/TentangKami'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { downloadKontenRingkasanCsv } from '@/lib/konten-csv'
+import { useMutation } from '@tanstack/react-query'
+import { exportContentSummaryXlsx } from '@/services/adminApiService'
 import { useAdminAnnouncements, useAdminEvents, useAdminKhutbahs } from '@/services/adminHooks'
 import { useAuth } from '@/context/AuthContext'
 
@@ -34,14 +35,16 @@ export default function KontenPage() {
   const { hasPermission } = useAuth()
   const canSponsors = hasPermission('access_sponsors')
   const [activeTab, setActiveTab] = useState<TabType>('tentang-kami')
-  const { data: eventsResponse, isLoading: eventsLoading } = useAdminEvents(100)
-  const { data: announcementsResponse, isLoading: announcementsLoading } = useAdminAnnouncements(100)
-  const { data: khutbahsResponse, isLoading: khutbahsLoading } = useAdminKhutbahs(100)
+  const { data: eventsResponse } = useAdminEvents(100)
+  const { data: announcementsResponse } = useAdminAnnouncements(100)
+  const { data: khutbahsResponse } = useAdminKhutbahs(100)
   const events = eventsResponse?.data ?? []
   const announcements = announcementsResponse?.data ?? []
   const khutbahs = khutbahsResponse?.data ?? []
 
-  const listsLoading = eventsLoading || announcementsLoading || khutbahsLoading
+  const exportKonten = useMutation({
+    mutationFn: () => exportContentSummaryXlsx(),
+  })
 
   useEffect(() => {
     if (!canSponsors && activeTab === 'mitra') {
@@ -49,17 +52,11 @@ export default function KontenPage() {
     }
   }, [canSponsors, activeTab])
 
-  const handleExportCsv = () => {
-    if (listsLoading) {
-      toast.error('Tunggu hingga data selesai dimuat')
-      return
-    }
-    try {
-      downloadKontenRingkasanCsv({ events, announcements, khutbahs })
-      toast.success('CSV berhasil diunduh')
-    } catch {
-      toast.error('Gagal mengekspor CSV')
-    }
+  const handleExportExcel = () => {
+    exportKonten.mutate(undefined, {
+      onSuccess: () => toast.success('Excel berhasil diunduh'),
+      onError: (e) => toast.error(e instanceof Error ? e.message : 'Gagal mengekspor Excel'),
+    })
   }
 
   const tabs: { key: TabType; label: string }[] = [
@@ -83,9 +80,9 @@ export default function KontenPage() {
             Kelola profil, publikasi, dan aset konten situs masjid.
           </p>
         </div>
-        <Button type="button" variant="outline" onClick={handleExportCsv} disabled={listsLoading}>
+        <Button type="button" variant="outline" onClick={handleExportExcel} disabled={exportKonten.isPending}>
           <Download className="mr-2 size-4 shrink-0" aria-hidden />
-          Export CSV
+          Export Excel
         </Button>
       </div>
 

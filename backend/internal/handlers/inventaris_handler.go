@@ -2,10 +2,14 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
+	"time"
+
+	"masjid-baiturrahim-backend/internal/exportxlsx"
 	"masjid-baiturrahim-backend/internal/models"
 	"masjid-baiturrahim-backend/internal/services"
 	"masjid-baiturrahim-backend/internal/utils"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -154,4 +158,30 @@ func (h *Handler) DeleteBarangTidakTetap(c *gin.Context) {
 	}
 
 	utils.SuccessResponse(c, http.StatusOK, nil, "Barang tidak tetap deleted successfully")
+}
+
+func (h *Handler) ExportInventarisXLSX(c *gin.Context) {
+	svc := services.NewInventarisService(h.DB)
+	aset, err := svc.GetAsetTetap()
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to load aset tetap")
+		return
+	}
+	barang, err := svc.GetBarangTidakTetap("")
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to load barang tidak tetap")
+		return
+	}
+
+	buf, err := exportxlsx.BuildInventarisXLSX(aset, barang)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	now := time.Now()
+	filename := fmt.Sprintf("inventaris-%04d-%02d-%02d.xlsx", now.Year(), now.Month(), now.Day())
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
+	c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", buf)
 }

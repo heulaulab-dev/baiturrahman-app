@@ -52,7 +52,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { downloadInventarisCsv } from '@/lib/inventaris-csv'
 import { cn } from '@/lib/utils'
 import {
   type AsetTetap,
@@ -62,6 +61,7 @@ import {
   deleteAsetTetap,
   deleteBarangTidakTetap,
   getAsetTetap,
+  exportInventarisXlsx,
   getBarangTidakTetap,
   updateAsetTetap,
   updateBarangTidakTetap,
@@ -286,12 +286,12 @@ export default function InventarisPage() {
     }
   }
 
-  const handleExportCsv = () => {
+  const handleExportExcel = async () => {
     try {
-      downloadInventarisCsv(asetTetap, barangTidakTetap)
-      toast.success('CSV berhasil diunduh')
-    } catch {
-      toast.error('Gagal mengekspor CSV')
+      await exportInventarisXlsx()
+      toast.success('Excel berhasil diunduh')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Gagal mengekspor Excel')
     }
   }
 
@@ -413,9 +413,9 @@ export default function InventarisPage() {
     <div className="space-y-6 p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-3xl font-semibold text-foreground">Inventaris</h2>
-        <Button type="button" variant="outline" onClick={handleExportCsv} disabled={loading}>
+        <Button type="button" variant="outline" onClick={() => void handleExportExcel()} disabled={loading}>
           <Download className="mr-2 size-4 shrink-0" aria-hidden />
-          Export CSV
+          Export Excel
         </Button>
       </div>
 

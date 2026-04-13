@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { FileBarChart, Loader2 } from 'lucide-react'
-import { useExportFinanceMonthlyCsv, useExportFinanceMonthlyPdf, useFinanceMonthlyReport } from '@/services/financeHooks'
+import { useExportFinanceMonthlyPdf, useExportFinanceMonthlyXlsx, useFinanceMonthlyReport } from '@/services/financeHooks'
 import type { FinanceFundType } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -63,7 +63,7 @@ export default function LaporanKeuanganPage() {
   const [year, setYear] = useState<number>(now.getFullYear())
   const [month, setMonth] = useState<number>(now.getMonth() + 1)
   const { data, isLoading } = useFinanceMonthlyReport({ fund_type: fundType, year, month })
-  const exportCsv = useExportFinanceMonthlyCsv()
+  const exportXlsx = useExportFinanceMonthlyXlsx()
   const exportPdf = useExportFinanceMonthlyPdf()
 
   const monthLabel = useMemo(
@@ -81,7 +81,7 @@ export default function LaporanKeuanganPage() {
             </div>
             <div className="min-w-0 space-y-1">
               <CardTitle className="text-xl sm:text-2xl">Laporan bulanan</CardTitle>
-              <CardDescription>Ringkasan mutasi per bulan dan unduhan PDF atau CSV.</CardDescription>
+              <CardDescription>Ringkasan mutasi per bulan dan unduhan PDF atau Excel.</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -128,16 +128,16 @@ export default function LaporanKeuanganPage() {
             <Button
               type="button"
               variant="outline"
-              disabled={exportCsv.isPending}
-              onClick={() => exportCsv.mutate({ fund_type: fundType, year, month })}
+              disabled={exportXlsx.isPending}
+              onClick={() => exportXlsx.mutate({ fund_type: fundType, year, month })}
             >
-              {exportCsv.isPending ? (
+              {exportXlsx.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Mengunduh…
                 </>
               ) : (
-                'Download CSV'
+                'Download Excel'
               )}
             </Button>
             <Button

@@ -44,7 +44,7 @@ export interface GetDonationsParams {
   donor_name?: string
 }
 
-/** Same filter fields as list; exports all matching rows as CSV. */
+/** Same filter fields as list; exports all matching rows as Excel. */
 export type ExportDonationsParams = Pick<
   GetDonationsParams,
   'status' | 'category' | 'from' | 'to' | 'donor_name'
@@ -66,8 +66,8 @@ function filenameFromContentDisposition(cd: string | undefined, fallback: string
   return fallback
 }
 
-function triggerCsvDownload(blob: Blob, contentDisposition: string | undefined): void {
-  const filename = filenameFromContentDisposition(contentDisposition, 'donasi.csv')
+function triggerBlobDownload(blob: Blob, contentDisposition: string | undefined, fallback: string): void {
+  const filename = filenameFromContentDisposition(contentDisposition, fallback)
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -79,7 +79,7 @@ function triggerCsvDownload(blob: Blob, contentDisposition: string | undefined):
   URL.revokeObjectURL(url)
 }
 
-async function assertCsvBlobOrThrowJsonError(blob: Blob): Promise<void> {
+async function assertBlobNotJsonError(blob: Blob): Promise<void> {
   if (!blob.type.includes('json')) return
   const text = await blob.text()
   const j = JSON.parse(text) as { error?: string }
@@ -99,15 +99,48 @@ async function axiosBlobErrorMessage(err: unknown): Promise<string> {
   }
 }
 
-export const exportAdminDonationsCsv = async (params: ExportDonationsParams = {}): Promise<void> => {
+export const exportAdminDonationsXlsx = async (params: ExportDonationsParams = {}): Promise<void> => {
   try {
-    const response = await api.get<Blob>('/v1/admin/donations/export', {
+    const response = await api.get<Blob>('/v1/admin/donations/export/xlsx', {
       params,
       responseType: 'blob',
     })
     const blob = response.data as unknown as Blob
-    await assertCsvBlobOrThrowJsonError(blob)
-    triggerCsvDownload(blob, response.headers['content-disposition'])
+    await assertBlobNotJsonError(blob)
+    triggerBlobDownload(blob, response.headers['content-disposition'], 'donasi.xlsx')
+  } catch (err) {
+    const fromAxios = await axiosBlobErrorMessage(err)
+    if (fromAxios) throw new Error(fromAxios)
+    throw err
+  }
+}
+
+export type DonationSummaryPeriod = 'bulan-ini' | '3-bulan' | 'tahun-ini'
+
+export const exportDonationSummaryXlsx = async (period: DonationSummaryPeriod): Promise<void> => {
+  try {
+    const response = await api.get<Blob>('/v1/admin/reports/donations/summary/xlsx', {
+      params: { period },
+      responseType: 'blob',
+    })
+    const blob = response.data as unknown as Blob
+    await assertBlobNotJsonError(blob)
+    triggerBlobDownload(blob, response.headers['content-disposition'], 'laporan-donasi-ringkasan.xlsx')
+  } catch (err) {
+    const fromAxios = await axiosBlobErrorMessage(err)
+    if (fromAxios) throw new Error(fromAxios)
+    throw err
+  }
+}
+
+export const exportContentSummaryXlsx = async (): Promise<void> => {
+  try {
+    const response = await api.get<Blob>('/v1/admin/content/summary/xlsx', {
+      responseType: 'blob',
+    })
+    const blob = response.data as unknown as Blob
+    await assertBlobNotJsonError(blob)
+    triggerBlobDownload(blob, response.headers['content-disposition'], 'konten-ringkasan.xlsx')
   } catch (err) {
     const fromAxios = await axiosBlobErrorMessage(err)
     if (fromAxios) throw new Error(fromAxios)

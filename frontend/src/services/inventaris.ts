@@ -98,3 +98,22 @@ export const updateBarangTidakTetap = async (
 export const deleteBarangTidakTetap = async (id: string): Promise<void> => {
   await api.delete(`/v1/admin/inventaris/barang/${id}`)
 }
+
+export const exportInventarisXlsx = async (): Promise<void> => {
+  const response = await api.get<Blob>('/v1/admin/inventaris/export/xlsx', { responseType: 'blob' })
+  const blob = response.data as unknown as Blob
+  if (blob.type.includes('json')) {
+    const text = await blob.text()
+    const j = JSON.parse(text) as { error?: string }
+    throw new Error(j.error || 'Export gagal')
+  }
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'inventaris.xlsx'
+  a.rel = 'noopener'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}

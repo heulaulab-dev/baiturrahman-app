@@ -40,7 +40,7 @@ import {
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
 import { useAdminDonations, useAdminPaymentMethods } from '@/services/adminHooks';
-import { exportAdminDonationsCsv } from '@/services/adminApiService';
+import { exportAdminDonationsXlsx } from '@/services/adminApiService';
 import type { DonationFull } from '@/types';
 
 export interface DonasiDonationsTabProps {
@@ -49,7 +49,7 @@ export interface DonasiDonationsTabProps {
 }
 
 export type DonasiDonationsTabHandle = {
-	exportCsv: () => Promise<void>;
+	exportXlsx: () => Promise<void>;
 };
 
 const categories = ['Semua', 'Donasi Umum', 'Zakat', 'Wakaf', 'Infaq Jumat', 'Fidyah', 'Zakat Fitrah'];
@@ -185,15 +185,15 @@ const DonasiDonationsTab = forwardRef<DonasiDonationsTabHandle, DonasiDonationsT
 	useImperativeHandle(
 		ref,
 		() => ({
-			exportCsv: async () => {
+			exportXlsx: async () => {
 				try {
-					await exportAdminDonationsCsv({
+					await exportAdminDonationsXlsx({
 						category: backendCategoryMap[filter],
 						donor_name: searchQuery.trim() || undefined,
 					});
-					toast.success('Berkas CSV berhasil diunduh');
+					toast.success('Berkas Excel berhasil diunduh');
 				} catch (e) {
-					toast.error(e instanceof Error ? e.message : 'Gagal mengekspor CSV');
+					toast.error(e instanceof Error ? e.message : 'Gagal mengekspor Excel');
 					throw e;
 				}
 			},

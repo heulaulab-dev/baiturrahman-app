@@ -175,7 +175,7 @@ export default function BantuanPage() {
                 menangani donasi masuk; metode pembayaran (termasuk QRIS) di tab terkait. Di{' '}
                 <strong className="font-semibold text-foreground">Laporan</strong> pilih periode (bulan ini, tiga bulan
                 terakhir, tahun ini), lihat rincian per bulan, dan unduh{' '}
-                <strong className="font-semibold text-foreground">Export CSV</strong> bila diperlukan.
+                <strong className="font-semibold text-foreground">Export Excel</strong> bila diperlukan.
               </AccordionContent>
             </AccordionItem>
 
@@ -204,7 +204,7 @@ export default function BantuanPage() {
               </AccordionTrigger>
               <AccordionContent className="max-w-prose pb-5 text-[15px] leading-relaxed text-muted-foreground">
                 <strong className="font-semibold text-foreground">Inventaris</strong> memisahkan aset tetap dan barang
-                tidak tetap; gunakan export CSV untuk arsip. <strong className="font-semibold text-foreground">Konten</strong>{' '}
+                tidak tetap; gunakan export Excel untuk arsip. <strong className="font-semibold text-foreground">Konten</strong>{' '}
                 mencakup tentang kami, event, berita, khutbah, sejarah, dan struktur—masing-masing di tab sendiri.
               </AccordionContent>
             </AccordionItem>

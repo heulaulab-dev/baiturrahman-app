@@ -14,6 +14,7 @@ const (
 	PermissionAccessInventaris   = "access_inventaris"
 	PermissionAccessLaporanMenu  = "access_laporan_menu"
 	PermissionAccessKonten       = "access_konten"
+	PermissionAccessSponsors     = "access_sponsors"
 	PermissionAccessPengaturan   = "access_pengaturan"
 	PermissionAccessRbacSettings = "access_rbac_settings"
 
@@ -88,6 +89,13 @@ func DefaultPermissionsCatalog() []Permission {
 			IsActive:    true,
 		},
 		{
+			Key:         PermissionAccessSponsors,
+			Name:        "Akses Mitra & Sponsor",
+			Description: "Dapat mengelola mitra dan sponsor di menu Konten",
+			Module:      "menu",
+			IsActive:    true,
+		},
+		{
 			Key:         PermissionAccessPengaturan,
 			Name:        "Akses Pengaturan",
 			Description: "Dapat mengakses menu Pengaturan",
@@ -118,7 +126,7 @@ func DefaultPermissionsCatalog() []Permission {
 		{
 			Key:         PermissionExportDonations,
 			Name:        "Ekspor Donasi",
-			Description: "Dapat mengekspor data donasi ke CSV",
+			Description: "Dapat mengekspor data donasi ke Excel (.xlsx)",
 			Module:      "donations",
 			IsActive:    true,
 		},
@@ -153,7 +161,7 @@ func DefaultPermissionsCatalog() []Permission {
 		{
 			Key:         PermissionFinanceExportReports,
 			Name:        "Ekspor Laporan Keuangan",
-			Description: "Dapat mengunduh laporan keuangan PDF dan CSV",
+			Description: "Dapat mengunduh laporan keuangan PDF dan Excel (.xlsx)",
 			Module:      "finance",
 			IsActive:    true,
 		},
@@ -216,6 +224,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 		PermissionAccessInventaris:   true,
 		PermissionAccessLaporanMenu:  true,
 		PermissionAccessKonten:       true,
+		PermissionAccessSponsors:     true,
 		PermissionAccessPengaturan:   true,
 		PermissionAccessRbacSettings: false,
 	}
@@ -229,6 +238,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:       baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:      baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:           baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:           baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:       baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings:     baseMenuPermissions[PermissionAccessRbacSettings],
 			PermissionViewDonationReports:    true,
@@ -249,6 +259,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:     baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:    baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:         baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:       baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:     baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings:   true,
 			PermissionFinanceViewReports:   true,
@@ -262,6 +273,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:   baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:  baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:       baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:     baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:   baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings: baseMenuPermissions[PermissionAccessRbacSettings],
 		},
@@ -273,6 +285,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:   baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:  baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:       baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:     baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:   baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings: baseMenuPermissions[PermissionAccessRbacSettings],
 		},
@@ -284,6 +297,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:   baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:  baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:       baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:     baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:   baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings: baseMenuPermissions[PermissionAccessRbacSettings],
 		},
@@ -295,6 +309,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:   baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:  baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:       baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:     baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:   baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings: baseMenuPermissions[PermissionAccessRbacSettings],
 		},
@@ -306,6 +321,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:   baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:  baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:       baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:     baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:   baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings: baseMenuPermissions[PermissionAccessRbacSettings],
 		},
@@ -317,6 +333,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:   baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:  baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:       baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:     baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:   baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings: baseMenuPermissions[PermissionAccessRbacSettings],
 		},
@@ -328,6 +345,7 @@ func defaultOrgRolePermissions() map[StrukturRole]map[string]bool {
 			PermissionAccessInventaris:   baseMenuPermissions[PermissionAccessInventaris],
 			PermissionAccessLaporanMenu:  baseMenuPermissions[PermissionAccessLaporanMenu],
 			PermissionAccessKonten:       baseMenuPermissions[PermissionAccessKonten],
+			PermissionAccessSponsors:     baseMenuPermissions[PermissionAccessSponsors],
 			PermissionAccessPengaturan:   baseMenuPermissions[PermissionAccessPengaturan],
 			PermissionAccessRbacSettings: baseMenuPermissions[PermissionAccessRbacSettings],
 		},

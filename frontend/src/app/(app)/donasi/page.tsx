@@ -45,7 +45,7 @@ export default function DonasiPage() {
 					onClick={async () => {
 						setExporting(true);
 						try {
-							await donationsRef.current?.exportCsv();
+							await donationsRef.current?.exportXlsx();
 						} catch {
 							// toast from tab / adminApiService
 						} finally {
@@ -59,7 +59,7 @@ export default function DonasiPage() {
 							Mengekspor…
 						</>
 					) : (
-						'Export CSV'
+						'Export Excel'
 					)}
 				</Button>
 			</div>

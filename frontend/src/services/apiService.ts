@@ -11,6 +11,8 @@ import type {
   Khutbah,
   HistoryEntry,
   GalleryItem,
+  HeroSlide,
+  PublicSponsor,
   Struktur,
   ApiResponse,
   PaginatedResponse,
@@ -143,5 +145,23 @@ export const getTentangKami = async (): Promise<ContentSection> => {
 // Gallery (public, published only)
 export const getGalleryItems = async (): Promise<GalleryItem[]> => {
   const response = await api.get<ApiResponse<GalleryItem[]>>('/v1/gallery/items')
+  return response.data.data ?? []
+}
+
+// Hero slides (public, published only)
+export const getHeroSlides = async (): Promise<HeroSlide[]> => {
+  const response = await api.get<ApiResponse<HeroSlide[]>>('/v1/hero/slides')
+  return response.data.data ?? []
+}
+
+export const getSponsors = async (): Promise<PublicSponsor[]> => {
+  const response = await api.get<ApiResponse<PublicSponsor[]>>('/v1/sponsors')
+  return response.data.data ?? []
+}
+
+export const getSponsorsForLanding = async (): Promise<PublicSponsor[]> => {
+  const response = await api.get<ApiResponse<PublicSponsor[]>>('/v1/sponsors', {
+    params: { for_landing: '1' },
+  })
   return response.data.data ?? []
 }

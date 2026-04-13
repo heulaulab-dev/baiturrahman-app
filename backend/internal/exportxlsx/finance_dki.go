@@ -182,8 +182,9 @@ func BuildFinanceMonthlyDKIXLSX(
 ) ([]byte, error) {
 	f := excelize.NewFile()
 	defer func() { _ = f.Close() }()
-	sheet := f.GetSheetName(0)
-	_ = f.SetSheetName(sheet, "Laporan")
+	defaultSheet := f.GetSheetName(0)
+	sheet := "Laporan"
+	_ = f.SetSheetName(defaultSheet, sheet)
 
 	loc := time.Local
 	start := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, loc)

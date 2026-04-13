@@ -24,8 +24,9 @@ type DonationDetailRow struct {
 func BuildDonationsDetailXLSX(rows []DonationDetailRow) ([]byte, error) {
 	f := excelize.NewFile()
 	defer func() { _ = f.Close() }()
-	sheet := f.GetSheetName(0)
-	_ = f.SetSheetName(sheet, "Donasi")
+	defaultSheet := f.GetSheetName(0)
+	sheet := "Donasi"
+	_ = f.SetSheetName(defaultSheet, sheet)
 
 	hdrID, err := NewHeaderRowStyleID(f)
 	if err != nil {
@@ -121,8 +122,9 @@ type DonationSummaryParams struct {
 func BuildDonationSummaryXLSX(p DonationSummaryParams) ([]byte, error) {
 	f := excelize.NewFile()
 	defer func() { _ = f.Close() }()
-	sheet := f.GetSheetName(0)
-	_ = f.SetSheetName(sheet, "Ringkasan")
+	defaultSheet := f.GetSheetName(0)
+	sheet := "Ringkasan"
+	_ = f.SetSheetName(defaultSheet, sheet)
 
 	boldID, _ := f.NewStyle(&excelize.Style{Font: &excelize.Font{Bold: true, Size: 14}})
 	hdrID, _ := NewHeaderRowStyleID(f)

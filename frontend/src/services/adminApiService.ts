@@ -18,6 +18,8 @@ import type {
   PaginatedResponse,
   HistoryEntry,
   GalleryItem,
+  HeroSlide,
+  Sponsor,
   Struktur,
   ContentSection,
   MosqueInfo,
@@ -42,7 +44,7 @@ export interface GetDonationsParams {
   donor_name?: string
 }
 
-/** Same filter fields as list; exports all matching rows as CSV. */
+/** Same filter fields as list; exports all matching rows as Excel. */
 export type ExportDonationsParams = Pick<
   GetDonationsParams,
   'status' | 'category' | 'from' | 'to' | 'donor_name'
@@ -64,8 +66,8 @@ function filenameFromContentDisposition(cd: string | undefined, fallback: string
   return fallback
 }
 
-function triggerCsvDownload(blob: Blob, contentDisposition: string | undefined): void {
-  const filename = filenameFromContentDisposition(contentDisposition, 'donasi.csv')
+function triggerBlobDownload(blob: Blob, contentDisposition: string | undefined, fallback: string): void {
+  const filename = filenameFromContentDisposition(contentDisposition, fallback)
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -77,7 +79,7 @@ function triggerCsvDownload(blob: Blob, contentDisposition: string | undefined):
   URL.revokeObjectURL(url)
 }
 
-async function assertCsvBlobOrThrowJsonError(blob: Blob): Promise<void> {
+async function assertBlobNotJsonError(blob: Blob): Promise<void> {
   if (!blob.type.includes('json')) return
   const text = await blob.text()
   const j = JSON.parse(text) as { error?: string }
@@ -97,15 +99,48 @@ async function axiosBlobErrorMessage(err: unknown): Promise<string> {
   }
 }
 
-export const exportAdminDonationsCsv = async (params: ExportDonationsParams = {}): Promise<void> => {
+export const exportAdminDonationsXlsx = async (params: ExportDonationsParams = {}): Promise<void> => {
   try {
-    const response = await api.get<Blob>('/v1/admin/donations/export', {
+    const response = await api.get<Blob>('/v1/admin/donations/export/xlsx', {
       params,
       responseType: 'blob',
     })
     const blob = response.data as unknown as Blob
-    await assertCsvBlobOrThrowJsonError(blob)
-    triggerCsvDownload(blob, response.headers['content-disposition'])
+    await assertBlobNotJsonError(blob)
+    triggerBlobDownload(blob, response.headers['content-disposition'], 'donasi.xlsx')
+  } catch (err) {
+    const fromAxios = await axiosBlobErrorMessage(err)
+    if (fromAxios) throw new Error(fromAxios)
+    throw err
+  }
+}
+
+export type DonationSummaryPeriod = 'bulan-ini' | '3-bulan' | 'tahun-ini'
+
+export const exportDonationSummaryXlsx = async (period: DonationSummaryPeriod): Promise<void> => {
+  try {
+    const response = await api.get<Blob>('/v1/admin/reports/donations/summary/xlsx', {
+      params: { period },
+      responseType: 'blob',
+    })
+    const blob = response.data as unknown as Blob
+    await assertBlobNotJsonError(blob)
+    triggerBlobDownload(blob, response.headers['content-disposition'], 'laporan-donasi-ringkasan.xlsx')
+  } catch (err) {
+    const fromAxios = await axiosBlobErrorMessage(err)
+    if (fromAxios) throw new Error(fromAxios)
+    throw err
+  }
+}
+
+export const exportContentSummaryXlsx = async (): Promise<void> => {
+  try {
+    const response = await api.get<Blob>('/v1/admin/content/summary/xlsx', {
+      responseType: 'blob',
+    })
+    const blob = response.data as unknown as Blob
+    await assertBlobNotJsonError(blob)
+    triggerBlobDownload(blob, response.headers['content-disposition'], 'konten-ringkasan.xlsx')
   } catch (err) {
     const fromAxios = await axiosBlobErrorMessage(err)
     if (fromAxios) throw new Error(fromAxios)
@@ -561,4 +596,100 @@ export const reorderGalleryItems = async (
 export const toggleGalleryItemPublished = async (id: string): Promise<GalleryItem> => {
   const response = await api.put<ApiResponse<GalleryItem>>(`/v1/admin/gallery/items/${id}/toggle`)
   return response.data.data
+}
+
+// Hero slides — admin
+export const getAdminHeroSlides = async (): Promise<HeroSlide[]> => {
+  const response = await api.get<ApiResponse<HeroSlide[]>>('/v1/admin/hero/slides')
+  return response.data.data ?? []
+}
+
+export const createHeroSlide = async (data: {
+  image_url: string
+  alt_text?: string
+  sort_order?: number
+  is_published?: boolean
+}): Promise<HeroSlide> => {
+  const response = await api.post<ApiResponse<HeroSlide>>('/v1/admin/hero/slides', data)
+  return response.data.data
+}
+
+export const updateHeroSlide = async (
+  id: string,
+  data: Partial<{
+    image_url: string
+    alt_text: string
+    sort_order: number
+    is_published: boolean
+  }>
+): Promise<HeroSlide> => {
+  const response = await api.put<ApiResponse<HeroSlide>>(`/v1/admin/hero/slides/${id}`, data)
+  return response.data.data
+}
+
+export const deleteHeroSlide = async (id: string): Promise<void> => {
+  await api.delete(`/v1/admin/hero/slides/${id}`)
+}
+
+export const reorderHeroSlides = async (items: { id: string; sort_order: number }[]): Promise<void> => {
+  await api.put('/v1/admin/hero/slides/reorder', { items })
+}
+
+export const toggleHeroSlidePublished = async (id: string): Promise<HeroSlide> => {
+  const response = await api.put<ApiResponse<HeroSlide>>(`/v1/admin/hero/slides/${id}/toggle`)
+  return response.data.data
+}
+
+// Sponsors (mitra) — admin
+export type CreateSponsorPayload = {
+  name: string
+  logo_url?: string
+  website_url?: string
+  description?: string
+  visibility_start?: string
+  visibility_end?: string
+  contract_start?: string
+  contract_end?: string
+  show_on_landing?: boolean
+  sort_order?: number
+}
+
+export const getAdminSponsors = async (): Promise<Sponsor[]> => {
+  const response = await api.get<ApiResponse<Sponsor[]>>('/v1/admin/sponsors')
+  return response.data.data ?? []
+}
+
+export const createAdminSponsor = async (data: CreateSponsorPayload): Promise<Sponsor> => {
+  const response = await api.post<ApiResponse<Sponsor>>('/v1/admin/sponsors', data)
+  return response.data.data
+}
+
+export const updateAdminSponsor = async (
+  id: string,
+  data: Partial<CreateSponsorPayload>
+): Promise<Sponsor> => {
+  const response = await api.put<ApiResponse<Sponsor>>(`/v1/admin/sponsors/${id}`, data)
+  return response.data.data
+}
+
+export const deleteAdminSponsor = async (id: string): Promise<void> => {
+  await api.delete(`/v1/admin/sponsors/${id}`)
+}
+
+export const reorderAdminSponsors = async (items: { id: string; sort_order: number }[]): Promise<void> => {
+  await api.put('/v1/admin/sponsors/reorder', { items })
+}
+
+export type AdminSettingsMap = Record<string, string>
+
+export const getAdminSettings = async (): Promise<AdminSettingsMap> => {
+  const response = await api.get<ApiResponse<AdminSettingsMap>>('/v1/admin/settings')
+  return response.data.data ?? {}
+}
+
+export const updateAdminSetting = async (
+  key: string,
+  payload: { value: string; description?: string; data_type?: 'string' | 'json' | 'int' | 'bool' }
+): Promise<void> => {
+  await api.put(`/v1/admin/settings/${encodeURIComponent(key)}`, payload)
 }

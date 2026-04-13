@@ -311,6 +311,43 @@ export interface GalleryItem {
   updated_at: string
 }
 
+/** Landing hero background slides (Konten → Banner), separate from gallery. */
+export interface HeroSlide {
+  id: string
+  image_url: string
+  alt_text: string
+  sort_order: number
+  is_published: boolean
+  created_at: string
+  updated_at: string
+}
+
+/** Public sponsor (no contract dates). */
+export interface PublicSponsor {
+  id: string
+  name: string
+  logo_url: string
+  website_url: string
+  description: string
+  visibility_start: string | null
+  visibility_end: string | null
+  show_on_landing: boolean
+  sort_order: number
+  created_at: string
+}
+
+/** Admin sponsor row (includes contract range). */
+export interface Sponsor extends PublicSponsor {
+  contract_start: string | null
+  contract_end: string | null
+  updated_at?: string
+}
+
+export interface SponsorReorderItem {
+  id: string
+  sort_order: number
+}
+
 export interface Struktur {
   id: string
   name: string

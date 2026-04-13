@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Download, Image } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { AnnouncementsManagement } from '@/components/dashboard/AnnouncementsManagement'
 import { EventsManagement } from '@/components/dashboard/EventsManagement'
@@ -9,12 +9,16 @@ import { HistoryManagement } from '@/components/dashboard/HistoryManagement'
 import { KhutbahManagement } from '@/components/dashboard/KhutbahManagement'
 import { StrukturManagement } from '@/components/dashboard/StrukturManagement'
 import { GalleryManagement } from '@/components/dashboard/GalleryManagement'
+import { HeroBannerManagement } from '@/components/dashboard/HeroBannerManagement'
+import { SponsorManagement } from '@/components/dashboard/SponsorManagement'
 import { TentangKami } from '@/components/dashboard/TentangKami'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { downloadKontenRingkasanCsv } from '@/lib/konten-csv'
+import { useMutation } from '@tanstack/react-query'
+import { exportContentSummaryXlsx } from '@/services/adminApiService'
 import { useAdminAnnouncements, useAdminEvents, useAdminKhutbahs } from '@/services/adminHooks'
+import { useAuth } from '@/context/AuthContext'
 
 type TabType =
   | 'tentang-kami'
@@ -25,29 +29,34 @@ type TabType =
   | 'struktur'
   | 'banner'
   | 'gallery'
+  | 'mitra'
 
 export default function KontenPage() {
+  const { hasPermission } = useAuth()
+  const canSponsors = hasPermission('access_sponsors')
   const [activeTab, setActiveTab] = useState<TabType>('tentang-kami')
-  const { data: eventsResponse, isLoading: eventsLoading } = useAdminEvents(100)
-  const { data: announcementsResponse, isLoading: announcementsLoading } = useAdminAnnouncements(100)
-  const { data: khutbahsResponse, isLoading: khutbahsLoading } = useAdminKhutbahs(100)
+  const { data: eventsResponse } = useAdminEvents(100)
+  const { data: announcementsResponse } = useAdminAnnouncements(100)
+  const { data: khutbahsResponse } = useAdminKhutbahs(100)
   const events = eventsResponse?.data ?? []
   const announcements = announcementsResponse?.data ?? []
   const khutbahs = khutbahsResponse?.data ?? []
 
-  const listsLoading = eventsLoading || announcementsLoading || khutbahsLoading
+  const exportKonten = useMutation({
+    mutationFn: () => exportContentSummaryXlsx(),
+  })
 
-  const handleExportCsv = () => {
-    if (listsLoading) {
-      toast.error('Tunggu hingga data selesai dimuat')
-      return
+  useEffect(() => {
+    if (!canSponsors && activeTab === 'mitra') {
+      setActiveTab('tentang-kami')
     }
-    try {
-      downloadKontenRingkasanCsv({ events, announcements, khutbahs })
-      toast.success('CSV berhasil diunduh')
-    } catch {
-      toast.error('Gagal mengekspor CSV')
-    }
+  }, [canSponsors, activeTab])
+
+  const handleExportExcel = () => {
+    exportKonten.mutate(undefined, {
+      onSuccess: () => toast.success('Excel berhasil diunduh'),
+      onError: (e) => toast.error(e instanceof Error ? e.message : 'Gagal mengekspor Excel'),
+    })
   }
 
   const tabs: { key: TabType; label: string }[] = [
@@ -59,6 +68,7 @@ export default function KontenPage() {
     { key: 'struktur', label: 'Struktur' },
     { key: 'banner', label: 'Banner' },
     { key: 'gallery', label: 'Galeri' },
+    ...(canSponsors ? [{ key: 'mitra' as const, label: 'Mitra' }] : []),
   ]
 
   return (
@@ -70,9 +80,9 @@ export default function KontenPage() {
             Kelola profil, publikasi, dan aset konten situs masjid.
           </p>
         </div>
-        <Button type="button" variant="outline" onClick={handleExportCsv} disabled={listsLoading}>
+        <Button type="button" variant="outline" onClick={handleExportExcel} disabled={exportKonten.isPending}>
           <Download className="mr-2 size-4 shrink-0" aria-hidden />
-          Export CSV
+          Export Excel
         </Button>
       </div>
 
@@ -142,12 +152,13 @@ export default function KontenPage() {
         <TabsContent value="banner" className="outline-none">
           <Card>
             <CardHeader>
-              <CardTitle>Banner</CardTitle>
-              <CardDescription>Pengelolaan banner hero akan ditambahkan pada pembaruan berikutnya.</CardDescription>
+              <CardTitle>Banner hero</CardTitle>
+              <CardDescription>
+                Gambar latar karusel di bagian atas beranda. Terpisah dari galeri kegiatan.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-              <Image className="mb-3 size-12 text-primary/35" aria-hidden />
-              <p className="text-sm">Belum tersedia</p>
+            <CardContent>
+              <HeroBannerManagement />
             </CardContent>
           </Card>
         </TabsContent>
@@ -165,6 +176,22 @@ export default function KontenPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {canSponsors ? (
+          <TabsContent value="mitra" className="outline-none">
+            <Card>
+              <CardHeader>
+                <CardTitle>Mitra &amp; sponsor</CardTitle>
+                <CardDescription>
+                  Logo, tautan, dan jadwal tampil di situs publik (halaman /mitra dan blok beranda).
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SponsorManagement />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        ) : null}
       </Tabs>
     </div>
   )

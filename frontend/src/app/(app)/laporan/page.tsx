@@ -18,14 +18,15 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { downloadLaporanKeuanganCsv } from '@/lib/laporan-csv'
+import { useMutation } from '@tanstack/react-query'
+import { exportDonationSummaryXlsx, type DonationSummaryPeriod } from '@/services/adminApiService'
 import { useAuth } from '@/context/AuthContext'
 import { useDonationStats } from '@/services/adminHooks'
 import { useFinanceMonthlyReport } from '@/services/financeHooks'
 import type { FinanceMonthlyReportResponse } from '@/services/financeApiService'
 import type { DonationStats } from '@/types'
 
-type Period = 'bulan-ini' | '3-bulan' | 'tahun-ini'
+type Period = DonationSummaryPeriod
 
 const ID_MONTHS = [
   'Januari',
@@ -171,6 +172,10 @@ export default function LaporanPage() {
   const [period, setPeriod] = useState<Period>('bulan-ini')
   const { data: stats, isLoading } = useDonationStats(canDonations)
 
+  const exportSummary = useMutation({
+    mutationFn: (p: Period) => exportDonationSummaryXlsx(p),
+  })
+
   const { periodLabel, periodMonthKeys, monthRowLabels, periodIncome, periodCount } = useMemo(() => {
     const currentDate = new Date()
     const monthKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
@@ -229,24 +234,11 @@ export default function LaporanPage() {
     )
   }
 
-  const handleExportCsv = () => {
-    if (!stats) {
-      toast.error('Data belum siap, tunggu sebentar')
-      return
-    }
-    try {
-      downloadLaporanKeuanganCsv({
-        periodLabel,
-        periodMonthKeys,
-        monthRowLabels,
-        periodIncome,
-        periodCount,
-        stats,
-      })
-      toast.success('CSV berhasil diunduh')
-    } catch {
-      toast.error('Gagal mengekspor CSV')
-    }
+  const handleExportExcel = () => {
+    exportSummary.mutate(period, {
+      onSuccess: () => toast.success('Excel berhasil diunduh'),
+      onError: (e) => toast.error(e instanceof Error ? e.message : 'Gagal mengekspor Excel'),
+    })
   }
 
   const byMonth = stats?.by_month ?? {}
@@ -269,9 +261,14 @@ export default function LaporanPage() {
           <p className="mt-1 text-sm text-muted-foreground">{pageDescription}</p>
         </div>
         {canDonations ? (
-          <Button type="button" variant="outline" onClick={handleExportCsv} disabled={isLoading || !stats}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleExportExcel}
+            disabled={exportSummary.isPending}
+          >
             <Download className="mr-2 size-4 shrink-0" aria-hidden />
-            Export CSV donasi
+            Export Excel donasi
           </Button>
         ) : null}
       </div>

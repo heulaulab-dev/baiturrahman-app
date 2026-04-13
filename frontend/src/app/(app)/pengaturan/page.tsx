@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { LayoutDashboard, UserPlus } from 'lucide-react'
 import { MosqueProfile } from '@/components/dashboard/MosqueProfile'
+import { ExcelExportSettings } from '@/components/dashboard/ExcelExportSettings'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -18,7 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAdminUsers } from '@/services/adminHooks'
 import type { UserRole } from '@/types'
 
-type TabType = 'profil-masjid' | 'pengguna-role'
+type TabType = 'profil-masjid' | 'export-excel' | 'pengguna-role'
 
 function roleLabel(role: UserRole): string {
   switch (role) {
@@ -53,6 +54,7 @@ export default function PengaturanPage() {
 
   const tabs: { key: TabType; label: string; icon: typeof LayoutDashboard }[] = [
     { key: 'profil-masjid', label: 'Profil masjid', icon: LayoutDashboard },
+    { key: 'export-excel', label: 'Export Excel', icon: LayoutDashboard },
     { key: 'pengguna-role', label: 'Pengguna & role', icon: UserPlus },
   ]
 
@@ -126,6 +128,10 @@ export default function PengaturanPage() {
 
         <TabsContent value="profil-masjid" className="outline-none">
           <MosqueProfile />
+        </TabsContent>
+
+        <TabsContent value="export-excel" className="outline-none">
+          <ExcelExportSettings />
         </TabsContent>
 
         <TabsContent value="pengguna-role" className="outline-none">

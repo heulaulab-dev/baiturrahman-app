@@ -131,12 +131,12 @@ export const getFinanceMonthlyReport = async (params: {
   return response.data.data
 }
 
-export const exportFinanceMonthlyCsv = async (params: {
+export const exportFinanceMonthlyXlsx = async (params: {
   fund_type: FinanceFundType
   year: number
   month: number
 }): Promise<void> => {
-  const response = await api.get<Blob>('/v1/admin/finance/reports/monthly/csv', {
+  const response = await api.get<Blob>('/v1/admin/finance/reports/monthly/xlsx', {
     params: { ...params, month: String(params.month).padStart(2, '0') },
     responseType: 'blob',
   })
@@ -144,7 +144,7 @@ export const exportFinanceMonthlyCsv = async (params: {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `laporan-${params.fund_type}-${params.year}-${String(params.month).padStart(2, '0')}.csv`
+  a.download = `laporan-${params.fund_type}-${params.year}-${String(params.month).padStart(2, '0')}.xlsx`
   a.rel = 'noopener'
   document.body.appendChild(a)
   a.click()

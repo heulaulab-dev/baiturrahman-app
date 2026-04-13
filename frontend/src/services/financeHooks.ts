@@ -3,7 +3,7 @@ import {
   approveFinanceTransfer,
   createFinanceTransaction,
   createFinanceTransfer,
-  exportFinanceMonthlyCsv,
+  exportFinanceMonthlyXlsx,
   exportFinanceMonthlyPdf,
   getFinanceBalance,
   getFinanceMonthlyReport,
@@ -98,9 +98,9 @@ export const useFinanceMonthlyReport = (
     staleTime: 1000 * 30,
   })
 
-export const useExportFinanceMonthlyCsv = () =>
+export const useExportFinanceMonthlyXlsx = () =>
   useMutation({
-    mutationFn: exportFinanceMonthlyCsv,
+    mutationFn: exportFinanceMonthlyXlsx,
   })
 
 export const useExportFinanceMonthlyPdf = () =>

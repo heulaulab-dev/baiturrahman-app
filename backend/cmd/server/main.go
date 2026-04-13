@@ -58,7 +58,7 @@ func main() {
 		AllowOrigins:     []string{cfg.FrontendURL},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept"},
-		ExposeHeaders:    []string{"Content-Length"},
+		ExposeHeaders:    []string{"Content-Length", "Content-Disposition"},
 		AllowCredentials: true,
 		MaxAge:           12 * 3600, // 12 hours
 	}))
@@ -75,7 +75,7 @@ func main() {
 	})
 
 	// Initialize handlers
-	h := handlers.New(db, minioSvc)
+	h := handlers.New(db, minioSvc, cfg)
 
 	// API v1 routes
 	v1 := r.Group("/api/v1")
@@ -109,6 +109,8 @@ func main() {
 			public.GET("/history-entries", h.GetPublishedEntries)
 			public.GET("/history-entries/date-range", h.GetHistoryEntriesByDateRange)
 			public.GET("/gallery/items", h.GetPublicGalleryItems)
+			public.GET("/hero/slides", h.GetPublicHeroSlides)
+			public.GET("/sponsors", h.GetPublicSponsors)
 			public.POST("/reservations", h.CreateReservation)
 		}
 
@@ -153,6 +155,7 @@ func main() {
 
 			// Content
 			admin.GET("/content", h.GetContentSections)
+			admin.GET("/content/summary/xlsx", middleware.RequirePermission(models.PermissionAccessKonten), h.ExportContentSummaryXLSX)
 			admin.GET("/content/:id", h.GetContentSection)
 			admin.PUT("/content/:id", h.UpdateContentSection)
 			admin.PUT("/content/reorder", h.ReorderContentSections)
@@ -197,7 +200,8 @@ func main() {
 			admin.GET("/donations", middleware.RequirePermission(models.PermissionViewDonationReports), h.GetDonations)
 			admin.PUT("/donations/:id/confirm", h.ConfirmDonation)
 			admin.GET("/donations/stats", middleware.RequirePermission(models.PermissionViewDonationStats), h.GetDonationStats)
-			admin.GET("/donations/export", middleware.RequirePermission(models.PermissionExportDonations), h.ExportDonations)
+			admin.GET("/donations/export/xlsx", middleware.RequirePermission(models.PermissionExportDonations), h.ExportDonationsXLSX)
+			admin.GET("/reports/donations/summary/xlsx", middleware.RequirePermission(models.PermissionViewDonationReports), h.ExportDonationSummaryXLSX)
 
 			// Finance
 			admin.GET("/finance/transactions", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceTransactions)
@@ -208,8 +212,19 @@ func main() {
 			admin.PUT("/finance/transfers/:id/approve", middleware.RequirePermission(models.PermissionFinanceApproveTransfer), h.ApproveFinanceTransfer)
 			admin.PUT("/finance/transfers/:id/reject", middleware.RequirePermission(models.PermissionFinanceApproveTransfer), h.RejectFinanceTransfer)
 			admin.GET("/finance/reports/monthly", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceMonthlyReport)
-			admin.GET("/finance/reports/monthly/csv", middleware.RequirePermission(models.PermissionFinanceExportReports), h.ExportFinanceMonthlyCSV)
+			admin.GET("/finance/reports/monthly/xlsx", middleware.RequirePermission(models.PermissionFinanceExportReports), h.ExportFinanceMonthlyXLSX)
 			admin.GET("/finance/reports/monthly/pdf", middleware.RequirePermission(models.PermissionFinanceExportReports), h.ExportFinanceMonthlyPDF)
+
+			// Inventaris
+			admin.GET("/inventaris/aset-tetap", middleware.RequirePermission(models.PermissionAccessInventaris), h.GetAsetTetap)
+			admin.POST("/inventaris/aset-tetap", middleware.RequirePermission(models.PermissionAccessInventaris), h.CreateAsetTetap)
+			admin.PUT("/inventaris/aset-tetap/:id", middleware.RequirePermission(models.PermissionAccessInventaris), h.UpdateAsetTetap)
+			admin.DELETE("/inventaris/aset-tetap/:id", middleware.RequirePermission(models.PermissionAccessInventaris), h.DeleteAsetTetap)
+			admin.GET("/inventaris/barang", middleware.RequirePermission(models.PermissionAccessInventaris), h.GetBarangTidakTetap)
+			admin.POST("/inventaris/barang", middleware.RequirePermission(models.PermissionAccessInventaris), h.CreateBarangTidakTetap)
+			admin.PUT("/inventaris/barang/:id", middleware.RequirePermission(models.PermissionAccessInventaris), h.UpdateBarangTidakTetap)
+			admin.DELETE("/inventaris/barang/:id", middleware.RequirePermission(models.PermissionAccessInventaris), h.DeleteBarangTidakTetap)
+			admin.GET("/inventaris/export/xlsx", middleware.RequirePermission(models.PermissionAccessInventaris), h.ExportInventarisXLSX)
 
 			// Payment Methods
 			admin.GET("/payment-methods", h.GetPaymentMethods)
@@ -229,6 +244,21 @@ func main() {
 			admin.DELETE("/gallery/items/:id", h.DeleteGalleryItem)
 			admin.PUT("/gallery/items/reorder", h.ReorderGalleryItems)
 			admin.PUT("/gallery/items/:id/toggle", h.ToggleGalleryItemPublished)
+
+			// Hero slides (landing banner)
+			admin.GET("/hero/slides", h.GetAdminHeroSlides)
+			admin.POST("/hero/slides", h.CreateHeroSlide)
+			admin.PUT("/hero/slides/:id", h.UpdateHeroSlide)
+			admin.DELETE("/hero/slides/:id", h.DeleteHeroSlide)
+			admin.PUT("/hero/slides/reorder", h.ReorderHeroSlides)
+			admin.PUT("/hero/slides/:id/toggle", h.ToggleHeroSlidePublished)
+
+			// Sponsors (mitra)
+			admin.GET("/sponsors", middleware.RequirePermission(models.PermissionAccessSponsors), h.GetAdminSponsors)
+			admin.POST("/sponsors", middleware.RequirePermission(models.PermissionAccessSponsors), h.CreateSponsor)
+			admin.PUT("/sponsors/:id", middleware.RequirePermission(models.PermissionAccessSponsors), h.UpdateSponsor)
+			admin.DELETE("/sponsors/:id", middleware.RequirePermission(models.PermissionAccessSponsors), h.DeleteSponsor)
+			admin.PUT("/sponsors/reorder", middleware.RequirePermission(models.PermissionAccessSponsors), h.ReorderSponsors)
 
 			// Settings
 			admin.GET("/settings", h.GetSettings)

@@ -20,11 +20,9 @@ jobs:
       - name: SSH deploy (staging)
         uses: appleboy/ssh-action@v1.2.2
         with:
-          host: ${{ secrets.VPS_HOST }}
+          host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          # SHA256 host key fingerprint (see: ssh-keygen -lf <(ssh-keyscan -t ed25519 $VPS_HOST))
-          fingerprint: ${{ secrets.VPS_SSH_HOST_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           command_timeout: 25m
           script: |

@@ -20,20 +20,19 @@ type Config struct {
 	MinioBucket    string
 	MinioObjectURL string
 
-	// Default Admin Account
 	DefaultAdminUsername string
 	DefaultAdminEmail    string
 	DefaultAdminPassword string
 	DefaultAdminFullName string
 
-	// Optional line on finance monthly Excel header (rekening bank, dll.)
 	FinanceReportBankLine string
 	ExcelSignerLeftName   string
 	ExcelSignerRightName  string
+
+	SentryDSN string // tambah ini
 }
 
 func Load() *Config {
-	// Load .env file
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using environment variables")
 	}
@@ -59,6 +58,8 @@ func Load() *Config {
 		FinanceReportBankLine: getEnv("FINANCE_REPORT_BANK_LINE", ""),
 		ExcelSignerLeftName:   getEnv("EXCEL_SIGNER_LEFT_NAME", "H. MUHAMMAD YAHYA ZUBIR"),
 		ExcelSignerRightName:  getEnv("EXCEL_SIGNER_RIGHT_NAME", "MOHAMAD DJOKO SANTOSO"),
+
+		SentryDSN: getEnv("SENTRY_DSN", ""), // tambah ini
 	}
 }
 

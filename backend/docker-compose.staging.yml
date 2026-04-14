@@ -1,0 +1,82 @@
+# Staging stack: isolated network/volumes/names from production.
+# Run from this directory: docker compose -f docker-compose.staging.yml --env-file .env.staging up -d --build
+
+name: baiturrahim-backend-staging
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: baiturrahim-postgres-staging
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "127.0.0.1:${PG_PORT:-5436}:5432"
+    volumes:
+      - postgres_data_staging:/var/lib/postgresql/data
+    networks:
+      - baiturrahim-staging-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: baiturrahim-minio-staging
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    ports:
+      - "127.0.0.1:${MINIO_API_PORT:-9006}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9007}:9001"
+    volumes:
+      - minio_data_staging:/data
+    networks:
+      - baiturrahim-staging-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: baiturrahim-backend-staging
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8083}:8080"
+    environment:
+      PORT: 8080
+      ENVIRONMENT: ${ENVIRONMENT}
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      MINIO_OBJECT_URL: ${MINIO_OBJECT_URL}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      FINANCE_REPORT_BANK_LINE: ${FINANCE_REPORT_BANK_LINE:-}
+      EXCEL_SIGNER_LEFT_NAME: ${EXCEL_SIGNER_LEFT_NAME:-}
+      EXCEL_SIGNER_RIGHT_NAME: ${EXCEL_SIGNER_RIGHT_NAME:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    networks:
+      - baiturrahim-staging-network
+
+networks:
+  baiturrahim-staging-network:
+    driver: bridge
+
+volumes:
+  postgres_data_staging:
+    name: baiturrahim_postgres_data_staging
+  minio_data_staging:
+    name: baiturrahim_minio_data_staging

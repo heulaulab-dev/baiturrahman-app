@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"time"
 	"masjid-baiturrahim-backend/config"
 	"masjid-baiturrahim-backend/internal/database"
 	"masjid-baiturrahim-backend/internal/handlers"
@@ -10,6 +12,8 @@ import (
 	"masjid-baiturrahim-backend/internal/models"
 	"masjid-baiturrahim-backend/internal/services"
 
+	"github.com/getsentry/sentry-go"
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -17,6 +21,17 @@ import (
 func main() {
 	// Load configuration
 	cfg := config.Load()
+
+	// Initialize Sentry
+	if err := sentry.Init(sentry.ClientOptions{
+		Dsn:              cfg.SentryDSN,
+		Environment:      cfg.Environment,
+		EnableTracing:    true,
+		TracesSampleRate: 1.0,
+	}); err != nil {
+		fmt.Printf("Sentry initialization failed: %v\n", err)
+	}
+	defer sentry.Flush(2 * time.Second)
 
 	// Set Gin mode
 	if cfg.Environment == "production" {
@@ -60,8 +75,11 @@ func main() {
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept"},
 		ExposeHeaders:    []string{"Content-Length", "Content-Disposition"},
 		AllowCredentials: true,
-		MaxAge:           12 * 3600, // 12 hours
+		MaxAge:           12 * 3600,
 	}))
+
+	// Sentry middleware (after CORS, before other middleware)
+	r.Use(sentrygin.New(sentrygin.Options{Repanic: true}))
 
 	// Global middleware
 	r.Use(middleware.Logger())
@@ -83,16 +101,14 @@ func main() {
 		// Public routes
 		public := v1.Group("")
 		{
-			// Auth (public)
 			auth := public.Group("/auth")
 			{
 				auth.POST("/login", h.Login)
 				auth.POST("/refresh", h.Refresh)
 			}
 
-			// Public endpoints
 			public.GET("/mosque", h.GetMosqueInfo)
-			public.GET("/mosque-info", h.GetMosqueInfo) // Backward-compatible alias
+			public.GET("/mosque-info", h.GetMosqueInfo)
 			public.GET("/structure", h.GetStructures)
 			public.GET("/strukturs", h.GetPublicStrukturs)
 			public.GET("/prayer-times", h.GetPrayerTimesByDate)
@@ -114,7 +130,7 @@ func main() {
 			public.POST("/reservations", h.CreateReservation)
 		}
 
-		// Protected routes (require authentication)
+		// Protected routes
 		protected := v1.Group("")
 		protected.Use(middleware.AuthRequired())
 		{
@@ -122,21 +138,18 @@ func main() {
 			protected.POST("/auth/logout", h.Logout)
 		}
 
-		// Admin routes (require authentication + admin role)
+		// Admin routes
 		admin := v1.Group("/admin")
 		admin.Use(middleware.AuthRequired())
 		{
-			// Mosque Info
 			admin.PUT("/mosque", h.UpdateMosqueInfo)
 
-			// Structure
 			admin.GET("/structure", h.GetStructures)
 			admin.POST("/structure", h.CreateStructure)
 			admin.PUT("/structure/:id", h.UpdateStructure)
 			admin.DELETE("/structure/:id", h.DeleteStructure)
 			admin.PUT("/structure/reorder", h.ReorderStructures)
 
-			// Struktur (legacy dashboard API paths)
 			admin.GET("/strukturs", h.GetStrukturs)
 			admin.GET("/strukturs/:id", h.GetStrukturByID)
 			admin.POST("/strukturs", h.CreateStruktur)
@@ -146,14 +159,12 @@ func main() {
 			admin.PUT("/strukturs/:id/toggle", h.ToggleStrukturStatus)
 			admin.GET("/strukturs/active-count", h.GetActiveStruktursCount)
 
-			// Prayer Times
 			admin.POST("/prayer-times", h.CreatePrayerTimes)
 			admin.POST("/prayer-times/bulk", h.BulkCreatePrayerTimes)
 			admin.PUT("/prayer-times/:id", h.UpdatePrayerTimes)
 			admin.DELETE("/prayer-times/:id", h.DeletePrayerTimes)
 			admin.POST("/prayer-times/generate", h.GeneratePrayerTimes)
 
-			// Content
 			admin.GET("/content", h.GetContentSections)
 			admin.GET("/content/summary/xlsx", middleware.RequirePermission(models.PermissionAccessKonten), h.ExportContentSummaryXLSX)
 			admin.GET("/content/:id", h.GetContentSection)
@@ -161,19 +172,16 @@ func main() {
 			admin.PUT("/content/reorder", h.ReorderContentSections)
 			admin.PUT("/content/:id/toggle", h.ToggleContentSection)
 
-			// Events
 			admin.GET("/events", h.GetEvents)
 			admin.POST("/events", h.CreateEvent)
 			admin.PUT("/events/:id", h.UpdateEvent)
 			admin.DELETE("/events/:id", h.DeleteEvent)
 
-			// Announcements
 			admin.GET("/announcements", h.GetAnnouncements)
 			admin.POST("/announcements", h.CreateAnnouncement)
 			admin.PUT("/announcements/:id", h.UpdateAnnouncement)
 			admin.DELETE("/announcements/:id", h.DeleteAnnouncement)
 
-			// Khutbah
 			admin.GET("/khutbahs", h.GetKhutbahs)
 			admin.GET("/khutbahs/:id", h.GetKhutbahByID)
 			admin.POST("/khutbahs", h.CreateKhutbah)
@@ -181,7 +189,6 @@ func main() {
 			admin.DELETE("/khutbahs/:id", h.DeleteKhutbah)
 			admin.PUT("/khutbahs/:id/toggle", h.ToggleKhutbahStatus)
 
-			// History Entries
 			admin.GET("/history-entries", h.GetHistoryEntries)
 			admin.GET("/history-entries/:id", h.GetHistoryEntryByID)
 			admin.POST("/history-entries", h.CreateHistoryEntry)
@@ -189,21 +196,18 @@ func main() {
 			admin.DELETE("/history-entries/:id", h.DeleteHistoryEntry)
 			admin.PUT("/history-entries/:id/toggle", h.ToggleHistoryEntryStatus)
 
-			// Reservations
 			admin.GET("/reservations", h.GetReservations)
 			admin.POST("/reservations/create", h.CreateReservationAdmin)
 			admin.GET("/reservations/:id", h.GetReservationByID)
 			admin.PUT("/reservations/:id", h.UpdateReservation)
 			admin.DELETE("/reservations/:id", h.DeleteReservation)
 
-			// Donations
 			admin.GET("/donations", middleware.RequirePermission(models.PermissionViewDonationReports), h.GetDonations)
 			admin.PUT("/donations/:id/confirm", h.ConfirmDonation)
 			admin.GET("/donations/stats", middleware.RequirePermission(models.PermissionViewDonationStats), h.GetDonationStats)
 			admin.GET("/donations/export/xlsx", middleware.RequirePermission(models.PermissionExportDonations), h.ExportDonationsXLSX)
 			admin.GET("/reports/donations/summary/xlsx", middleware.RequirePermission(models.PermissionViewDonationReports), h.ExportDonationSummaryXLSX)
 
-			// Finance
 			admin.GET("/finance/transactions", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceTransactions)
 			admin.POST("/finance/transactions", middleware.RequireAnyPermission(models.PermissionFinanceCreateTx, models.PermissionFinanceAdjustOpening), h.CreateFinanceTransaction)
 			admin.GET("/finance/balance", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceBalance)
@@ -215,7 +219,6 @@ func main() {
 			admin.GET("/finance/reports/monthly/xlsx", middleware.RequirePermission(models.PermissionFinanceExportReports), h.ExportFinanceMonthlyXLSX)
 			admin.GET("/finance/reports/monthly/pdf", middleware.RequirePermission(models.PermissionFinanceExportReports), h.ExportFinanceMonthlyPDF)
 
-			// Inventaris
 			admin.GET("/inventaris/aset-tetap", middleware.RequirePermission(models.PermissionAccessInventaris), h.GetAsetTetap)
 			admin.POST("/inventaris/aset-tetap", middleware.RequirePermission(models.PermissionAccessInventaris), h.CreateAsetTetap)
 			admin.PUT("/inventaris/aset-tetap/:id", middleware.RequirePermission(models.PermissionAccessInventaris), h.UpdateAsetTetap)
@@ -226,18 +229,15 @@ func main() {
 			admin.DELETE("/inventaris/barang/:id", middleware.RequirePermission(models.PermissionAccessInventaris), h.DeleteBarangTidakTetap)
 			admin.GET("/inventaris/export/xlsx", middleware.RequirePermission(models.PermissionAccessInventaris), h.ExportInventarisXLSX)
 
-			// Payment Methods
 			admin.GET("/payment-methods", h.GetPaymentMethods)
 			admin.POST("/payment-methods", h.CreatePaymentMethod)
 			admin.PUT("/payment-methods/:id", h.UpdatePaymentMethod)
 			admin.DELETE("/payment-methods/:id", h.DeletePaymentMethod)
 			admin.PUT("/payment-methods/reorder", h.ReorderPaymentMethods)
 
-			// Upload
 			admin.POST("/upload", h.UploadImage)
 			admin.DELETE("/upload", h.DeleteImage)
 
-			// Gallery
 			admin.GET("/gallery/items", h.GetAdminGalleryItems)
 			admin.POST("/gallery/items", h.CreateGalleryItem)
 			admin.PUT("/gallery/items/:id", h.UpdateGalleryItem)
@@ -245,7 +245,6 @@ func main() {
 			admin.PUT("/gallery/items/reorder", h.ReorderGalleryItems)
 			admin.PUT("/gallery/items/:id/toggle", h.ToggleGalleryItemPublished)
 
-			// Hero slides (landing banner)
 			admin.GET("/hero/slides", h.GetAdminHeroSlides)
 			admin.POST("/hero/slides", h.CreateHeroSlide)
 			admin.PUT("/hero/slides/:id", h.UpdateHeroSlide)
@@ -253,24 +252,20 @@ func main() {
 			admin.PUT("/hero/slides/reorder", h.ReorderHeroSlides)
 			admin.PUT("/hero/slides/:id/toggle", h.ToggleHeroSlidePublished)
 
-			// Sponsors (mitra)
 			admin.GET("/sponsors", middleware.RequirePermission(models.PermissionAccessSponsors), h.GetAdminSponsors)
 			admin.POST("/sponsors", middleware.RequirePermission(models.PermissionAccessSponsors), h.CreateSponsor)
 			admin.PUT("/sponsors/:id", middleware.RequirePermission(models.PermissionAccessSponsors), h.UpdateSponsor)
 			admin.DELETE("/sponsors/:id", middleware.RequirePermission(models.PermissionAccessSponsors), h.DeleteSponsor)
 			admin.PUT("/sponsors/reorder", middleware.RequirePermission(models.PermissionAccessSponsors), h.ReorderSponsors)
 
-			// Settings
 			admin.GET("/settings", h.GetSettings)
 			admin.PUT("/settings/:key", h.UpdateSetting)
 
-			// RBAC config
 			admin.GET("/rbac/permissions", h.GetRBACPermissions)
 			admin.GET("/rbac/roles", h.GetRBACRoles)
 			admin.GET("/rbac/roles/:orgRole/permissions", h.GetRBACRolePermissions)
 			admin.PUT("/rbac/roles/:orgRole/permissions", h.UpdateRBACRolePermissions)
 
-			// Users
 			admin.GET("/users", h.GetUsers)
 			admin.POST("/users", h.CreateUser)
 			admin.PUT("/users/:id", h.UpdateUser)

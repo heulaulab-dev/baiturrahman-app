@@ -50,6 +50,108 @@ type financeReportRow struct {
 	ReferenceNo    *string              `json:"reference_no,omitempty"`
 }
 
+type financeReportQuery struct {
+	PeriodType services.FinancePeriodType
+	FundType   models.FinanceFundType
+	FundScope  services.FinanceFundScope
+	Start      time.Time
+	End        time.Time
+	AnchorDate time.Time
+	Year       int
+	Month      int
+}
+
+func toFinanceReportRows(rows []services.FinanceReportRow) []financeReportRow {
+	items := make([]financeReportRow, 0, len(rows))
+	for _, row := range rows {
+		tx := row.Transaction
+		items = append(items, financeReportRow{
+			ID:             tx.ID,
+			TxDate:         tx.TxDate.Format("2006-01-02"),
+			TxType:         tx.TxType,
+			Category:       tx.Category,
+			Description:    tx.Description,
+			Amount:         tx.Amount,
+			RunningBalance: row.RunningBalance,
+			DisplayBelow:   tx.DisplayBelow,
+			ReferenceNo:    tx.ReferenceNo,
+		})
+	}
+	return items
+}
+
+func parseFinanceMonthlyQuery(c *gin.Context) (financeReportQuery, error) {
+	fundType := models.FinanceFundType(c.Query("fund_type"))
+	if fundType != models.FinanceFundKasBesar && fundType != models.FinanceFundKasKecil {
+		return financeReportQuery{}, errors.New("fund_type must be kas_besar or kas_kecil")
+	}
+	year, err := time.Parse("2006", c.DefaultQuery("year", ""))
+	if err != nil {
+		return financeReportQuery{}, errors.New("year must use YYYY")
+	}
+	monthParsed, err := time.Parse("01", c.DefaultQuery("month", ""))
+	if err != nil {
+		return financeReportQuery{}, errors.New("month must use MM")
+	}
+	start := time.Date(year.Year(), monthParsed.Month(), 1, 0, 0, 0, 0, time.Local)
+	return financeReportQuery{
+		PeriodType: services.FinancePeriodMonthly,
+		FundType:   fundType,
+		FundScope:  services.FinanceFundScope(fundType),
+		Start:      start,
+		End:        start.AddDate(0, 1, 0),
+		Year:       year.Year(),
+		Month:      int(monthParsed.Month()),
+	}, nil
+}
+
+func parseFinanceWeeklyQuery(c *gin.Context) (financeReportQuery, error) {
+	anchorDate, err := time.ParseInLocation("2006-01-02", c.Query("anchor_date"), time.Local)
+	if err != nil {
+		return financeReportQuery{}, errors.New("anchor_date must use format YYYY-MM-DD")
+	}
+	weekStart, weekEnd := services.GetWeekRange(anchorDate)
+	return financeReportQuery{
+		PeriodType: services.FinancePeriodWeekly,
+		FundScope:  services.FinanceFundScopeAll,
+		Start:      weekStart,
+		End:        weekEnd,
+		AnchorDate: anchorDate,
+	}, nil
+}
+
+func (h *Handler) loadFinanceReportRows(query financeReportQuery) (services.FinanceReportSummary, error) {
+	base := h.DB.Model(&models.FinanceTransaction{}).Where("approval_status = ?", models.FinanceApprovalApproved)
+	if query.FundScope != services.FinanceFundScopeAll {
+		base = base.Where("fund_type = ?", query.FundType)
+	}
+
+	var previous []models.FinanceTransaction
+	if err := base.Session(&gorm.Session{}).
+		Where("tx_date < ?", query.Start).
+		Order("tx_date ASC, created_at ASC").
+		Find(&previous).Error; err != nil {
+		return services.FinanceReportSummary{}, err
+	}
+
+	var opening float64
+	if query.FundScope == services.FinanceFundScopeAll {
+		opening = services.ComputeCombinedBalance(previous)
+	} else {
+		opening = services.ComputeFundBalance(previous, query.FundType)
+	}
+
+	var approvedRows []models.FinanceTransaction
+	if err := base.Session(&gorm.Session{}).
+		Where("tx_date >= ? AND tx_date < ?", query.Start, query.End).
+		Order("tx_date ASC, created_at ASC").
+		Find(&approvedRows).Error; err != nil {
+		return services.FinanceReportSummary{}, err
+	}
+
+	return services.BuildFinanceReportSummary(opening, approvedRows), nil
+}
+
 func userIDFromContext(c *gin.Context) (uuid.UUID, bool) {
 	userIDRaw, ok := c.Get("userID")
 	if !ok {
@@ -426,121 +528,75 @@ func (h *Handler) GetFinanceTransfers(c *gin.Context) {
 }
 
 func (h *Handler) GetFinanceMonthlyReport(c *gin.Context) {
-	fundType := models.FinanceFundType(c.Query("fund_type"))
-	if fundType != models.FinanceFundKasBesar && fundType != models.FinanceFundKasKecil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "fund_type must be kas_besar or kas_kecil")
-		return
-	}
-	year, err := time.Parse("2006", c.DefaultQuery("year", ""))
+	query, err := parseFinanceMonthlyQuery(c)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "year must use YYYY")
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	monthParsed, err := time.Parse("01", c.DefaultQuery("month", ""))
+	report, err := h.loadFinanceReportRows(query)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "month must use MM")
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to load monthly report")
+		return
+	}
+	utils.SuccessResponse(c, http.StatusOK, gin.H{
+		"period_type":     query.PeriodType,
+		"fund_type":       query.FundType,
+		"fund_scope":      query.FundScope,
+		"year":            query.Year,
+		"month":           query.Month,
+		"opening_balance": report.OpeningBalance,
+		"closing_balance": report.ClosingBalance,
+		"total_income":    report.TotalIncome,
+		"total_expense":   report.TotalExpense,
+		"rows":            toFinanceReportRows(report.Rows),
+		"display_below":   toFinanceReportRows(report.DisplayBelow),
+	}, "")
+}
+
+func (h *Handler) GetFinanceWeeklyReport(c *gin.Context) {
+	query, err := parseFinanceWeeklyQuery(c)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	start := time.Date(year.Year(), monthParsed.Month(), 1, 0, 0, 0, 0, time.Local)
-	end := start.AddDate(0, 1, 0)
-
-	var previous []models.FinanceTransaction
-	if err := h.DB.Where("fund_type = ? AND approval_status = ? AND tx_date < ?", fundType, models.FinanceApprovalApproved, start).
-		Order("tx_date ASC, created_at ASC").Find(&previous).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to load opening balance")
+	report, err := h.loadFinanceReportRows(query)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to load weekly report")
 		return
-	}
-	opening := services.ComputeFundBalance(previous, fundType)
-
-	var approvedRows []models.FinanceTransaction
-	if err := h.DB.Where(
-		"fund_type = ? AND approval_status = ? AND tx_date >= ? AND tx_date < ?",
-		fundType, models.FinanceApprovalApproved, start, end,
-	).Order("tx_date ASC, created_at ASC").Find(&approvedRows).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to load monthly transactions")
-		return
-	}
-
-	running := opening
-	reportRows := make([]financeReportRow, 0, len(approvedRows))
-	belowRows := make([]financeReportRow, 0)
-	var income, expense float64
-
-	for _, row := range approvedRows {
-		switch row.TxType {
-		case models.FinanceTxPemasukan, models.FinanceTxTransferIn, models.FinanceTxOpening, models.FinanceTxAdjustment:
-			running += row.Amount
-			income += row.Amount
-		case models.FinanceTxPengeluaran, models.FinanceTxTransferOut:
-			running -= row.Amount
-			expense += row.Amount
-		}
-		item := financeReportRow{
-			ID:             row.ID,
-			TxDate:         row.TxDate.Format("2006-01-02"),
-			TxType:         row.TxType,
-			Category:       row.Category,
-			Description:    row.Description,
-			Amount:         row.Amount,
-			RunningBalance: running,
-			DisplayBelow:   row.DisplayBelow,
-			ReferenceNo:    row.ReferenceNo,
-		}
-		if row.DisplayBelow {
-			belowRows = append(belowRows, item)
-		}
-		reportRows = append(reportRows, item)
 	}
 
 	utils.SuccessResponse(c, http.StatusOK, gin.H{
-		"fund_type":       fundType,
-		"year":            start.Year(),
-		"month":           int(start.Month()),
-		"opening_balance": opening,
-		"closing_balance": running,
-		"total_income":    income,
-		"total_expense":   expense,
-		"rows":            reportRows,
-		"display_below":   belowRows,
+		"period_type":     query.PeriodType,
+		"fund_scope":      query.FundScope,
+		"anchor_date":     query.AnchorDate.Format("2006-01-02"),
+		"week_start":      query.Start.Format("2006-01-02"),
+		"week_end":        query.End.Add(-time.Nanosecond).Format("2006-01-02"),
+		"period_label":    fmt.Sprintf("%s - %s", query.Start.Format("2006-01-02"), query.End.Add(-time.Nanosecond).Format("2006-01-02")),
+		"opening_balance": report.OpeningBalance,
+		"closing_balance": report.ClosingBalance,
+		"total_income":    report.TotalIncome,
+		"total_expense":   report.TotalExpense,
+		"rows":            toFinanceReportRows(report.Rows),
+		"display_below":   toFinanceReportRows(report.DisplayBelow),
 	}, "")
 }
 
 func (h *Handler) ExportFinanceMonthlyXLSX(c *gin.Context) {
-	fundType := models.FinanceFundType(c.Query("fund_type"))
-	if fundType != models.FinanceFundKasBesar && fundType != models.FinanceFundKasKecil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "fund_type must be kas_besar or kas_kecil")
-		return
-	}
-	year, err := time.Parse("2006", c.DefaultQuery("year", ""))
+	query, err := parseFinanceMonthlyQuery(c)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "year must use YYYY")
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	monthParsed, err := time.Parse("01", c.DefaultQuery("month", ""))
+
+	report, err := h.loadFinanceReportRows(query)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "month must use MM")
-		return
-	}
-
-	start := time.Date(year.Year(), monthParsed.Month(), 1, 0, 0, 0, 0, time.Local)
-	end := start.AddDate(0, 1, 0)
-
-	var previous []models.FinanceTransaction
-	if err := h.DB.Where("fund_type = ? AND approval_status = ? AND tx_date < ?", fundType, models.FinanceApprovalApproved, start).
-		Order("tx_date ASC, created_at ASC").Find(&previous).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to load opening balance")
-		return
-	}
-	opening := services.ComputeFundBalance(previous, fundType)
-
-	var approvedRows []models.FinanceTransaction
-	if err := h.DB.Where(
-		"fund_type = ? AND approval_status = ? AND tx_date >= ? AND tx_date < ?",
-		fundType, models.FinanceApprovalApproved, start, end,
-	).Order("tx_date ASC, created_at ASC").Find(&approvedRows).Error; err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to load monthly transactions")
 		return
+	}
+	var approvedRows []models.FinanceTransaction
+	for _, row := range report.Rows {
+		approvedRows = append(approvedRows, row.Transaction)
 	}
 
 	var mosque models.MosqueInfo
@@ -562,8 +618,9 @@ func (h *Handler) ExportFinanceMonthlyXLSX(c *gin.Context) {
 	}
 
 	buf, err := exportxlsx.BuildFinanceMonthlyDKIXLSX(
-		fundType, start.Year(), int(start.Month()),
-		opening, approvedRows, mosque, excelCfg.BankLine, logoBytes,
+		query.FundType, query.Year, query.Month,
+		"",
+		report.OpeningBalance, approvedRows, mosque, excelCfg.BankLine, logoBytes,
 		excelCfg.SignerLeftName, excelCfg.SignerRightName,
 	)
 	if err != nil {
@@ -571,71 +628,97 @@ func (h *Handler) ExportFinanceMonthlyXLSX(c *gin.Context) {
 		return
 	}
 
-	filename := fmt.Sprintf("laporan-%s-%04d-%02d.xlsx", fundType, start.Year(), int(start.Month()))
+	filename := fmt.Sprintf("laporan-%s-%04d-%02d.xlsx", query.FundType, query.Year, query.Month)
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
+	c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", buf)
+}
+
+func (h *Handler) ExportFinanceWeeklyXLSX(c *gin.Context) {
+	query, err := parseFinanceWeeklyQuery(c)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	report, err := h.loadFinanceReportRows(query)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to load weekly transactions")
+		return
+	}
+	var approvedRows []models.FinanceTransaction
+	for _, row := range report.Rows {
+		approvedRows = append(approvedRows, row.Transaction)
+	}
+
+	var mosque models.MosqueInfo
+	_ = h.DB.First(&mosque).Error
+	excelCfg := h.getExcelExportSettings()
+
+	var logoBytes []byte
+	headerImageURL := strings.TrimSpace(excelCfg.HeaderImageURL)
+	if headerImageURL == "" && mosque.LogoURL != nil {
+		headerImageURL = strings.TrimSpace(*mosque.LogoURL)
+	}
+	if headerImageURL != "" {
+		b, _ := exportxlsx.FetchLogoBytes(context.Background(), headerImageURL)
+		logoBytes = b
+	}
+	if len(logoBytes) == 0 {
+		logoBytes = exportxlsx.FallbackLogoPNG()
+	}
+
+	periodLabel := fmt.Sprintf(
+		"Periode %s - %s",
+		query.Start.Format("02/01/2006"),
+		query.End.Add(-time.Nanosecond).Format("02/01/2006"),
+	)
+	buf, err := exportxlsx.BuildFinanceMonthlyDKIXLSX(
+		models.FinanceFundType("all"), query.Start.Year(), int(query.Start.Month()),
+		periodLabel,
+		report.OpeningBalance, approvedRows, mosque, excelCfg.BankLine, logoBytes,
+		excelCfg.SignerLeftName, excelCfg.SignerRightName,
+	)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	filename := fmt.Sprintf("laporan-weekly-%s-to-%s.xlsx", query.Start.Format("2006-01-02"), query.End.Add(-time.Nanosecond).Format("2006-01-02"))
 	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
 	c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", buf)
 }
 
 func (h *Handler) ExportFinanceMonthlyPDF(c *gin.Context) {
-	fundType := models.FinanceFundType(c.Query("fund_type"))
-	if fundType != models.FinanceFundKasBesar && fundType != models.FinanceFundKasKecil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "fund_type must be kas_besar or kas_kecil")
-		return
-	}
-	year, err := time.Parse("2006", c.DefaultQuery("year", ""))
+	query, err := parseFinanceMonthlyQuery(c)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "year must use YYYY")
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	monthParsed, err := time.Parse("01", c.DefaultQuery("month", ""))
+	report, err := h.loadFinanceReportRows(query)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "month must use MM")
-		return
-	}
-
-	start := time.Date(year.Year(), monthParsed.Month(), 1, 0, 0, 0, 0, time.Local)
-	end := start.AddDate(0, 1, 0)
-
-	var previous []models.FinanceTransaction
-	if err := h.DB.Where("fund_type = ? AND approval_status = ? AND tx_date < ?", fundType, models.FinanceApprovalApproved, start).
-		Order("tx_date ASC, created_at ASC").Find(&previous).Error; err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to load opening balance")
-		return
-	}
-	opening := services.ComputeFundBalance(previous, fundType)
-
-	var approvedRows []models.FinanceTransaction
-	if err := h.DB.Where(
-		"fund_type = ? AND approval_status = ? AND tx_date >= ? AND tx_date < ?",
-		fundType, models.FinanceApprovalApproved, start, end,
-	).Order("tx_date ASC, created_at ASC").Find(&approvedRows).Error; err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to load monthly transactions")
 		return
 	}
+	h.exportFinanceReportPDF(c, query, report)
+}
 
-	rows := make([]financeReportRow, 0, len(approvedRows))
-	running := opening
-	for _, row := range approvedRows {
-		switch row.TxType {
-		case models.FinanceTxPemasukan, models.FinanceTxTransferIn, models.FinanceTxOpening, models.FinanceTxAdjustment:
-			running += row.Amount
-		case models.FinanceTxPengeluaran, models.FinanceTxTransferOut:
-			running -= row.Amount
-		}
-		rows = append(rows, financeReportRow{
-			ID:             row.ID,
-			TxDate:         row.TxDate.Format("2006-01-02"),
-			TxType:         row.TxType,
-			Category:       row.Category,
-			Description:    row.Description,
-			Amount:         row.Amount,
-			RunningBalance: running,
-			DisplayBelow:   row.DisplayBelow,
-			ReferenceNo:    row.ReferenceNo,
-		})
+func (h *Handler) ExportFinanceWeeklyPDF(c *gin.Context) {
+	query, err := parseFinanceWeeklyQuery(c)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
 	}
+	report, err := h.loadFinanceReportRows(query)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to load weekly transactions")
+		return
+	}
+	h.exportFinanceReportPDF(c, query, report)
+}
 
+func (h *Handler) exportFinanceReportPDF(c *gin.Context, query financeReportQuery, report services.FinanceReportSummary) {
 	var ketuaName = "________________________"
 	var bendaharaName = "________________________"
 	var strukturs []models.Struktur
@@ -651,17 +734,13 @@ func (h *Handler) ExportFinanceMonthlyPDF(c *gin.Context) {
 		}
 	}
 
-	displayBelow := make([]financeReportRow, 0)
-	for _, r := range rows {
-		if r.DisplayBelow {
-			displayBelow = append(displayBelow, r)
-		}
-	}
+	rows := toFinanceReportRows(report.Rows)
+	displayBelow := toFinanceReportRows(report.DisplayBelow)
 	var belowTotal float64
 	for _, b := range displayBelow {
 		belowTotal += b.Amount
 	}
-	totalKas := running + belowTotal
+	totalKas := report.ClosingBalance + belowTotal
 
 	formatMoney := func(v float64) string {
 		return strconv.FormatFloat(v, 'f', 0, 64)
@@ -670,9 +749,15 @@ func (h *Handler) ExportFinanceMonthlyPDF(c *gin.Context) {
 	pdf := gofpdf.New("L", "mm", "A4", "")
 	pdf.SetMargins(10, 8, 10)
 	pdf.SetAutoPageBreak(true, 8)
-	periodLabel := start.Format("JANUARY 2006")
+	periodLabel := ""
 	fundLabel := "KAS KECIL"
-	if fundType == models.FinanceFundKasBesar {
+	if query.PeriodType == services.FinancePeriodWeekly {
+		periodLabel = fmt.Sprintf("%s - %s", query.Start.Format("02 Jan 2006"), query.End.Add(-time.Nanosecond).Format("02 Jan 2006"))
+		fundLabel = "GABUNGAN"
+	} else {
+		periodLabel = query.Start.Format("JANUARY 2006")
+	}
+	if query.FundType == models.FinanceFundKasBesar {
 		fundLabel = "KAS BESAR"
 	}
 	addPage := func(copyLabel string) {
@@ -695,11 +780,11 @@ func (h *Handler) ExportFinanceMonthlyPDF(c *gin.Context) {
 
 		pdf.SetFont("Arial", "", 8.5)
 		pdf.CellFormat(widths[0], 6, "", "1", 0, "C", false, 0, "")
-		pdf.CellFormat(widths[1], 6, start.Format("2006-01-02"), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(widths[2], 6, fmt.Sprintf("Saldo Bulan %s", start.AddDate(0, -1, 0).Format("January 2006")), "1", 0, "", false, 0, "")
+		pdf.CellFormat(widths[1], 6, query.Start.Format("2006-01-02"), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(widths[2], 6, fmt.Sprintf("Saldo Awal Periode %s", periodLabel), "1", 0, "", false, 0, "")
 		pdf.CellFormat(widths[3], 6, "", "1", 0, "R", false, 0, "")
 		pdf.CellFormat(widths[4], 6, "", "1", 0, "R", false, 0, "")
-		pdf.CellFormat(widths[5], 6, formatMoney(opening), "1", 0, "R", false, 0, "")
+		pdf.CellFormat(widths[5], 6, formatMoney(report.OpeningBalance), "1", 0, "R", false, 0, "")
 		pdf.Ln(-1)
 
 		for i, r := range rows {
@@ -719,8 +804,8 @@ func (h *Handler) ExportFinanceMonthlyPDF(c *gin.Context) {
 		}
 
 		pdf.SetFont("Arial", "B", 9)
-		pdf.CellFormat(widths[0]+widths[1]+widths[2]+widths[3]+widths[4], 7, fmt.Sprintf("Saldo Akhir %s", start.Format("2 January 2006")), "1", 0, "R", false, 0, "")
-		pdf.CellFormat(widths[5], 7, formatMoney(running), "1", 0, "R", false, 0, "")
+		pdf.CellFormat(widths[0]+widths[1]+widths[2]+widths[3]+widths[4], 7, fmt.Sprintf("Saldo Akhir %s", query.End.Add(-time.Nanosecond).Format("2 January 2006")), "1", 0, "R", false, 0, "")
+		pdf.CellFormat(widths[5], 7, formatMoney(report.ClosingBalance), "1", 0, "R", false, 0, "")
 		pdf.Ln(-1)
 
 		pdf.SetFont("Arial", "", 8.5)
@@ -752,7 +837,13 @@ func (h *Handler) ExportFinanceMonthlyPDF(c *gin.Context) {
 		return
 	}
 
-	filename := fmt.Sprintf("laporan-%s-%04d-%02d.pdf", fundType, start.Year(), int(start.Month()))
+	filename := "laporan-keuangan.pdf"
+	if query.PeriodType == services.FinancePeriodMonthly {
+		filename = fmt.Sprintf("laporan-%s-%04d-%02d.pdf", query.FundType, query.Year, query.Month)
+	}
+	if query.PeriodType == services.FinancePeriodWeekly {
+		filename = fmt.Sprintf("laporan-weekly-%s-to-%s.pdf", query.Start.Format("2006-01-02"), query.End.Add(-time.Nanosecond).Format("2006-01-02"))
+	}
 	c.Header("Content-Type", "application/pdf")
 	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
 	c.Data(http.StatusOK, "application/pdf", out.Bytes())

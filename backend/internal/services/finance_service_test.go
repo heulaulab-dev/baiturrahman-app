@@ -68,3 +68,51 @@ func TestFinanceBalance_HasSufficientBalance(t *testing.T) {
 		t.Fatalf("expected sufficient balance check to fail")
 	}
 }
+
+func TestFinanceService_GetWeekRange(t *testing.T) {
+	anchor := time.Date(2026, 4, 17, 9, 0, 0, 0, time.Local) // Friday
+	start, end := GetWeekRange(anchor)
+
+	if start.Format("2006-01-02") != "2026-04-13" {
+		t.Fatalf("expected week start 2026-04-13, got %s", start.Format("2006-01-02"))
+	}
+	if end.Format("2006-01-02") != "2026-04-20" {
+		t.Fatalf("expected exclusive week end 2026-04-20, got %s", end.Format("2006-01-02"))
+	}
+}
+
+func TestFinanceService_BuildFinanceReportSummary(t *testing.T) {
+	actor := uuid.New()
+	rows := []models.FinanceTransaction{
+		{
+			FundType:       models.FinanceFundKasBesar,
+			TxType:         models.FinanceTxPemasukan,
+			Amount:         100000,
+			ApprovalStatus: models.FinanceApprovalApproved,
+			CreatedBy:      actor,
+			TxDate:         time.Now(),
+		},
+		{
+			FundType:       models.FinanceFundKasKecil,
+			TxType:         models.FinanceTxPengeluaran,
+			Amount:         25000,
+			ApprovalStatus: models.FinanceApprovalApproved,
+			CreatedBy:      actor,
+			TxDate:         time.Now(),
+		},
+	}
+
+	report := BuildFinanceReportSummary(50000, rows)
+	if report.OpeningBalance != 50000 {
+		t.Fatalf("expected opening 50000, got %.0f", report.OpeningBalance)
+	}
+	if report.TotalIncome != 100000 {
+		t.Fatalf("expected income 100000, got %.0f", report.TotalIncome)
+	}
+	if report.TotalExpense != 25000 {
+		t.Fatalf("expected expense 25000, got %.0f", report.TotalExpense)
+	}
+	if report.ClosingBalance != 125000 {
+		t.Fatalf("expected closing 125000, got %.0f", report.ClosingBalance)
+	}
+}

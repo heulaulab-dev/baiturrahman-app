@@ -218,6 +218,9 @@ func main() {
 			admin.GET("/finance/reports/monthly", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceMonthlyReport)
 			admin.GET("/finance/reports/monthly/xlsx", middleware.RequirePermission(models.PermissionFinanceExportReports), h.ExportFinanceMonthlyXLSX)
 			admin.GET("/finance/reports/monthly/pdf", middleware.RequirePermission(models.PermissionFinanceExportReports), h.ExportFinanceMonthlyPDF)
+			admin.GET("/finance/reports/weekly", middleware.RequirePermission(models.PermissionFinanceViewReports), h.GetFinanceWeeklyReport)
+			admin.GET("/finance/reports/weekly/xlsx", middleware.RequirePermission(models.PermissionFinanceExportReports), h.ExportFinanceWeeklyXLSX)
+			admin.GET("/finance/reports/weekly/pdf", middleware.RequirePermission(models.PermissionFinanceExportReports), h.ExportFinanceWeeklyPDF)
 
 			admin.GET("/inventaris/aset-tetap", middleware.RequirePermission(models.PermissionAccessInventaris), h.GetAsetTetap)
 			admin.POST("/inventaris/aset-tetap", middleware.RequirePermission(models.PermissionAccessInventaris), h.CreateAsetTetap)

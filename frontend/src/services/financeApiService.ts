@@ -68,6 +68,21 @@ export interface FinanceMonthlyReportResponse {
   }>
 }
 
+export interface FinanceWeeklyReportResponse {
+  period_type: 'weekly'
+  fund_scope: 'all'
+  anchor_date: string
+  week_start: string
+  week_end: string
+  period_label: string
+  opening_balance: number
+  closing_balance: number
+  total_income: number
+  total_expense: number
+  rows: FinanceMonthlyReportResponse['rows']
+  display_below: FinanceMonthlyReportResponse['display_below']
+}
+
 export const getFinanceTransactions = async (
   params: GetFinanceTransactionsParams = {}
 ): Promise<PaginatedResponse<FinanceTransaction>> => {
@@ -166,6 +181,47 @@ export const exportFinanceMonthlyPdf = async (params: {
   const a = document.createElement('a')
   a.href = url
   a.download = `laporan-${params.fund_type}-${params.year}-${String(params.month).padStart(2, '0')}.pdf`
+  a.rel = 'noopener'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+
+export const getFinanceWeeklyReport = async (params: { anchor_date: string }): Promise<FinanceWeeklyReportResponse> => {
+  const response = await api.get<ApiResponse<FinanceWeeklyReportResponse>>('/v1/admin/finance/reports/weekly', {
+    params,
+  })
+  return response.data.data
+}
+
+export const exportFinanceWeeklyXlsx = async (params: { anchor_date: string }): Promise<void> => {
+  const response = await api.get<Blob>('/v1/admin/finance/reports/weekly/xlsx', {
+    params,
+    responseType: 'blob',
+  })
+  const blob = response.data as unknown as Blob
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `laporan-weekly-${params.anchor_date}.xlsx`
+  a.rel = 'noopener'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+
+export const exportFinanceWeeklyPdf = async (params: { anchor_date: string }): Promise<void> => {
+  const response = await api.get<Blob>('/v1/admin/finance/reports/weekly/pdf', {
+    params,
+    responseType: 'blob',
+  })
+  const blob = response.data as unknown as Blob
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `laporan-weekly-${params.anchor_date}.pdf`
   a.rel = 'noopener'
   document.body.appendChild(a)
   a.click()

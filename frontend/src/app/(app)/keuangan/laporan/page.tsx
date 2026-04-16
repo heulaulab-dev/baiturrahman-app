@@ -2,7 +2,14 @@
 
 import { useMemo, useState } from 'react'
 import { FileBarChart, Loader2 } from 'lucide-react'
-import { useExportFinanceMonthlyPdf, useExportFinanceMonthlyXlsx, useFinanceMonthlyReport } from '@/services/financeHooks'
+import {
+  useExportFinanceMonthlyPdf,
+  useExportFinanceMonthlyXlsx,
+  useExportFinanceWeeklyPdf,
+  useExportFinanceWeeklyXlsx,
+  useFinanceMonthlyReport,
+  useFinanceWeeklyReport,
+} from '@/services/financeHooks'
 import type { FinanceFundType } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('id-ID', {
@@ -37,12 +45,12 @@ function StatBlock({
   value,
   loading,
   emphasize,
-}: {
+}: Readonly<{
   label: string
   value: string
   loading?: boolean
   emphasize?: boolean
-}) {
+}>) {
   return (
     <div className="rounded-lg border bg-card/50 p-4 shadow-xs">
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
@@ -59,17 +67,35 @@ function StatBlock({
 
 export default function LaporanKeuanganPage() {
   const now = new Date()
+  const toDateInput = (date: Date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
   const [fundType, setFundType] = useState<FinanceFundType>('kas_kecil')
+  const [periodType, setPeriodType] = useState<'monthly' | 'weekly'>('monthly')
   const [year, setYear] = useState<number>(now.getFullYear())
   const [month, setMonth] = useState<number>(now.getMonth() + 1)
-  const { data, isLoading } = useFinanceMonthlyReport({ fund_type: fundType, year, month })
+  const [anchorDate, setAnchorDate] = useState<string>(toDateInput(now))
+  const { data: monthlyData, isLoading: isMonthlyLoading } = useFinanceMonthlyReport({ fund_type: fundType, year, month })
+  const { data: weeklyData, isLoading: isWeeklyLoading } = useFinanceWeeklyReport({ anchor_date: anchorDate }, periodType === 'weekly')
   const exportXlsx = useExportFinanceMonthlyXlsx()
   const exportPdf = useExportFinanceMonthlyPdf()
+  const exportWeeklyXlsx = useExportFinanceWeeklyXlsx()
+  const exportWeeklyPdf = useExportFinanceWeeklyPdf()
 
   const monthLabel = useMemo(
     () => new Date(year, month - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }),
     [year, month]
   )
+  const isWeekly = periodType === 'weekly'
+  const isMonthly = periodType === 'monthly'
+  const isLoading = isWeekly ? isWeeklyLoading : isMonthlyLoading
+  const data = isWeekly ? weeklyData : monthlyData
+  const periodLabel = isWeekly ? weeklyData?.period_label ?? 'Memuat periode minggu…' : monthLabel
+  const xlsxPending = isWeekly ? exportWeeklyXlsx.isPending : exportXlsx.isPending
+  const pdfPending = isWeekly ? exportWeeklyPdf.isPending : exportPdf.isPending
 
   return (
     <div className="space-y-6 p-6">
@@ -84,54 +110,96 @@ export default function LaporanKeuanganPage() {
               <CardDescription>Ringkasan mutasi per bulan dan unduhan PDF atau Excel.</CardDescription>
             </div>
           </div>
+          <div className="inline-flex rounded-lg border bg-background p-1">
+            <button
+              type="button"
+              className={cn(
+                'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+                isMonthly ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'
+              )}
+              onClick={() => setPeriodType('monthly')}
+            >
+              Bulanan
+            </button>
+            <button
+              type="button"
+              className={cn(
+                'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+                isWeekly ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'
+              )}
+              onClick={() => setPeriodType('weekly')}
+            >
+              Mingguan
+            </button>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 border-t bg-muted/20 pt-6 sm:flex-row sm:flex-wrap sm:items-end">
-          <Field className="min-w-0 sm:w-[200px]">
-            <FieldLabel>Kas</FieldLabel>
-            <Select value={fundType} onValueChange={(v) => setFundType(v as FinanceFundType)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Pilih kas" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="kas_besar">Kas besar</SelectItem>
-                <SelectItem value="kas_kecil">Kas kecil</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field className="min-w-0 sm:w-[200px]">
-            <FieldLabel>Bulan</FieldLabel>
-            <Select value={String(month)} onValueChange={(v) => setMonth(Number(v))}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Bulan" />
-              </SelectTrigger>
-              <SelectContent>
-                {MONTH_OPTIONS.map((m) => (
-                  <SelectItem key={m.value} value={String(m.value)}>
-                    {m.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field className="min-w-0 sm:w-[120px]">
-            <FieldLabel htmlFor="laporan-year">Tahun</FieldLabel>
-            <Input
-              id="laporan-year"
-              type="number"
-              min={2000}
-              max={2100}
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-            />
-          </Field>
+          {isMonthly ? (
+            <>
+              <Field className="min-w-0 sm:w-[200px]">
+                <FieldLabel>Kas</FieldLabel>
+                <Select value={fundType} onValueChange={(v) => setFundType(v as FinanceFundType)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Pilih kas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="kas_besar">Kas besar</SelectItem>
+                    <SelectItem value="kas_kecil">Kas kecil</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field className="min-w-0 sm:w-[200px]">
+                <FieldLabel>Bulan</FieldLabel>
+                <Select value={String(month)} onValueChange={(v) => setMonth(Number(v))}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Bulan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MONTH_OPTIONS.map((m) => (
+                      <SelectItem key={m.value} value={String(m.value)}>
+                        {m.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field className="min-w-0 sm:w-[120px]">
+                <FieldLabel htmlFor="laporan-year">Tahun</FieldLabel>
+                <Input
+                  id="laporan-year"
+                  type="number"
+                  min={2000}
+                  max={2100}
+                  value={year}
+                  onChange={(e) => setYear(Number(e.target.value))}
+                />
+              </Field>
+            </>
+          ) : (
+            <Field className="min-w-0 sm:w-[220px]">
+              <FieldLabel htmlFor="laporan-anchor-date">Tanggal acuan minggu</FieldLabel>
+              <Input
+                id="laporan-anchor-date"
+                type="date"
+                value={anchorDate}
+                onChange={(e) => setAnchorDate(e.target.value)}
+              />
+            </Field>
+          )}
           <div className="flex flex-wrap gap-2 pb-0.5">
             <Button
               type="button"
               variant="outline"
-              disabled={exportXlsx.isPending}
-              onClick={() => exportXlsx.mutate({ fund_type: fundType, year, month })}
+              disabled={xlsxPending}
+              onClick={() => {
+                if (isWeekly) {
+                  exportWeeklyXlsx.mutate({ anchor_date: anchorDate })
+                  return
+                }
+                exportXlsx.mutate({ fund_type: fundType, year, month })
+              }}
             >
-              {exportXlsx.isPending ? (
+              {xlsxPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Mengunduh…
@@ -143,10 +211,16 @@ export default function LaporanKeuanganPage() {
             <Button
               type="button"
               variant="default"
-              disabled={exportPdf.isPending}
-              onClick={() => exportPdf.mutate({ fund_type: fundType, year, month })}
+              disabled={pdfPending}
+              onClick={() => {
+                if (isWeekly) {
+                  exportWeeklyPdf.mutate({ anchor_date: anchorDate })
+                  return
+                }
+                exportPdf.mutate({ fund_type: fundType, year, month })
+              }}
             >
-              {exportPdf.isPending ? (
+              {pdfPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Mengunduh…
@@ -163,7 +237,7 @@ export default function LaporanKeuanganPage() {
         <CardHeader className="border-b bg-muted/20 pb-4">
           <CardTitle className="text-base">Ringkasan periode</CardTitle>
           <CardDescription>
-            {isLoading || !data ? 'Memuat angka…' : monthLabel}
+            {isLoading || !data ? 'Memuat angka…' : periodLabel}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6">
@@ -177,7 +251,7 @@ export default function LaporanKeuanganPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              <p className="text-sm font-medium text-foreground">{monthLabel}</p>
+              <p className="text-sm font-medium text-foreground">{periodLabel}</p>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <StatBlock label="Saldo awal" value={formatCurrency(data.opening_balance)} />
                 <StatBlock label="Total pemasukan" value={formatCurrency(data.total_income)} />

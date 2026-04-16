@@ -36,8 +36,40 @@ const notoNaskhArabic = Noto_Naskh_Arabic({
 })
 
 export const metadata: Metadata = {
-  title: 'Masjid Baiturrahim',
-  description: 'Website resmi Masjid Baiturrahim - Pusat ibadah dan kegiatan keagamaan',
+  metadataBase: new URL('https://masjidbaiturrahimsb.org'),
+  title: {
+    default: 'Masjid Baiturrahim Sungai Bambu',
+    template: '%s | Masjid Baiturrahim Sungai Bambu',
+  },
+  description:
+    'Website resmi Masjid Baiturrahim Sungai Bambu - Informasi kegiatan, donasi, dan layanan jamaah.',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'id_ID',
+    url: '/',
+    siteName: 'Masjid Baiturrahim Sungai Bambu',
+    title: 'Masjid Baiturrahim Sungai Bambu',
+    description:
+      'Website resmi Masjid Baiturrahim Sungai Bambu - Informasi kegiatan, donasi, dan layanan jamaah.',
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'Masjid Baiturrahim Sungai Bambu',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Masjid Baiturrahim Sungai Bambu',
+    description:
+      'Website resmi Masjid Baiturrahim Sungai Bambu - Informasi kegiatan, donasi, dan layanan jamaah.',
+    images: ['/opengraph-image'],
+  },
 }
 
 export default function RootLayout({

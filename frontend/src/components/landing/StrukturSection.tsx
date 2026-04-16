@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { Users } from 'lucide-react';
 import { usePublicStrukturs } from '@/services/hooks';
 import type { Struktur } from '@/types';
@@ -17,14 +18,24 @@ const roleConfig = {
   lainnya: { label: 'Lainnya', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400' },
 };
 
-export function StrukturSection() {
+interface StrukturSectionProps {
+  mode?: 'landing' | 'page';
+}
+
+export function StrukturSection({ mode = 'landing' }: Readonly<StrukturSectionProps>) {
   const { data, isLoading } = usePublicStrukturs();
 
   const strukturs: Struktur[] = Array.isArray(data) ? data : [];
+  const isLanding = mode === 'landing';
+  const title = isLanding ? 'Struktur Kepengurusan' : 'Struktur Pengurus Masjid';
+  const subtitle = isLanding
+    ? 'Kenali para pengurus yang mengelola aktivitas dan pelayanan masjid.'
+    : 'Daftar lengkap pengurus aktif Masjid Baiturrahim.';
+  const sectionId = isLanding ? 'struktur' : undefined;
 
   if (isLoading) {
     return (
-      <section id="struktur" className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+      <section id={sectionId} className="bg-white px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto container">
           <div className="h-64 bg-muted/20 animate-pulse rounded-lg" />
         </div>
@@ -34,21 +45,24 @@ export function StrukturSection() {
 
   if (strukturs.length === 0) {
     return (
-      <section id="struktur" className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+      <section id={sectionId} className="bg-white px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto container">
-          <div className="h-64 bg-muted/20 animate-pulse rounded-lg" />
+          <div className="rounded-xl border border-dashed border-border bg-muted/10 p-8 text-center text-muted-foreground">
+            Struktur pengurus belum tersedia.
+          </div>
         </div>
       </section>
     );
   }
 
   return (
-    <section id="struktur" className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+    <section id={sectionId} className="bg-white px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto container">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-serif-cormorant font-semibold text-sacred-green mb-4">
-            Struktur Kepengurusan
+            {title}
           </h2>
+          <p className="mx-auto mb-4 max-w-2xl text-sm text-muted sm:text-base">{subtitle}</p>
           <div className="w-16 h-1 bg-sacred-gold mx-auto" />
         </div>
 
@@ -93,36 +107,21 @@ export function StrukturSection() {
                       <p className="text-sm text-muted">{struktur.department}</p>
                     )}
                   </div>
-
-                  {/* Contact Info */}
-                  {(struktur.email || struktur.phone) && (
-                    <div className="space-y-2 text-sm text-muted mb-4">
-                      {struktur.email && (
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">Email:</span>
-                          <span className="truncate">{struktur.email}</span>
-                        </div>
-                      )}
-                      {struktur.phone && (
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">Telepon:</span>
-                          <span>{struktur.phone}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Bio */}
-                  {struktur.bio && (
-                    <p className="text-sm text-sacred-text/90 line-clamp-3">
-                      {struktur.bio}
-                    </p>
-                  )}
                 </div>
               );
             })}
           </div>
         </div>
+        {isLanding && (
+          <div className="mt-10 flex justify-center">
+            <Link
+              href="/struktur"
+              className="inline-flex items-center rounded-md bg-sacred-green px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sacred-green/90"
+            >
+              Lihat Struktur Lengkap
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );

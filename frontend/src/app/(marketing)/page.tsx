@@ -27,7 +27,7 @@ export default function HomePage() {
 			<KajianSection />
 			<SejarahSection />
 			<MimbarJumatSection />
-			<StrukturSection />
+			<StrukturSection mode="landing" />
 			<BeritaSection />
 			<GallerySection />
 			<DonationSection />

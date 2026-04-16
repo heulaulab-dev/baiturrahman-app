@@ -1,6 +1,8 @@
 package models
 
 import (
+	"database/sql/driver"
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -21,6 +23,28 @@ const (
 	StrukturRoleLainnya       StrukturRole = "lainnya"
 )
 
+type StrukturSocialMedia struct {
+	Facebook  *string `json:"facebook,omitempty"`
+	Instagram *string `json:"instagram,omitempty"`
+	YouTube   *string `json:"youtube,omitempty"`
+	Twitter   *string `json:"twitter,omitempty"`
+}
+
+func (sm StrukturSocialMedia) Value() (driver.Value, error) {
+	return json.Marshal(sm)
+}
+
+func (sm *StrukturSocialMedia) Scan(value interface{}) error {
+	if value == nil {
+		return nil
+	}
+	bytes, ok := value.([]byte)
+	if !ok {
+		return nil
+	}
+	return json.Unmarshal(bytes, sm)
+}
+
 type Struktur struct {
 	ID           uuid.UUID     `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
 	Name         string       `gorm:"type:varchar(255);not null" json:"name"`
@@ -30,7 +54,7 @@ type Struktur struct {
 	Phone        *string       `gorm:"type:varchar(20)" json:"phone,omitempty"`
 	Department   string       `gorm:"type:varchar(255)" json:"department,omitempty"`
 	Bio          string       `gorm:"type:text" json:"bio,omitempty"`
-	SocialMedia  *string       `gorm:"type:jsonb" json:"social_media,omitempty"`
+	SocialMedia  StrukturSocialMedia `gorm:"type:jsonb" json:"social_media,omitempty"`
 	DisplayOrder int           `gorm:"default:0;not null;index" json:"display_order"`
 	IsActive     bool          `gorm:"default:true;not null;index" json:"is_active"`
 	CreatedBy    uuid.UUID     `gorm:"type:uuid;not null;index" json:"created_by"`

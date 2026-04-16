@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
+import { FinanceFormDatePicker } from '@/components/dashboard/finance/FinanceFormDatePicker'
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('id-ID', {
@@ -176,15 +177,14 @@ export default function LaporanKeuanganPage() {
               </Field>
             </>
           ) : (
-            <Field className="min-w-0 sm:w-[220px]">
-              <FieldLabel htmlFor="laporan-anchor-date">Tanggal acuan minggu</FieldLabel>
-              <Input
-                id="laporan-anchor-date"
-                type="date"
-                value={anchorDate}
-                onChange={(e) => setAnchorDate(e.target.value)}
-              />
-            </Field>
+            <FinanceFormDatePicker
+              id="laporan-anchor-date"
+              label="Tanggal acuan minggu"
+              value={anchorDate}
+              onChange={setAnchorDate}
+              className="min-w-0 sm:w-[260px]"
+              buttonClassName="h-10"
+            />
           )}
           <div className="flex flex-wrap gap-2 pb-0.5">
             <Button

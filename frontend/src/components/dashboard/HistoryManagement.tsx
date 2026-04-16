@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
+import { FinanceFormDatePicker } from '@/components/dashboard/finance/FinanceFormDatePicker';
 import { toast } from 'sonner';
 import {
   useAdminHistoryEntries,
@@ -267,13 +268,11 @@ export function HistoryManagement() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="date">Tanggal *</Label>
-                  <Input
+                  <FinanceFormDatePicker
                     id="date"
-                    type="date"
+                    label="Tanggal *"
                     value={formData.entry_date}
-                    onChange={(e) => setFormData({ ...formData, entry_date: e.target.value })}
-                    required
+                    onChange={(value) => setFormData({ ...formData, entry_date: value })}
                   />
                 </div>
                 <div className="space-y-2">

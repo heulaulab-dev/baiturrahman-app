@@ -26,6 +26,9 @@ import type {
   Reservation,
   ReservationStatus,
   CreateReservationRequest,
+  QurbanAnimal,
+  QurbanParticipant,
+  QurbanSettings,
 } from '@/types'
 
 export const getDonationStats = async (): Promise<DonationStats> => {
@@ -692,4 +695,71 @@ export const updateAdminSetting = async (
   payload: { value: string; description?: string; data_type?: 'string' | 'json' | 'int' | 'bool' }
 ): Promise<void> => {
   await api.put(`/v1/admin/settings/${encodeURIComponent(key)}`, payload)
+}
+
+export const getQurbanSettings = async (): Promise<QurbanSettings> => {
+  const response = await api.get<ApiResponse<QurbanSettings>>('/v1/admin/qurban/settings')
+  return response.data.data
+}
+
+export const updateQurbanSettings = async (payload: {
+  default_max_participants_sapi: number
+  default_max_participants_kambing: number
+}): Promise<QurbanSettings> => {
+  const response = await api.put<ApiResponse<QurbanSettings>>('/v1/admin/qurban/settings', payload)
+  return response.data.data
+}
+
+export const getQurbanAnimals = async (): Promise<QurbanAnimal[]> => {
+  const response = await api.get<ApiResponse<QurbanAnimal[]>>('/v1/admin/qurban/animals')
+  return response.data.data ?? []
+}
+
+export const createQurbanAnimal = async (payload: {
+  label: string
+  animal_type: 'sapi' | 'kambing'
+  max_participants_override?: number | null
+}): Promise<QurbanAnimal> => {
+  const response = await api.post<ApiResponse<QurbanAnimal>>('/v1/admin/qurban/animals', payload)
+  return response.data.data
+}
+
+export const updateQurbanAnimal = async (
+  id: string,
+  payload: Partial<{ label: string; animal_type: 'sapi' | 'kambing'; max_participants_override: number | null }>
+): Promise<QurbanAnimal> => {
+  const response = await api.put<ApiResponse<QurbanAnimal>>(`/v1/admin/qurban/animals/${id}`, payload)
+  return response.data.data
+}
+
+export const deleteQurbanAnimal = async (id: string): Promise<void> => {
+  await api.delete(`/v1/admin/qurban/animals/${id}`)
+}
+
+export const getQurbanParticipants = async (animalId: string): Promise<QurbanParticipant[]> => {
+  const response = await api.get<ApiResponse<QurbanParticipant[]>>(`/v1/admin/qurban/animals/${animalId}/participants`)
+  return response.data.data ?? []
+}
+
+export const createQurbanParticipant = async (
+  animalId: string,
+  payload: { name: string; phone?: string; notes?: string }
+): Promise<void> => {
+  await api.post(`/v1/admin/qurban/animals/${animalId}/participants`, payload)
+}
+
+export const updateQurbanParticipant = async (
+  id: string,
+  payload: Partial<{ name: string; phone: string; notes: string }>
+): Promise<QurbanParticipant> => {
+  const response = await api.put<ApiResponse<QurbanParticipant>>(`/v1/admin/qurban/participants/${id}`, payload)
+  return response.data.data
+}
+
+export const moveQurbanParticipant = async (id: string, targetAnimalId: string): Promise<void> => {
+  await api.put(`/v1/admin/qurban/participants/${id}/move`, { target_animal_id: targetAnimalId })
+}
+
+export const deleteQurbanParticipant = async (id: string): Promise<void> => {
+  await api.delete(`/v1/admin/qurban/participants/${id}`)
 }

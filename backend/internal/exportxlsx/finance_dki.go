@@ -33,6 +33,9 @@ func fundTitleWord(ft models.FinanceFundType) string {
 	if ft == models.FinanceFundKasBesar {
 		return "BESAR"
 	}
+	if ft == models.FinanceFundType("all") {
+		return "GABUNGAN"
+	}
 	return "KECIL"
 }
 
@@ -174,6 +177,7 @@ func buildDKIStyles(f *excelize.File) (dkiStyles, error) {
 func BuildFinanceMonthlyDKIXLSX(
 	fundType models.FinanceFundType,
 	year, month int,
+	periodLabelOverride string,
 	opening float64,
 	rows []models.FinanceTransaction,
 	mosque models.MosqueInfo,
@@ -192,6 +196,9 @@ func BuildFinanceMonthlyDKIXLSX(
 	start := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, loc)
 	moName := idMonths[int(start.Month())]
 	titlePeriod := fmt.Sprintf("PERIODE %s %d", strings.ToUpper(moName), year)
+	if strings.TrimSpace(periodLabelOverride) != "" {
+		titlePeriod = strings.ToUpper(strings.TrimSpace(periodLabelOverride))
+	}
 	reportTitle := fmt.Sprintf("LAPORAN KEUANGAN KAS %s %s — %s", fundTitleWord(fundType), strings.ToUpper(strings.TrimSpace(mosque.Name)), titlePeriod)
 
 	addrParts := []string{strings.TrimSpace(mosque.Address)}

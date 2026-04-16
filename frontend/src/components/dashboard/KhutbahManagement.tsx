@@ -22,6 +22,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { AdminPdfUploadField } from '@/components/dashboard/AdminPdfUploadField'
+import { FinanceFormDatePicker } from '@/components/dashboard/finance/FinanceFormDatePicker'
 import { StatusBadge } from '@/components/dashboard/StatusBadge'
 import {
   useAdminKhutbahs,
@@ -266,13 +267,11 @@ export function KhutbahManagement() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="kh-date">Tanggal</Label>
-                <Input
+                <FinanceFormDatePicker
                   id="kh-date"
-                  type="date"
+                  label="Tanggal"
                   value={form.date}
-                  onChange={(ev) => setForm((f) => ({ ...f, date: ev.target.value }))}
-                  required
+                  onChange={(value) => setForm((f) => ({ ...f, date: value }))}
                 />
               </div>
               <div className="space-y-2">

@@ -264,6 +264,18 @@ func main() {
 			admin.GET("/settings", h.GetSettings)
 			admin.PUT("/settings/:key", h.UpdateSetting)
 
+			admin.GET("/qurban/settings", h.GetQurbanSettings)
+			admin.PUT("/qurban/settings", h.UpdateQurbanSettings)
+			admin.GET("/qurban/animals", h.GetQurbanAnimals)
+			admin.POST("/qurban/animals", h.CreateQurbanAnimal)
+			admin.PUT("/qurban/animals/:id", h.UpdateQurbanAnimal)
+			admin.DELETE("/qurban/animals/:id", h.DeleteQurbanAnimal)
+			admin.GET("/qurban/animals/:animalId/participants", h.GetQurbanParticipants)
+			admin.POST("/qurban/animals/:animalId/participants", h.CreateQurbanParticipant)
+			admin.PUT("/qurban/participants/:id", h.UpdateQurbanParticipant)
+			admin.PUT("/qurban/participants/:id/move", h.MoveQurbanParticipant)
+			admin.DELETE("/qurban/participants/:id", h.DeleteQurbanParticipant)
+
 			admin.GET("/rbac/permissions", h.GetRBACPermissions)
 			admin.GET("/rbac/roles", h.GetRBACRoles)
 			admin.GET("/rbac/roles/:orgRole/permissions", h.GetRBACRolePermissions)

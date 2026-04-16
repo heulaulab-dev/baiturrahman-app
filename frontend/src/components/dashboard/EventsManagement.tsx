@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { AdminImageUploadField } from '@/components/dashboard/AdminImageUploadField'
+import { FinanceFormDatePicker } from '@/components/dashboard/finance/FinanceFormDatePicker'
 import { StatusBadge } from '@/components/dashboard/StatusBadge'
 import { eventVisibleOnPublicPages, formatEventClockLabel, formatEventDateIso } from '@/lib/event-display'
 import { resolveBackendAssetUrl, slugifyForUrl } from '@/lib/utils'
@@ -335,13 +336,11 @@ export function EventsManagement() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="ev-date">Tanggal</Label>
-                <Input
+                <FinanceFormDatePicker
                   id="ev-date"
-                  type="date"
+                  label="Tanggal"
                   value={form.event_date}
-                  onChange={(ev) => setForm((f) => ({ ...f, event_date: ev.target.value }))}
-                  required
+                  onChange={(value) => setForm((f) => ({ ...f, event_date: value }))}
                 />
               </div>
               <div className="space-y-2">

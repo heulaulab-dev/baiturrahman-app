@@ -91,6 +91,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           title: "Manajemen Donasi",
           url: "/donasi",
         },
+        {
+          title: "Kantong Qurban",
+          url: "/qurban",
+        },
       ],
     },
     {

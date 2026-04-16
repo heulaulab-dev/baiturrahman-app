@@ -13,6 +13,7 @@ postgres-data/
 .env.local
 .env.production
 backend/.env
+backend/.env.staging
 
 # Build outputs
 dist/

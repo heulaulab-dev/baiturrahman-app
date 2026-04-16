@@ -1,0 +1,36 @@
+# Deploys staging on push to `staging`: SSH to VPS, pull, rebuild staging compose, prune images.
+
+name: Deploy staging to VPS
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging-baiturrahman
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: SSH deploy (staging)
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          command_timeout: 25m
+          script: |
+            set -euo pipefail
+            cd /home/onserver/heulaulab/baiturrahman-app-staging
+            git fetch origin staging
+            git checkout staging
+            git pull --ff-only origin staging
+            cd backend
+            docker compose -f docker-compose.staging.yml --env-file .env.staging up -d --build
+            docker image prune -f

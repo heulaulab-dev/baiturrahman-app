@@ -65,6 +65,17 @@ import {
   reorderAdminSponsors,
   getAdminSettings,
   updateAdminSetting,
+  getQurbanSettings,
+  updateQurbanSettings,
+  getQurbanAnimals,
+  createQurbanAnimal,
+  updateQurbanAnimal,
+  deleteQurbanAnimal,
+  getQurbanParticipants,
+  createQurbanParticipant,
+  updateQurbanParticipant,
+  moveQurbanParticipant,
+  deleteQurbanParticipant,
   type GetReservationsParams,
   type UpdateReservationRequest,
   type CreateEventPayload,
@@ -775,6 +786,118 @@ export const useUpdateAdminSetting = () => {
       updateAdminSetting(key, { value, description, data_type: 'string' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'settings'] })
+    },
+  })
+}
+
+export const useQurbanSettings = () =>
+  useQuery({
+    queryKey: ['admin', 'qurban', 'settings'],
+    queryFn: getQurbanSettings,
+    staleTime: 1000 * 30,
+  })
+
+export const useUpdateQurbanSettings = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: updateQurbanSettings,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'qurban', 'settings'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'qurban', 'animals'] })
+    },
+  })
+}
+
+export const useQurbanAnimals = () =>
+  useQuery({
+    queryKey: ['admin', 'qurban', 'animals'],
+    queryFn: getQurbanAnimals,
+    staleTime: 1000 * 10,
+  })
+
+export const useCreateQurbanAnimal = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createQurbanAnimal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'qurban', 'animals'] })
+    },
+  })
+}
+
+export const useUpdateQurbanAnimal = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof updateQurbanAnimal>[1] }) =>
+      updateQurbanAnimal(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'qurban', 'animals'] })
+    },
+  })
+}
+
+export const useDeleteQurbanAnimal = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteQurbanAnimal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'qurban', 'animals'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'qurban', 'participants'] })
+    },
+  })
+}
+
+export const useQurbanParticipants = (animalId: string) =>
+  useQuery({
+    queryKey: ['admin', 'qurban', 'participants', animalId],
+    queryFn: () => getQurbanParticipants(animalId),
+    enabled: !!animalId,
+    staleTime: 1000 * 5,
+  })
+
+export const useCreateQurbanParticipant = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ animalId, data }: { animalId: string; data: { name: string; phone?: string; notes?: string } }) =>
+      createQurbanParticipant(animalId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'qurban', 'participants', variables.animalId] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'qurban', 'animals'] })
+    },
+  })
+}
+
+export const useUpdateQurbanParticipant = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof updateQurbanParticipant>[1] }) =>
+      updateQurbanParticipant(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'qurban', 'participants'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'qurban', 'animals'] })
+    },
+  })
+}
+
+export const useMoveQurbanParticipant = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, targetAnimalId }: { id: string; targetAnimalId: string }) =>
+      moveQurbanParticipant(id, targetAnimalId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'qurban', 'participants'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'qurban', 'animals'] })
+    },
+  })
+}
+
+export const useDeleteQurbanParticipant = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteQurbanParticipant,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'qurban', 'participants'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'qurban', 'animals'] })
     },
   })
 }

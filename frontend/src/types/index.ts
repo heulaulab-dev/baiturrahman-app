@@ -404,3 +404,34 @@ export interface FinanceBalanceResponse {
   fund_type: FinanceFundType
   balance: number
 }
+
+export type QurbanAnimalType = 'sapi' | 'kambing'
+
+export interface QurbanSettings {
+  id: string
+  default_max_participants_sapi: number
+  default_max_participants_kambing: number
+  created_at: string
+  updated_at: string
+}
+
+export interface QurbanAnimal {
+  id: string
+  label: string
+  animal_type: QurbanAnimalType
+  max_participants_override?: number | null
+  participant_count: number
+  effective_max_participants: number
+  created_at: string
+  updated_at: string
+}
+
+export interface QurbanParticipant {
+  id: string
+  qurban_animal_id: string
+  name: string
+  phone?: string
+  notes?: string
+  created_at: string
+  updated_at: string
+}

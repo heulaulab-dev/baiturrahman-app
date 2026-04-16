@@ -4,9 +4,12 @@ import {
   createFinanceTransaction,
   createFinanceTransfer,
   exportFinanceMonthlyXlsx,
+  exportFinanceWeeklyPdf,
+  exportFinanceWeeklyXlsx,
   exportFinanceMonthlyPdf,
   getFinanceBalance,
   getFinanceMonthlyReport,
+  getFinanceWeeklyReport,
   getFinanceTransfers,
   getFinanceTransactions,
   rejectFinanceTransfer,
@@ -106,5 +109,23 @@ export const useExportFinanceMonthlyXlsx = () =>
 export const useExportFinanceMonthlyPdf = () =>
   useMutation({
     mutationFn: exportFinanceMonthlyPdf,
+  })
+
+export const useFinanceWeeklyReport = (params: { anchor_date: string }, queryEnabled = true) =>
+  useQuery({
+    queryKey: ['admin', 'finance', 'weekly-report', params],
+    queryFn: () => getFinanceWeeklyReport(params),
+    enabled: Boolean(params.anchor_date) && queryEnabled,
+    staleTime: 1000 * 30,
+  })
+
+export const useExportFinanceWeeklyXlsx = () =>
+  useMutation({
+    mutationFn: exportFinanceWeeklyXlsx,
+  })
+
+export const useExportFinanceWeeklyPdf = () =>
+  useMutation({
+    mutationFn: exportFinanceWeeklyPdf,
   })
 

@@ -16,6 +16,7 @@ import (
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/penglongli/gin-metrics/ginmetrics"
 )
 
 func main() {
@@ -77,6 +78,12 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * 3600,
 	}))
+
+	m := ginmetrics.GetMonitor()
+	m.SetMetricPath("/metrics")
+	m.SetSlowTime(10)
+	m.SetDuration([]float64{0.1, 0.3, 0.5, 1.0, 2.0})
+	m.Use(r)
 
 	// Sentry middleware (after CORS, before other middleware)
 	r.Use(sentrygin.New(sentrygin.Options{Repanic: true}))

@@ -19,6 +19,21 @@ type qurbanAnimalResponse struct {
 	EffectiveMax     int   `json:"effective_max_participants"`
 }
 
+type qurbanParticipantPublicResponse struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type qurbanAnimalPublicResponse struct {
+	ID               string                           `json:"id"`
+	Label            string                           `json:"label"`
+	AnimalType       models.QurbanAnimalType          `json:"animal_type"`
+	ParticipantCount int64                            `json:"participant_count"`
+	EffectiveMax     int                              `json:"effective_max_participants"`
+	Status           string                           `json:"status"`
+	Participants     []qurbanParticipantPublicResponse `json:"participants"`
+}
+
 func normalizeAnimalType(value string) models.QurbanAnimalType {
 	switch strings.ToLower(strings.TrimSpace(value)) {
 	case string(models.QurbanAnimalTypeSapi):
@@ -126,6 +141,59 @@ func (h *Handler) GetQurbanAnimals(c *gin.Context) {
 	}
 
 	utils.SuccessResponse(c, http.StatusOK, responses, "")
+}
+
+func (h *Handler) GetPublicQurbanSummary(c *gin.Context) {
+	setting, err := ensureQurbanSetting(h.DB)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal memuat pengaturan qurban")
+		return
+	}
+
+	var animals []models.QurbanAnimal
+	if err := h.DB.Order("created_at ASC").Find(&animals).Error; err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil daftar hewan qurban")
+		return
+	}
+
+	response := make([]qurbanAnimalPublicResponse, 0, len(animals))
+	for _, animal := range animals {
+		var participants []models.QurbanParticipant
+		if err := h.DB.
+			Where("qurban_animal_id = ?", animal.ID).
+			Order("created_at ASC").
+			Find(&participants).Error; err != nil {
+			utils.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil daftar peserta qurban")
+			return
+		}
+
+		effectiveMax := effectiveCapacity(setting, animal)
+		participantCount := int64(len(participants))
+		status := "open"
+		if participantCount >= int64(effectiveMax) {
+			status = "full"
+		}
+
+		participantResponses := make([]qurbanParticipantPublicResponse, 0, len(participants))
+		for _, participant := range participants {
+			participantResponses = append(participantResponses, qurbanParticipantPublicResponse{
+				ID:   participant.ID.String(),
+				Name: participant.Name,
+			})
+		}
+
+		response = append(response, qurbanAnimalPublicResponse{
+			ID:               animal.ID.String(),
+			Label:            animal.Label,
+			AnimalType:       animal.AnimalType,
+			ParticipantCount: participantCount,
+			EffectiveMax:     effectiveMax,
+			Status:           status,
+			Participants:     participantResponses,
+		})
+	}
+
+	utils.SuccessResponse(c, http.StatusOK, response, "")
 }
 
 func (h *Handler) CreateQurbanAnimal(c *gin.Context) {

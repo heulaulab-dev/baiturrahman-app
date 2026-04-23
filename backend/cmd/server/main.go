@@ -134,6 +134,7 @@ func main() {
 			public.GET("/gallery/items", h.GetPublicGalleryItems)
 			public.GET("/hero/slides", h.GetPublicHeroSlides)
 			public.GET("/sponsors", h.GetPublicSponsors)
+			public.GET("/qurban/summary", h.GetPublicQurbanSummary)
 			public.POST("/reservations", h.CreateReservation)
 		}
 

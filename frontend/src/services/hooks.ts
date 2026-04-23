@@ -21,6 +21,7 @@ import {
 	getHeroSlides,
 	getSponsors,
 	getSponsorsForLanding,
+	getPublicQurbanSummary,
 } from './apiService';
 
 // Mosque Info
@@ -204,5 +205,13 @@ export const useSponsorsForLanding = () => {
 		queryKey: ['sponsors', 'landing'],
 		queryFn: getSponsorsForLanding,
 		staleTime: 1000 * 60 * 5,
+	});
+};
+
+export const usePublicQurbanSummary = () => {
+	return useQuery({
+		queryKey: ['qurban', 'summary'],
+		queryFn: getPublicQurbanSummary,
+		staleTime: 1000 * 60 * 2,
 	});
 };

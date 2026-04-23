@@ -13,6 +13,7 @@ import type {
   GalleryItem,
   HeroSlide,
   PublicSponsor,
+  PublicQurbanAnimalSummary,
   Struktur,
   ApiResponse,
   PaginatedResponse,
@@ -163,5 +164,10 @@ export const getSponsorsForLanding = async (): Promise<PublicSponsor[]> => {
   const response = await api.get<ApiResponse<PublicSponsor[]>>('/v1/sponsors', {
     params: { for_landing: '1' },
   })
+  return response.data.data ?? []
+}
+
+export const getPublicQurbanSummary = async (): Promise<PublicQurbanAnimalSummary[]> => {
+  const response = await api.get<ApiResponse<PublicQurbanAnimalSummary[]>>('/v1/qurban/summary')
   return response.data.data ?? []
 }

@@ -435,3 +435,18 @@ export interface QurbanParticipant {
   created_at: string
   updated_at: string
 }
+
+export interface PublicQurbanParticipant {
+  id: string
+  name: string
+}
+
+export interface PublicQurbanAnimalSummary {
+  id: string
+  label: string
+  animal_type: QurbanAnimalType
+  participant_count: number
+  effective_max_participants: number
+  status: 'open' | 'full'
+  participants: PublicQurbanParticipant[]
+}

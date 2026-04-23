@@ -9,6 +9,71 @@ import { usePublicQurbanSummary } from '@/services/hooks';
 
 export function QurbanSection() {
   const { data: qurbanSummary = [], isLoading } = usePublicQurbanSummary();
+  const hasAnimals = qurbanSummary.length > 0;
+
+  const renderSummaryContent = () => {
+    if (isLoading) {
+      return <p className="text-sm text-sacred-green/70">Memuat data qurban...</p>;
+    }
+    if (!hasAnimals) {
+      return <p className="text-sm text-sacred-green/70">Data qurban belum tersedia.</p>;
+    }
+
+    return (
+      <div className="grid gap-3 md:grid-cols-2">
+        {qurbanSummary.map((animal) => (
+          <article key={animal.id} className="rounded-lg border border-sacred-gold/20 bg-white p-4">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p className="font-medium text-sacred-green">{animal.label}</p>
+                <p className="text-xs uppercase tracking-wide text-sacred-green/70">{animal.animal_type}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant={animal.status === 'full' ? 'destructive' : 'secondary'}>
+                  {animal.status === 'full' ? 'Full' : 'Open'}
+                </Badge>
+                <span className="rounded bg-sacred-green/10 px-2 py-1 text-xs font-medium text-sacred-green/80">
+                  {animal.participant_count}/{animal.effective_max_participants}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-sacred-green/10">
+              <div
+                className="h-full rounded-full bg-sacred-green transition-all"
+                style={{
+                  width: `${Math.min(
+                    100,
+                    Math.round((animal.participant_count / animal.effective_max_participants) * 100)
+                  )}%`,
+                }}
+              />
+            </div>
+
+            <div className="mt-3 text-sm text-sacred-green/80">
+              {animal.participants.length > 0 ? (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-sacred-green/70">Peserta</p>
+                  <div className="flex flex-wrap gap-2">
+                    {animal.participants.map((participant, index) => (
+                      <span
+                        key={participant.id}
+                        className="rounded-md border border-sacred-gold/30 bg-sacred-gold/10 px-2 py-1 text-xs text-sacred-green"
+                      >
+                        {index + 1}. {participant.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-sacred-green/70">Belum ada peserta.</p>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <section id="qurban" className="py-16 md:py-20 bg-white">
@@ -44,38 +109,7 @@ export function QurbanSection() {
 
           <div className="mt-8 space-y-3">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-sacred-green">Daftar Kantong Qurban</h3>
-            {isLoading ? (
-              <p className="text-sm text-sacred-green/70">Memuat data qurban...</p>
-            ) : qurbanSummary.length === 0 ? (
-              <p className="text-sm text-sacred-green/70">Data qurban belum tersedia.</p>
-            ) : (
-              <div className="space-y-3">
-                {qurbanSummary.map((animal) => (
-                  <div key={animal.id} className="rounded-lg border border-sacred-gold/20 bg-white p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-medium text-sacred-green">
-                        {animal.label} ({animal.animal_type})
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={animal.status === 'full' ? 'destructive' : 'secondary'}>
-                          {animal.status === 'full' ? 'Full' : 'Open'}
-                        </Badge>
-                        <span className="text-xs text-sacred-green/70">
-                          {animal.participant_count}/{animal.effective_max_participants}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-2 text-sm text-sacred-green/80">
-                      {animal.participants.length > 0 ? (
-                        <p>Peserta: {animal.participants.map((participant) => participant.name).join(', ')}</p>
-                      ) : (
-                        <p>Belum ada peserta.</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            {renderSummaryContent()}
           </div>
         </div>
       </div>

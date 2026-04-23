@@ -15,6 +15,7 @@ const navLinks = [
 	{ name: 'Kajian', href: '#kajian' },
 	{ name: 'Berita', href: '#berita' },
 	{ name: 'Galeri', href: '/galeri' },
+	{ name: 'Qurban', href: '#qurban' },
 	{ name: 'Mitra', href: '/mitra' },
 	{ name: 'Tabungan Akhirat', href: '#donasi' },
 ];

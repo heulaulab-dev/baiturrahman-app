@@ -107,8 +107,10 @@ export default function LaporanKeuanganPage() {
               <FileBarChart className="size-5" aria-hidden />
             </div>
             <div className="min-w-0 space-y-1">
-              <CardTitle className="text-xl sm:text-2xl">Laporan bulanan</CardTitle>
-              <CardDescription>Ringkasan mutasi per bulan dan unduhan PDF atau Excel.</CardDescription>
+              <CardTitle className="text-xl sm:text-2xl">Laporan keuangan</CardTitle>
+              <CardDescription>
+                Ringkasan mutasi per periode pilihan (bulanan atau mingguan) dan unduhan PDF atau Excel.
+              </CardDescription>
             </div>
           </div>
           <div className="inline-flex rounded-lg border bg-background p-1">

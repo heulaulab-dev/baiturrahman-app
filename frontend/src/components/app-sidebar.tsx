@@ -128,7 +128,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: "/keuangan/transfer",
         },
         {
-          title: "Laporan Bulanan",
+          title: "Laporan Keuangan",
           url: "/keuangan/laporan",
         },
       ],

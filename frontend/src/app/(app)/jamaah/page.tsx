@@ -612,7 +612,7 @@ export default function JamaahPage() {
 			)}
 
 			<Sheet open={showDetailDrawer && !!selectedMember} onOpenChange={setShowDetailDrawer}>
-				<SheetContent side="right" className="flex w-[480px] flex-col overflow-y-auto sm:max-w-[480px]">
+				<SheetContent side="right" className="flex w-full flex-col overflow-y-auto sm:max-w-md">
 					<SheetHeader>
 						<SheetTitle>Detail Anggota</SheetTitle>
 					</SheetHeader>

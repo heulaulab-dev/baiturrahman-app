@@ -87,12 +87,12 @@ export default function KontenPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)} className="space-y-6">
-        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 border border-border/60 bg-muted/30 p-1 shadow-sm">
+        <TabsList className="flex h-auto w-full flex-nowrap gap-1 overflow-x-auto border border-border/60 bg-muted/30 p-1 shadow-sm [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {tabs.map((tab) => (
             <TabsTrigger
               key={tab.key}
               value={tab.key}
-              className="text-xs data-[state=active]:bg-primary/15 data-[state=active]:text-primary sm:text-sm"
+              className="shrink-0 text-xs data-[state=active]:bg-primary/15 data-[state=active]:text-primary sm:text-sm"
             >
               {tab.label}
             </TabsTrigger>

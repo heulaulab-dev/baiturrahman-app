@@ -96,34 +96,35 @@ export function PendingDonationsTable() {
         </div>
       ) : (
         <div className="border border-border rounded-md overflow-hidden">
-          <div className="grid grid-cols-[1fr_auto_auto_auto_auto] bg-muted/30 h-10 items-center px-4 text-xs font-medium tracking-wider text-muted-foreground uppercase">
-            <div>Donatur</div>
-            <div className="w-20 text-center">Kategori</div>
-            <div className="w-28 text-right">Nominal</div>
-            <div className="w-24 text-right">Waktu</div>
-            <div className="w-20 text-center">Aksi</div>
-          </div>
+        <div className="hidden md:grid md:grid-cols-[1fr_auto_auto_auto_auto] bg-muted/30 h-10 items-center px-4 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+          <div>Donatur</div>
+          <div className="w-20 text-center">Kategori</div>
+          <div className="w-28 text-right">Nominal</div>
+          <div className="w-24 text-right">Waktu</div>
+          <div className="w-20 text-center">Aksi</div>
+        </div>
 
-          {donations.map((donation) => (
-            <div
-              key={donation.id}
-              className="grid grid-cols-[1fr_auto_auto_auto_auto] h-14 items-center px-4 border-t border-border hover:bg-muted/20 transition-colors group"
-            >
-              <div className="text-sm font-medium truncate pr-3">
-                {donation.donor_name}
+        {donations.map((donation) => (
+          <div
+            key={donation.id}
+            className="flex flex-col gap-2 p-3 border-t border-border hover:bg-muted/20 transition-colors md:grid md:grid-cols-[1fr_auto_auto_auto_auto] md:h-14 md:items-center md:px-4"
+          >
+            <div className="flex items-center justify-between md:block">
+              <div className="text-sm font-medium truncate">{donation.donor_name}</div>
+              <div className="text-xs text-muted-foreground md:hidden">{relativeTime(donation.created_at)}</div>
+            </div>
+            <div className="hidden md:flex md:justify-center">
+              <StatusBadge status="default">{capitalize(donation.category)}</StatusBadge>
+            </div>
+            <div className="hidden md:block md:w-28 md:text-right md:font-mono md:text-sm">
+              {formatCurrency(donation.amount)}
+            </div>
+            <div className="flex items-center justify-between md:hidden">
+              <div className="flex items-center gap-2">
+                <StatusBadge status="default">{capitalize(donation.category)}</StatusBadge>
+                <span className="font-mono text-sm">{formatCurrency(donation.amount)}</span>
               </div>
-              <div className="w-20 flex justify-center">
-                <StatusBadge status="default">
-                  {capitalize(donation.category)}
-                </StatusBadge>
-              </div>
-              <div className="w-28 text-right font-mono text-sm">
-                {formatCurrency(donation.amount)}
-              </div>
-              <div className="w-24 text-right text-xs text-muted-foreground">
-                {relativeTime(donation.created_at)}
-              </div>
-              <div className="w-20 flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex gap-1">
                 <button
                   onClick={() => confirmMutation.mutate(donation.id)}
                   disabled={confirmMutation.isPending}
@@ -132,16 +133,27 @@ export function PendingDonationsTable() {
                 >
                   <Check className="w-4 h-4" />
                 </button>
-                <button
-                  className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                  title="Tolak"
-                >
-                  <X className="w-4 h-4" />
-                </button>
               </div>
             </div>
-          ))}
-        </div>
+            <div className="hidden md:flex md:justify-center md:gap-1">
+              <button
+                onClick={() => confirmMutation.mutate(donation.id)}
+                disabled={confirmMutation.isPending}
+                className="p-1.5 rounded-md text-muted-foreground hover:bg-muted/30 transition-colors"
+                title="Konfirmasi"
+              >
+                <Check className="w-4 h-4" />
+              </button>
+              <button
+                className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                title="Tolak"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
       )}
     </div>
   );

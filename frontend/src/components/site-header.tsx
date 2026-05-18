@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
   type SidebarControlMode,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
 import {
@@ -105,36 +106,37 @@ export function SiteHeader() {
       )}
     >
       <div className="flex h-full w-full min-w-0 items-center gap-2 px-3 sm:px-4">
-
-        {isMobile === false ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8 shrink-0"
-                  aria-label="Mode tampilan sidebar"
-                >
-                  <Settings2 className="size-4" />
-                  <span className="sr-only">Mode sidebar</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-52">
-                <DropdownMenuLabel className="font-normal text-muted-foreground">
-                  Tampilan sidebar
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuRadioGroup
-                  value={controlMode}
-                  onValueChange={(value) => setControlMode(value as SidebarControlMode)}
-                >
-                  <DropdownMenuRadioItem value="expanded">Buka penuh</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="collapsed">Ikon saja</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="hover">Buka saat di-hover</DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-        ) : null}
+        {isMobile ? (
+          <SidebarTrigger aria-label="Buka menu navigasi" />
+        ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 shrink-0"
+                aria-label="Mode tampilan sidebar"
+              >
+                <Settings2 className="size-4" />
+                <span className="sr-only">Mode sidebar</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-52">
+              <DropdownMenuLabel className="font-normal text-muted-foreground">
+                Tampilan sidebar
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup
+                value={controlMode}
+                onValueChange={(value) => setControlMode(value as SidebarControlMode)}
+              >
+                <DropdownMenuRadioItem value="expanded">Buka penuh</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="collapsed">Ikon saja</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="hover">Buka saat di-hover</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
 
         <Separator orientation="vertical" className="hidden h-6 sm:block" />
 
